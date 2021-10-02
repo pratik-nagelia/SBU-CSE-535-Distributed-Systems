@@ -1,11 +1,11 @@
 package diem.model;
 
 public class Block {
-    Author author;
-    int round;
-    Payload payload;
-    QuorumCertificate quorumCertificate;
-    int id;
+    public Author author;
+    public int round;
+    public Payload payload;
+    public QuorumCertificate quorumCertificate;
+    public int id;
 
 
 }
