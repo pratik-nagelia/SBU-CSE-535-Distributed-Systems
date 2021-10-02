@@ -7,4 +7,6 @@ public class QuorumCertificate {
     public Signature signatures;
     public Author author;
     public Signature authorSignature;
+    // TODO Check BlockId not present in the code
+    public int blockId;
 }

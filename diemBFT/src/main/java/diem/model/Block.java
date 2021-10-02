@@ -8,4 +8,11 @@ public class Block {
     public int id;
 
 
+    public Block(Author author, int round, Payload payload, QuorumCertificate quorumCertificate, int id) {
+        this.author = author;
+        this.round = round;
+        this.payload = payload;
+        this.quorumCertificate = quorumCertificate;
+        this.id = id;
+    }
 }
