@@ -4,9 +4,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class TimeoutInfo {
-
-    int round;
-    public QuorumCertificate highQC;
-    int sender;
-    Signature signature;
+  public int round;
+  public QuorumCertificate highQC;
+  public int sender;
+  public Signature signature;
 }
