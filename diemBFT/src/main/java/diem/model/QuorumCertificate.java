@@ -2,9 +2,9 @@ package diem.model;
 
 
 public class QuorumCertificate {
-    VoteInfo voteInfo;
-    LedgerCommitInfo ledgerCommitInfo;
-    Signature signatures;
-    Author author;
-    Signature authorSignature;
+    public VoteInfo voteInfo;
+    public LedgerCommitInfo ledgerCommitInfo;
+    public Signature signatures;
+    public Author author;
+    public Signature authorSignature;
 }

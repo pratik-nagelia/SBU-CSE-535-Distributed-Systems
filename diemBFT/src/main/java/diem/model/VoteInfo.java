@@ -1,9 +1,9 @@
 package diem.model;
 
 public class VoteInfo {
-    int id;
-    int round;
-    int parentId;
-    int parentRound;
-    int executionStateId;
+    public int id;
+    public int round;
+    public int parentId;
+    public int parentRound;
+    public int executionStateId;
 }

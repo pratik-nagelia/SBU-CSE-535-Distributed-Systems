@@ -1,6 +1,6 @@
 package diem.model;
 
 public class LedgerCommitInfo {
-    int commitStateId;
-    String voteInfoHash;
+    public Integer commitStateId;
+    public String voteInfoHash;
 }
