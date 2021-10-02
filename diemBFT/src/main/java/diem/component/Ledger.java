@@ -1,5 +1,6 @@
 package diem.component;
 
+import diem.model.Block;
 import diem.model.Payload;
 
 public class Ledger {
@@ -17,4 +18,7 @@ public class Ledger {
   }
 
 
+  public static Block committedBlock(int parentId) {
+    return null;
+  }
 }

@@ -6,7 +6,7 @@ import diem.model.TimeoutInfo;
 
 public class Pacemaker {
 
-  int currentRound;
+  public static int currentRound;
   TimeoutCertificate lastRoundTc;
   int pendingTimeouts;
   Safety safety = new Safety();
