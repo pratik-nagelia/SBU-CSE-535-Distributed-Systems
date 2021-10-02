@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 public class TimeoutInfo {
 
     int round;
-    QuorumCertificate highQC;
+    public QuorumCertificate highQC;
     int sender;
     Signature signature;
 }
