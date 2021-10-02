@@ -7,7 +7,6 @@ public class Block {
     public QuorumCertificate quorumCertificate;
     public int id;
 
-
     public Block(Author author, int round, Payload payload, QuorumCertificate quorumCertificate, int id) {
         this.author = author;
         this.round = round;
