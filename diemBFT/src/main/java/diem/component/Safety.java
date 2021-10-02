@@ -3,7 +3,9 @@ package diem.component;
 import diem.model.Block;
 import diem.model.LedgerCommitInfo;
 import diem.model.QuorumCertificate;
+import diem.model.Signature;
 import diem.model.TimeoutCertificate;
+import diem.model.TimeoutInfo;
 import diem.model.VoteInfo;
 import diem.model.VoteMessage;
 import java.util.Collections;
@@ -67,7 +69,20 @@ public class Safety {
       // Need to Revisit
       LedgerCommitInfo ledgerCommitInfo = new LedgerCommitInfo(
           commitStateIdCandidate(b.round, b.quorumCertificate), String.valueOf(voteInfo.id));
-      return new VoteMessage();
+      return new VoteMessage(voteInfo, ledgerCommitInfo, BlockTree.highCommitQC, 0,
+          new Signature());
+    }
+    return null;
+  }
+
+  public TimeoutInfo makeTimeout(int round, QuorumCertificate highestQc,
+      TimeoutCertificate lastTc) {
+    int qcRound = highestQc.voteInfo.round;
+
+    // Add Valid Signature
+    if (safeToTimeout(round, qcRound, lastTc)) {
+      increaseHighestVoteRound(round);
+      return new TimeoutInfo(round, highestQc, 0, new Signature());
     }
     return null;
   }
