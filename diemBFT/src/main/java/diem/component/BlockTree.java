@@ -1,6 +1,7 @@
 package diem.component;
 
-import diem.model.Block;import diem.model.QuorumCertificate;
+import diem.model.Block;
+import diem.model.QuorumCertificate;
 import diem.model.VoteMessage;
 import diem.model.*;
 
