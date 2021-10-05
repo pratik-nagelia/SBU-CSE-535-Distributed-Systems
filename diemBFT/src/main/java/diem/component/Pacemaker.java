@@ -1,5 +1,6 @@
 package diem.component;
 
+import diem.model.Block;
 import diem.model.QuorumCertificate;
 import diem.model.TimeoutCertificate;
 import diem.model.TimeoutInfo;
@@ -18,29 +19,38 @@ public class Pacemaker {
   public static void advanceRound(int round) {
   }
 
+  // TODO
   public int getRoundTimer(int r) {
-    return 1;
+    return 1; // round timer formulae
   }
 
-  // Revisit
-  public static int startTimer(int newRound) {
-    // Stop Timer
+  // TODO
+  public static void startTimer(int newRound) {
+    stopTimer(currentRound);
     currentRound = newRound;
     // Start Local Timer
-    return 1;
+  }
+
+  private static void stopTimer(int currentRound) {
   }
 
   public void localTimeoutRound() {
-    // Save Consensus State
+    saveConsensusState();
     TimeoutInfo timeoutInfo = safety.makeTimeout(currentRound, BlockTree.highCommitQC, lastRoundTc);
-    // broadcast TimeoutMessage
+    TimeoutMessage timeoutMessage = new TimeoutMessage(timeoutInfo, lastRoundTc, BlockTree.highCommitQC);
+
+    //API CALL
+    //broadcast TimeoutMessage
   }
 
-  // Revisit
-  public static TimeoutCertificate processRemoteTimeout(TimeoutMessage message) {
-    // TimeoutInfo
+  private void saveConsensusState() {
+  }
 
-    if (message.getTimeoutInfo().round < currentRound) {
+  // TODO
+  public static TimeoutCertificate processRemoteTimeout(TimeoutMessage message) {
+    TimeoutInfo timeoutInfo = message.getTimeoutInfo();
+
+    if (timeoutInfo.round < currentRound) {
       return null;
     }
 
