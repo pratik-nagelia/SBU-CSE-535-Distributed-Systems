@@ -69,8 +69,7 @@ public class Safety {
         return null;
     }
 
-    public TimeoutInfo makeTimeout(int round, QuorumCertificate highestQc,
-                                   TimeoutCertificate lastTc) {
+    public TimeoutInfo makeTimeout(int round, QuorumCertificate highestQc, TimeoutCertificate lastTc) {
         int qcRound = highestQc.voteInfo.round;
 
         // Add Valid Signature
