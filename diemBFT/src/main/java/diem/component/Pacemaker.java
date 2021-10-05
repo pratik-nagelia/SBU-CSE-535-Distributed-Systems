@@ -3,6 +3,7 @@ package diem.component;
 import diem.model.QuorumCertificate;
 import diem.model.TimeoutCertificate;
 import diem.model.TimeoutInfo;
+import diem.model.TimeoutMessage;
 
 public class Pacemaker {
 
@@ -10,6 +11,9 @@ public class Pacemaker {
   static TimeoutCertificate lastRoundTc;
   int pendingTimeouts;
   Safety safety = new Safety();
+
+  public static void advanceRound(TimeoutCertificate timeoutCertificate) {
+  }
 
   public static void advanceRound(int round) {
   }
@@ -33,10 +37,10 @@ public class Pacemaker {
   }
 
   // Revisit
-  public static TimeoutCertificate processRemoteTimeout(TimeoutInfo timeoutInfo) {
+  public static TimeoutCertificate processRemoteTimeout(TimeoutMessage message) {
     // TimeoutInfo
 
-    if (timeoutInfo.round < currentRound) {
+    if (message.getTimeoutInfo().round < currentRound) {
       return null;
     }
 

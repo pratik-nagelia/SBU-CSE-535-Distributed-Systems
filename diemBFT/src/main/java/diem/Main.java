@@ -7,19 +7,23 @@ import diem.component.Pacemaker;
 import diem.component.Safety;
 import diem.model.Block;
 import diem.model.Leader;
-import diem.model.Message;
 import diem.model.ProposalMessage;
 import diem.model.QuorumCertificate;
 import diem.model.TimeoutCertificate;
-import diem.model.TimeoutInfo;
+import diem.model.TimeoutMessage;
 import diem.model.VoteMessage;
 
 public class Main {
 
   BlockTree blockTree;
-  LeaderElection leaderElection;
-  Pacemaker pacemaker;
+  //LeaderElection leaderElection;
+  //Pacemaker pacemaker;
   Safety safety;
+
+  public Main(BlockTree blockTree, Safety safety) {
+    this.blockTree = blockTree;
+    this.safety = safety;
+  }
 
   public void processCertificateQc(QuorumCertificate qc) {
     blockTree.processQC(qc);
@@ -39,19 +43,21 @@ public class Main {
     blockTree.executeAndInsert(P.block);
     VoteMessage vote = safety.makeVote(P.block, P.lastRoundTC);
     if (vote != null) {
-      Leader sendVoteToNextLeader = LeaderElection.getLeader(currRound + 1);
-      //Need to implement send
-      //send(vote, sendVoteToNextLeader);
+      Leader nextRoundLeader = LeaderElection.getLeader(currRound + 1);
+
+      // API CALL
+      // send(vote, nextRoundLeader);
     }
   }
 
-  void processTimeoutMessage(Message msg) {
-    processCertificateQc(msg.tmoInfo.highQC);
-    processCertificateQc(msg.highCommitQC);
-    Pacemaker.advanceRoundTc(msg.lastRoundTC);
-    TimeoutCertificate tc = Pacemaker.processRemoteTimeout(new TimeoutInfo());
+  void processTimeoutMessage(TimeoutMessage msg) {
+
+    processCertificateQc(msg.getTimeoutInfo().highQC);
+    processCertificateQc(msg.getHighCommitQC());
+    Pacemaker.advanceRoundTc(msg.getLastRoundTC());
+    TimeoutCertificate tc = Pacemaker.processRemoteTimeout(msg);
     if (tc != null) {
-      Pacemaker.advanceRound(0);
+      Pacemaker.advanceRound(tc);
       processNewRoundEvent(tc);
     }
   }
