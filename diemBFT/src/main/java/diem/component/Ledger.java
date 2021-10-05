@@ -13,7 +13,7 @@ public class Ledger {
     return 0;
   }
 
-  public static void speculate(int qcBlockId, int blockId, Payload blockPayload) {
+  public static void speculate(int qcBlockId, int blockId, Payload payload) {
 
   }
 

@@ -1,11 +1,12 @@
 package diem.component;
 
-import diem.model.Transaction;
-import java.util.*;
+import diem.model.Payload;
 
 public class MemPool {
-    static List<Transaction> transactions;
-    public static List<Transaction> getTransactions() {
-        return transactions;
-    }
+
+  static Payload transactions;
+
+  public static Payload getTransactions() {
+    return transactions;
+  }
 }

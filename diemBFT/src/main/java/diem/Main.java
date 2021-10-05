@@ -73,9 +73,14 @@ public class Main {
   void processNewRoundEvent(TimeoutCertificate last_tc) {
     Leader leader = LeaderElection.getLeader(Pacemaker.currentRound);
 
-    Block b = blockTree.generateBlock(MemPool.getTransactions(), Pacemaker.currentRound);
-    ProposalMessage p = new ProposalMessage(b, last_tc, BlockTree.highCommitQC);
-    //send(p,all);
+    if (leader != null) {
+      Block b = blockTree.generateBlock(MemPool.getTransactions(), Pacemaker.currentRound);
+      ProposalMessage p = new ProposalMessage(b, last_tc, BlockTree.highCommitQC);
+
+      // API CALL
+      // broadcast proposal message
+
+    }
 
   }
 }
