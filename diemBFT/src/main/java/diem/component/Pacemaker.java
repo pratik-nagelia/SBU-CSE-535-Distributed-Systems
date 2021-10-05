@@ -7,16 +7,19 @@ import diem.model.TimeoutInfo;
 public class Pacemaker {
 
   public static int currentRound;
-  TimeoutCertificate lastRoundTc;
+  static TimeoutCertificate lastRoundTc;
   int pendingTimeouts;
   Safety safety = new Safety();
+
+  public static void advanceRound(int round) {
+  }
 
   public int getRoundTimer(int r) {
     return 1;
   }
 
   // Revisit
-  public int startTimer(int newRound) {
+  public static int startTimer(int newRound) {
     // Stop Timer
     currentRound = newRound;
     // Start Local Timer
@@ -30,18 +33,18 @@ public class Pacemaker {
   }
 
   // Revisit
-  public int processRemoteTimeout(TimeoutInfo timeoutInfo) {
+  public static TimeoutCertificate processRemoteTimeout(TimeoutInfo timeoutInfo) {
     // TimeoutInfo
 
     if (timeoutInfo.round < currentRound) {
-      return 0;
+      return null;
     }
 
     // Pending Timeout Checks
-    return 0;
+    return null;
   }
 
-  public boolean advanceRoundTc(TimeoutCertificate tc) {
+  public static boolean advanceRoundTc(TimeoutCertificate tc) {
     if (tc == null || tc.round < currentRound) {
       return false;
     }
