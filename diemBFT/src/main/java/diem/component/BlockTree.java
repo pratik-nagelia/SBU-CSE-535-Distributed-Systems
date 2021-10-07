@@ -27,7 +27,7 @@ public class BlockTree {
 
     // Revisit
     public void executeAndInsert(Block block) {
-        //Ledger.speculate(block.quorumCertificate.blockId, block.id, block.payload);
+        Ledger.speculate(block.quorumCertificate.blockId, block.id, block.payload);
         pendingBlockTree.add(block);
     }
 
