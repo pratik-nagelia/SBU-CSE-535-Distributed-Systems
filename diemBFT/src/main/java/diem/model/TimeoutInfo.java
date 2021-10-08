@@ -11,4 +11,7 @@ public class TimeoutInfo {
   public QuorumCertificate highQC;
   public int sender;
   public Signature signature;
+
+  public TimeoutInfo(int round, QuorumCertificate highestQc) {
+  }
 }
