@@ -1,8 +1,8 @@
 import sys
 import json
 import logging
-author = import_da('author')
-client = import_da('client')
+import author as author
+import client as client
 
 config(channel is fifo, clock is lamport)
 

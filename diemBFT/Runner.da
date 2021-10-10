@@ -1,0 +1,45 @@
+import json
+import sys
+
+class Node(process):
+
+    def setup(node_id:int):
+        output("Setup complete for Node : ", self.node_id)
+
+    def run():
+        output("Running Node : ", str(self.node_id))
+        
+        
+
+class Client:
+    pass
+
+
+
+def main():
+    config(clock='Lamport', channel = 'fifo')
+
+    with open(sys.argv[1]) as config_file:
+        conf = json.load(config_file)
+
+    nodes = new(Node, num = conf['nodes'])
+    output("Number of Nodes Intiated: ", len(nodes))
+    # clients = new(Client, num = conf['clients'])
+
+    id = 0
+    for n in nodes:
+        setup(n, (id,))
+        id+=1
+
+    #for config in configs:
+        #p = new(Node)
+        #processes.append(p)
+        #setup(p, (config,))
+        #start(p)
+        #send(('Hello',), to = p)
+
+
+
+if __name__ == '__main__':
+    main()
+
