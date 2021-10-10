@@ -1,0 +1,20 @@
+import logging
+import mempool as mp
+from constants import *
+
+config(channel is fifo, clock is lamport)
+class Author(process):
+    def setup(otherValidators:set, num:int):
+        self.memPool = mp.MemPool()
+
+    def receive(msg= (TXN, data)):
+        self.memPool.addTransaction(data)
+        log('Added transaction to mempool')
+
+    def run():
+        log('Replica started')
+        await(False)
+
+    def log(msg):
+        prefix = '[REPLICA-' + str(num) + '] '
+        output(prefix + msg)

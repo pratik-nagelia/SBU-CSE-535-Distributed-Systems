@@ -1,0 +1,6 @@
+{
+  "f": 1,
+  "replicas": 4,
+  "clients": 1,
+  "initial_leader": 0
+}

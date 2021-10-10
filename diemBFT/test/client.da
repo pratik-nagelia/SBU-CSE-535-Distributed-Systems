@@ -1,0 +1,23 @@
+import logging
+from constants import *
+from transaction import *
+
+config(channel is fifo, clock is lamport)
+class Client(process):
+    def setup(validators:set):
+        self.txnNumber = 0
+
+    def receive(msg= (COMMITTED, c, p)):
+        print('Transaction committed by process - ', p)
+
+    def nextTransaction():
+        transaction = Transaction('Transaction - ' + str(txnNumber))
+        txnNumber += 1
+        return transaction
+
+    def run():
+        output('[CLIENT] Client started')
+        send((TXN, nextTransaction()), to= validators)
+        output('[CLIENT] Sent transactions to all validators')
+        output('[CLIENT] Waiting...')
+        await(False)
