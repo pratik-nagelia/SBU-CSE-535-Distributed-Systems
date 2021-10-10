@@ -1,4 +1,4 @@
-from timeout_mssage import TimeoutMessage
+from timeout_message import TimeoutMessage
 from block_tree import BlockTree
 
 

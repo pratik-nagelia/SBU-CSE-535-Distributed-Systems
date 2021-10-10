@@ -4,4 +4,4 @@ class ProposalMessage:
         self.last_round_tc = last_round_tc
         self.high_commit_qc = high_commit_qc
         # self.signature = signature
-        # self.sender = sender
+        # self.sender = senders
