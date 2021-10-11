@@ -4,28 +4,28 @@ import sys
 import json
 from block_tree import BlockTree
 from proposal_message import ProposalMessage
-
-
+from constants import *
+from pacemaker import Pacemaker
 
 class Node(process):
     def setup(node_id:int, nodes:set, nodesDict):
         self.main = Main(self.node_id)
         self.nodesDict = nodesDict
         self.block_tree = BlockTree([], [], None, None)
-        output("Setup complete for Node : ", self.node_id)
+        self.pacemaker = Pacemaker(0, None, [], self.block_tree)
+        output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():
-        output("Running Node : ", str(self.node_id))
+        output("[Node] [{}] Running Node".format(self.node_id))
         await(False)
 
 
-    def receive(msg=(txn), from_= client):
-        output("[NODE] Received in node :", self.node_id, " | Message: ", txn.to_string(), "| Client Id :", client)
-        # send((txn.to_string()), to=client)
+    def receive(msg=("TXN", payload), from_= client):
+        output("[Node] [{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
         self.process_new_round_event(None)
 
-    def receive(msg=('test', proposal), from_= node):
-        print("Chutttttiiii")
+    def receive(msg=("PROPOSAL", proposal, sender_id), from_= sender):
+        output("[Node] [{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
     
 
     def start_event_processing(message):
@@ -51,8 +51,7 @@ class Node(process):
 
     def process_new_round_event(last_tc):
         #TODO Get current Round
-        if self.node_id == 0:
+        if self.node_id == 0 and self.pacemaker.current_round == 0 :
             block = self.block_tree.generate_block(None, 0)
-            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
-            print(str(proposal)) 
-            send(('test', proposal), to=nodes)
+            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc) 
+            send(("PROPOSAL", proposal, self.node_id), to=nodes)

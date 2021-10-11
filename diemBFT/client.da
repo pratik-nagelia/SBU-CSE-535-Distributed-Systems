@@ -1,5 +1,5 @@
 from transaction import Transaction
-from constants import MessageType
+from constants import *
 
 class Client(process):
     def setup(nodes:set, client_id:int):
@@ -14,7 +14,7 @@ class Client(process):
         output('[CLIENT] Starting Client....')
         txn = initiate_new_transaction()
         msg = txn.to_string()
-        send((txn), to=nodes)
+        send(("TXN", txn), to=nodes)
         output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
         await(False)
 

@@ -1,4 +1,10 @@
 from enum import Enum
+
+
+TXN = 'TRANSACTION'
+VOTE = 'VOTE'
+PROPOSAL = 'PROPOSAL'
+
 class MessageType(Enum):
 	LOCAL_TIMEOUT = 1
 	PROPOSAL_MESSAGE = 2
