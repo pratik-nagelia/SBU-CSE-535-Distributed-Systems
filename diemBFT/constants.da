@@ -1,0 +1,6 @@
+from enum import Enum
+class MessageType(Enum):
+	LOCAL_TIMEOUT = 1
+	PROPOSAL_MESSAGE = 2
+	VOTE_MESSAGE  = 3
+	TIMEOUT_MESSAGE = 4

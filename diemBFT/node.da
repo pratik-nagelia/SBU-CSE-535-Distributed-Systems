@@ -1,0 +1,19 @@
+from main import Main
+
+class Node(process):
+    def setup(node_id:int):
+        self.main = Main()
+        output("Setup complete for Node : ", self.node_id)
+
+
+    def run():
+        output("Running Node : ", str(self.node_id))
+        await(False)
+
+
+    def receive(msg=(txn), from_= client):
+        output("[NODE] Received in node :", self.node_id, " | Message: ", txn.to_string(), "| Client Id :", client)
+        # send((txn.to_string()), to=client)
+        self.main.start_event_processing(txn)
+
+ 

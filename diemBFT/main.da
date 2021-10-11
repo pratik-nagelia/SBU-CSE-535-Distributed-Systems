@@ -1,0 +1,29 @@
+import logging
+import sys
+import json
+
+class Main:
+	def __init__(self):
+		self.node_id = 0
+
+	def start_event_processing(self, message):
+		print("Hello")
+		if(message.is_local_timeout_m()):
+			#Pacemaker.local_timeout_round()
+			pass
+		elif(message.is_proposal_m()):
+			self.process_proposal_msg(message)
+		elif(message.is_vote_m()):
+			self.process_vote_msg(message)
+		elif(message.is_timeout_m()):
+			self.process_timeout_message(message)
+		else:
+			pass
+
+	def process_new_round_event(self):
+		pass
+
+	def process_proposal_msg(self, message):
+		print(self.node_id)
+		
+
