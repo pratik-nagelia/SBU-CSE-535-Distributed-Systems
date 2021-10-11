@@ -2,17 +2,49 @@ import json
 import sys
 
 class Node(process):
-
     def setup(node_id:int):
         output("Setup complete for Node : ", self.node_id)
 
     def run():
         output("Running Node : ", str(self.node_id))
-        
-        
+        await(False)
 
-class Client:
-    pass
+
+    def receive(msg=(txn), from_= client):
+        output("[NODE] Received in node :", self.node_id, " | Message: ", txn.to_string(), "| Client Id :", client)
+        send((txn.to_string()), to=client)
+        
+        
+class Transaction:
+    def __init__(self, transaction_id, client_id):
+        self.transaction_id = transaction_id
+        self.client_id = client_id
+
+
+    def to_string(self):
+        msg = "Transaction :" + str(self.transaction_id) + ", initiated by client: " + str(self.client_id)
+        return msg
+
+
+class Client(process):
+    def setup(nodes:set, client_id:int):
+        self.transaction_id = -1
+
+    def initiate_new_transaction():
+        self.transaction_id += 1
+        curr_trans = Transaction(self.transaction_id , self.client_id)
+        return curr_trans
+
+    def run():
+        output('[CLIENT] Starting Client....')
+        txn = initiate_new_transaction()
+        msg = txn.to_string()
+        send((txn), to=nodes)
+        output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
+        await(False)
+
+    def receive(msg = (message), from_ = node):
+        output('[Client] Received Message', message)
 
 
 
@@ -23,13 +55,22 @@ def main():
         conf = json.load(config_file)
 
     nodes = new(Node, num = conf['nodes'])
-    output("Number of Nodes Intiated: ", len(nodes))
-    # clients = new(Client, num = conf['clients'])
+    output("**[Main]** Number of Nodes Intiated: ", len(nodes))
+    clients = new(Client, num = conf['clients'])
 
     id = 0
     for n in nodes:
         setup(n, (id,))
+        start(n)
         id+=1
+    output("**[Main]** Setup Complete for Nodes")
+
+    id = 0
+    for c in clients:
+        setup(c, (nodes,id))
+        start(c)
+        id+=1
+
 
     #for config in configs:
         #p = new(Node)
