@@ -2,7 +2,7 @@ from main import Main
 
 class Node(process):
     def setup(node_id:int):
-        self.main = Main()
+        self.main = Main(self.node_id)
         output("Setup complete for Node : ", self.node_id)
 
 
