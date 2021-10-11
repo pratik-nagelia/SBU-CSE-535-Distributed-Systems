@@ -2,9 +2,10 @@ import logging
 import sys
 import json
 
+
 class Main:
-	def __init__(self):
-		self.node_id = 0
+	def __init__(self, node_id):
+		self.node_id = node_id
 
 	def start_event_processing(self, message):
 		print("Hello")
@@ -24,6 +25,9 @@ class Main:
 		pass
 
 	def process_proposal_msg(self, message):
-		print(self.node_id)
+		if self.node_id == 0:
+			pass
+
+
 		
 
