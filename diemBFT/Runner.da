@@ -16,7 +16,7 @@ def main():
 
     id = 0
     for n in nodes:
-        setup(n, (id,))
+        setup(n, (id, nodes))
         start(n)
         id+=1
     output("**[Main]** Setup Complete for Nodes")

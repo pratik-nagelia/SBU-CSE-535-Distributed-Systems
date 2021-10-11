@@ -1,8 +1,16 @@
 from main import Main
+import logging
+import sys
+import json
+from block_tree import BlockTree
+from proposal_message import ProposalMessage
+
+
 
 class Node(process):
-    def setup(node_id:int):
+    def setup(node_id:int, nodes:set):
         self.main = Main(self.node_id)
+        self.block_tree = BlockTree([], [], None, None)
         output("Setup complete for Node : ", self.node_id)
 
 
@@ -14,6 +22,34 @@ class Node(process):
     def receive(msg=(txn), from_= client):
         output("[NODE] Received in node :", self.node_id, " | Message: ", txn.to_string(), "| Client Id :", client)
         # send((txn.to_string()), to=client)
-        self.main.start_event_processing(txn)
+        self.process_new_round_event(None)
 
- 
+    def receive(msg=('test', proposal), from_= node):
+        print("Chutttttiiii")
+    
+
+    def start_event_processing(message):
+        if(message.is_local_timeout_m()):
+            #Pacemaker.local_timeout_round()
+            pass
+        elif(message.is_proposal_m()):
+            self.process_proposal_msg(message)
+        elif(message.is_vote_m()):
+            self.process_vote_msg(message)
+        elif(message.is_timeout_m()):
+            self.process_timeout_message(message)
+        else:
+            pass
+
+
+    def process_proposal_msg(message):
+        pass
+
+
+    def process_new_round_event(last_tc):
+        #TODO Get current Round
+        if self.node_id == 0:
+            block = self.block_tree.generate_block(None, 0)
+            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+            print(str(proposal)) 
+            send(('test', proposal), to=nodes)
