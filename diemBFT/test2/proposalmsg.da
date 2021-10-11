@@ -1,0 +1,10 @@
+from block import Block
+from qc import QC
+from tc import TC
+
+class ProposalMessage:
+    def setup(block:Block, last_round_tc:TC, high_commit_qc:QC, signature:str):
+        self.block = block
+        self.last_round_tc = last_round_tc
+        self.high_commit_qc = high_commit_qc
+        self.signature = signature

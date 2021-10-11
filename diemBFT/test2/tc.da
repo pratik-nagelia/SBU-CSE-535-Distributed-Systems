@@ -1,0 +1,5 @@
+class TC:
+    def setup(round:int, timeout_high_qc_rounds:list, timeout_signatures:list):
+        self.round = round
+        self.timeout_high_qc_rounds = timeout_high_qc_rounds
+        self.timeout_signatures = timeout_signatures

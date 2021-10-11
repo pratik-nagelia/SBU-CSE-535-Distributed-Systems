@@ -8,11 +8,11 @@ from proposal_message import ProposalMessage
 
 
 class Node(process):
-    def setup(node_id:int, nodes:set):
+    def setup(node_id:int, nodes:set, nodesDict):
         self.main = Main(self.node_id)
+        self.nodesDict = nodesDict
         self.block_tree = BlockTree([], [], None, None)
         output("Setup complete for Node : ", self.node_id)
-
 
     def run():
         output("Running Node : ", str(self.node_id))
@@ -41,6 +41,9 @@ class Node(process):
         else:
             pass
 
+
+    def process_proposal_msg(message):
+        pass
 
     def process_proposal_msg(message):
         pass

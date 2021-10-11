@@ -1,0 +1,7 @@
+class VoteMessage:
+    def __init__(self):
+        self.voteInfo = None
+        self.ledgerCommitInfo = None
+        self.highCommitQC = None
+        self.sender = None
+        self.signature = None
