@@ -53,6 +53,7 @@ class Safety:
         #     #BlockTree Check how block_tree's object will be initialized.
         #     #VoteMsg msg = VoteMsg(vote_info, ledger_commit_info, BlockTree.high_commit_qc) #=> Confirm last parameter
         #     return msg
+        
         pass
 
     # #TODO
