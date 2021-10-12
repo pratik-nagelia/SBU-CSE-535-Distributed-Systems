@@ -6,6 +6,7 @@ from block_tree import BlockTree
 from proposal_message import ProposalMessage
 from constants import *
 from pacemaker import Pacemaker
+from mem_pool import MemPool
 
 class Node(process):
     def setup(node_id:int, nodes:set, nodesDict):
@@ -13,6 +14,7 @@ class Node(process):
         self.nodesDict = nodesDict
         self.block_tree = BlockTree([], [], None, None)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree)
+        self.mempool = MemPool([])
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():
@@ -26,32 +28,18 @@ class Node(process):
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_= sender):
         output("[Node] [{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
-    
-
-    def start_event_processing(message):
-        if(message.is_local_timeout_m()):
-            #Pacemaker.local_timeout_round()
-            pass
-        elif(message.is_proposal_m()):
-            self.process_proposal_msg(message)
-        elif(message.is_vote_m()):
-            self.process_vote_msg(message)
-        elif(message.is_timeout_m()):
-            self.process_timeout_message(message)
-        else:
-            pass
+        self.process_proposal_msg(proposal, sender_id)
 
 
-    def process_proposal_msg(message):
-        pass
-
-    def process_proposal_msg(message):
-        pass
+    def process_proposal_msg(proposal, sender_id):
+        process_certificate_qc(proposal.block.qc)
+        process_certificate_qc(proposal.high_commit_qc)
+        self.pacemaker.advance_round_tc(proposal.last_round_tc)
 
 
     def process_new_round_event(last_tc):
         #TODO Get current Round
         if self.node_id == 0 and self.pacemaker.current_round == 0 :
-            block = self.block_tree.generate_block(None, 0)
+            block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc) 
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
