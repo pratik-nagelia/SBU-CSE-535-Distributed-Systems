@@ -1,3 +1,7 @@
+from vote_info import VoteInfo
+from vote_message import VoteMsg
+
+
 class Safety:
     F = 1
 
@@ -53,8 +57,8 @@ class Safety:
         #     #BlockTree Check how block_tree's object will be initialized.
         #     #VoteMsg msg = VoteMsg(vote_info, ledger_commit_info, BlockTree.high_commit_qc) #=> Confirm last parameter
         #     return msg
-
-        pass
+        vote_info = VoteInfo(0, 0, 0, 0, 0)
+        return VoteMsg(vote_info, None, None, None, None)
 
     # #TODO
     # def calculate_hash(self, vote_info):
@@ -70,7 +74,3 @@ class Safety:
     #         increase_highest_vote_round(voting_round)
     #         return TimeoutInfo(voting_round, highest_quorum_certificate)
     #     return None
-
-
-
-
