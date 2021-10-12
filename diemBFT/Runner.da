@@ -22,7 +22,7 @@ def main():
     for n in nodes:
         nodeDict[id] = n;
         id+=1
-
+    output("[Runner] fetch 0 node: ", nodeDict[0])
     id = 0
     for n in nodes:
         setup(n, (id, nodes, nodeDict))
