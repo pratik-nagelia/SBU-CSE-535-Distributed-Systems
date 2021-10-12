@@ -66,7 +66,10 @@ class Node(process):
             self.process_new_round_event(null)
 
     def process_certificate_qc(qc):
-        pass
+        BlockTree.process_qc(qc)
+        LeaderElection.update_leaders(qc)
+        # TODO Function not in pseudocode
+        #Pacemaker.advance_round
 
     def process_new_round_event(last_tc):
         # TODO Get current Round
@@ -74,3 +77,14 @@ class Node(process):
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
+
+    def process timeout msg(timeout_msg, sender_id):
+        output("[Node] [{}] Start processing the Timeout message".format(self.node_id))
+        process_certificate_qc(timeout_msg.timeout_info.high_qc)
+        process_certificate_qc(timeout_msg.high_commit_qc)
+        Pacemaker.advance_round_tc(timeout_msg.last_round_tc)
+        tc = Pacemaker.process_remote_timeout(timeout_msg)
+        if (tc!=null):
+            Pacemaker.advance_round_tc(tc)
+            process_new_round_event(tc)
+

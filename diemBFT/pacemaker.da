@@ -1,6 +1,5 @@
 from block_tree import BlockTree
 
-
 class Pacemaker:
     def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree):
         self.current_round = current_round
@@ -31,15 +30,9 @@ class Pacemaker:
         #timeout_info = Safety.make_timeout(self.current_round, block_tree.high_qc, last_round_tc)
         #broadcast TimeoutMessage(timeout_info, last_round_tc, block_tree.high_commit_qc)
 
-#    def process_remote_timeout(self, tmo):
-#        tmo_info = tmo.tmo_info
-
-   # def advance_round_tc(self, tc):
-   #     if tc is None or tc.round < self.current_round:
-   #         return False
-   #     self.last_round_tc = tc
-   #     self.start_timer(tc.round + 1)
-   #     return True
+   def process_remote_timeout(self, tmo):
+       pass
+       #tmo_info = tmo.tmo_info
 
 #    def advance_round_qc(self, qc):
 #        if qc.vote_info.round < self.current_round:
