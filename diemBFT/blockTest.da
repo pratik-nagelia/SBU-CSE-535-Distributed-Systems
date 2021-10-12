@@ -1,5 +1,0 @@
-from block_tree import BlockTree
-
-
-b = BlockTree([], [], None, None)
-b.generate_block(None, 0)
