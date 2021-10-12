@@ -18,7 +18,7 @@ class Node(process):
         self.safety = Safety(None, None, -1, -1)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree)
         self.mempool = MemPool([])
-        self.leader_election = LeaderElection(nodes, 10, 10, {})
+        self.leader_election = LeaderElection(nodesDict, 10, 10, {})
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():

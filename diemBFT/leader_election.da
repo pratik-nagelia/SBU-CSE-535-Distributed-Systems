@@ -1,8 +1,8 @@
 class LeaderElection:
     F = 1
 
-    def __init__(self, validators, window_size, exclude_size, reputation_leaders):
-        self.validators = validators  # -> Set of nodes
+    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders):
+        self.nodesDict = nodesDict #-> Set of nodes
         self.window_size = window_size
         self.exclude_size = exclude_size
         self.reputation_leaders = reputation_leaders  # => Dict

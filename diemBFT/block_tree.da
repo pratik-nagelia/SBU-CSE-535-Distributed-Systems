@@ -40,9 +40,9 @@ class BlockTree:
         print("[Block-Tree] [{}] Process Vote ".format(79))
         self.process_qc(vote.high_commit_qc)
         vote_idx = hash(vote.ledger_commit_info)
-        self.pending_votes[vote_idx] = self.pending_votes[vote_idx].add(vote.signature)
-        if len(self.pending_votes[vote_idx]) == (2 * self.F) + 1:
-            signatures_list = list(self.pending_votes[vote_idx])
+        self.pendingVotes[vote_idx] = self.pendingVotes[vote_idx].add(vote.signature)
+        if len(self.pendingVotes[vote_idx]) == (2 * self.F) + 1:
+            signatures_list = list(self.pendingVotes[vote_idx])
             new_qc = QC(vote.vote_info, vote.ledger_commit_info, signatures_list, vote.sender, vote.signature)
             return new_qc
         return None
