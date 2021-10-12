@@ -1,0 +1,40 @@
+import sys
+import json
+import logging
+import author as author
+import client as client
+
+config(channel is fifo, clock is lamport)
+
+def main():
+    with open(sys.argv[1]) as json_file:
+        data = json.load(json_file)
+
+    output("CONFIG READ SUCCESSFULLY FROM ",sys.argv[1])
+    # print(data['initial_leader'])
+
+    # Create a client which will fire requests to all the validators
+    output("Number of Clients Intiated:", data['clients'])
+    clients = new(client.Client, num= data['clients'])
+
+    # Create as many validators as specified in the config
+    validators = new(author.Author, num= data['replicas'])
+    output("Validators Initiated" ,data['replicas'])
+
+
+    vNum = 0
+    for v in validators:
+        setup(v, (validators-{v}, vNum))
+        vNum += 1
+
+    output('Validators setup done.')
+
+    # Setup and start the client
+    for c in clients:
+        setup(c, (validators,))
+
+    output('Clients setup done.')
+
+    start(validators)
+    start(clients)
+    await(False)

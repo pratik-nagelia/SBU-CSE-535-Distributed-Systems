@@ -1,0 +1,40 @@
+import logging
+import sys
+import json
+from block_tree import BlockTree
+from proposal_message import ProposalMessage
+
+class Main():
+	def __init__(self, node_id):
+		self.node_id = node_id
+		self.block_tree = BlockTree([], [], None, None)
+
+	def start_event_processing(self, message):
+		if(message.is_local_timeout_m()):
+			#Pacemaker.local_timeout_round()
+			pass
+		elif(message.is_proposal_m()):
+			self.process_proposal_msg(message)
+		elif(message.is_vote_m()):
+			self.process_vote_msg(message)
+		elif(message.is_timeout_m()):
+			self.process_timeout_message(message)
+		else:
+			pass
+
+
+	def process_proposal_msg(self, message):
+		pass
+
+
+	def process_new_round_event(self, last_tc):
+		#TODO Get current Round
+		if self.node_id == 0:
+			block = self.block_tree.generate_block(None, 0)
+			proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+			print(str(proposal)) 
+			send(('test', proposal), to=node)
+
+
+		
+

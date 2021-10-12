@@ -1,0 +1,7 @@
+class VoteInfo:
+    def __init__(self, _id, _round, parentId, parentRound, execStateId):
+        self.id = _id
+        self.round = _round
+        self.parentId = parentId
+        self.parentRound = parentRound
+        self.execStateId = execStateId

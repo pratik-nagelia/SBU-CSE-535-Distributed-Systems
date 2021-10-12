@@ -1,0 +1,11 @@
+from voteinfo import VoteInfo
+from ledgerCommitInfo import LedgerCommitInfo
+from author import Author
+
+class QC:
+    def setup(voteInfo: VoteInfo, ledgerCommitInfo: LedgerCommitInfo, signatures: list, author: Author, authorSignature:str):
+        self.voteInfo = voteInfo
+        self.ledgerCommitInfo = ledgerCommitInfo
+        self.signatures = signatures
+        self.author = None
+        self.authorSignature = authorSignature
