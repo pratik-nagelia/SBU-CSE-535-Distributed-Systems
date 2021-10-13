@@ -12,6 +12,6 @@ class Ledger:
 
     def commit(self, block_id):
         pass
-    #
-    # def committed_block(self, block_id):
-    #     pass
+
+    def committed_block(self, block_id):
+        pass
