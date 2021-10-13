@@ -3,7 +3,7 @@ from quorum_certificate import QC
 from ledger_commit_info import LedgerCommitInfo
 from ledger import Ledger
 from vote_info import VoteInfo
-from vote_messge import VoteMsg
+from vote_message import VoteMsg
 
 class BlockTree:
     F = 1
