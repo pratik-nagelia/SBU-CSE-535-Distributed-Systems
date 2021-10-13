@@ -67,7 +67,8 @@ class Node(process):
     def process_vote_msg(vote_msg, sender_id):
         print("[Node] [{}] Start processing the VOTE message".format(self.node_id))
         qc = self.block_tree.process_vote(vote_msg)
-        if(qc!=null):
+        print("[Node] [{}] Check if a quorum has been formed".format(self.node_id))
+        if(qc is not None):
             self.process_certificate_qc(qc)
             self.process_new_round_event(null)
 

@@ -2,6 +2,8 @@ from block import Block
 from quorum_certificate import QC
 from ledger_commit_info import LedgerCommitInfo
 from ledger import Ledger
+from vote_info import VoteInfo
+from vote_messge import VoteMsg
 
 class BlockTree:
     F = 1
@@ -21,6 +23,10 @@ class BlockTree:
         self.node_id = node_id
 
     def process_qc(self, qc):
+        print("[Block-Tree] Process QC with id [{}]".format(vote_info.id),
+              " voted in round: {[]}".format(vote_info.round),
+              " for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
+
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
             Ledger.commit(qc.vote_info.parent_id)
             # TODO
@@ -36,16 +42,24 @@ class BlockTree:
         self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)
         self.pendingBlockTree.append(block)
 
-    def process_vote(self, vote):
-        print("[Block-Tree] [{}] Process Vote ".format(79))
-        self.process_qc(vote.high_commit_qc)
-        vote_idx = hash(vote.ledger_commit_info)
-        self.pending_votes[vote_idx] = self.pending_votes[vote_idx].add(vote.signature)
+    def process_vote(self, vote_msg):
+        #bypassing make_vote
+        VoteInfo1 = VoteInfo(0,0,0,0,None)
+        vote_msg = VoteMsg(VoteInfo1, None, None, None, None)
+        vote_info = vote_msg.vote_info
+        print("[Block-Tree] Process Vote Message with id [{}]".format(79))#vote_info.id)," voted in round: {[]}".format(vote_info.round)," for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
+        if(vote_msg.high_commit_qc is not None):
+            print("[Block-Tree] high_commit_qc of current vote message is not null. See if a commit can be made")
+            self.process_qc(vote.high_commit_qc) #For the transaction initiated in the first round, high_commit_qc of vote_msg is null, so no commit to be made in this round.
+            #Understand how how_commit_qc will be updated and understand its significance in further rounds.
+        vote_idx = self.hash_determine_id_of_vote(vote_msg.ledger_commit_info) #Determine why hash is being calculated here
+        print("[Block-Tree] VOTE_IDX: [{}]".format(vote_idx))
+        '''self.pending_votes[vote_idx] = self.pending_votes[vote_idx].add(vote.signature)
         if len(self.pending_votes[vote_idx]) == (2 * self.F) + 1:
             signatures_list = list(self.pending_votes[vote_idx])
             new_qc = QC(vote.vote_info, vote.ledger_commit_info, signatures_list, vote.sender, vote.signature)
             return new_qc
-        return None
+        return None'''
 
     def generate_block(self, transactions, current_round):
         author = 0
@@ -67,3 +81,7 @@ class BlockTree:
 
     def hash(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
         return 0
+
+    def hash_determine_id_of_vote(self, commit_info): #TODO
+        return 0
+
