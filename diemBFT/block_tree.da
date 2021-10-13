@@ -14,6 +14,7 @@ class BlockTree:
         self.high_qc = high_qc
         self.high_commit_qc = high_commit_qc
         self.ledger = None
+        self.node_id = None
 
     # TODO HACK Couldnot init in the constructer
     def set_ledger(self, ledger):
@@ -35,11 +36,11 @@ class BlockTree:
         self.high_qc = self.get_max_round(qc, self.high_qc)
 
     def execute_and_insert(self, block):
-        print("[Block-Tree] [{}] Execute and insert".format(79))
+        print("[Block-Tree-Node-{}".format(self.node_id),"] Execute and insert")
         block_qc_block_id = None
         if block.qc is not None:
             block_qc_block_id = block.qc.block_id
-        self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)
+        self.ledger.speculate(block_qc_block_id, block.block_id, block.payload) #TODO Pending till now
         self.pendingBlockTree.append(block)
 
     def process_vote(self, vote_msg):
@@ -71,7 +72,7 @@ class BlockTree:
             high_qc_signatures = self.high_qc.signatures
 
         return Block(author, current_round, transactions, self.high_qc,
-                     self.hash(author, current_round, transactions, vote_info_id, high_qc_signatures))
+                     self.hash_fun(author, current_round, transactions, vote_info_id, high_qc_signatures))
 
     def get_max_round(self, qc, high_commit_qc):
         pass
@@ -79,8 +80,16 @@ class BlockTree:
     def prune(self, parent_id):
         pass
 
-    def hash(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
-        return 0
+    def hash_fun(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
+        temp_str = str(author)+str(current_round)
+        for t in transactions:
+            temp_str = temp_str+t
+        if(vote_info_id is not None):
+            temp_str = temp_str+str(vote_info_id)
+        if(high_qc_signatures is not None):
+            temp_str = temp_str+str(high_qc_signatures)
+        print("[Block-Tree] temp_str: {}".format(temp_str)," hash: {}".format(hash(temp_str)))
+        return hash(temp_str)
 
     def hash_determine_id_of_vote(self, commit_info): #TODO
         return 0

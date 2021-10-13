@@ -15,9 +15,9 @@ class Node(process):
         self.nodesDict = nodesDict
         self.ledger = Ledger()
         self.block_tree = BlockTree([], [], None, None)
-        self.safety = Safety(None, None, -1, -1)
+        self.safety = Safety(None, None, -1, -1,self.node_id)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree)
-        self.mempool = MemPool([])
+        self.mempool = MemPool([],self.node_id)
         self.leader_election = LeaderElection(nodesDict, 10, 10, {})
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
@@ -25,11 +25,13 @@ class Node(process):
         output("[Node] [{}] Running Node".format(self.node_id))
         # TODO HACK Couldnot init in the constructer
         self.block_tree.set_ledger(self.ledger)
+        self.block_tree.set_node_id(self.node_id)
         # self.block_tree.set_node_id(self.node_id)
         await(False)
 
     def receive(msg=("TXN", payload), from_=client):
         output("[Node] [{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
+        self.mempool.add_transaction(payload.to_string())
         self.process_new_round_event(None)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):

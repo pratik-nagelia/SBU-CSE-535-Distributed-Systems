@@ -47,11 +47,8 @@ class LeaderElection:
 
     def round_robin_leader(self, current_round):
         x = (current_round // 2)
-        print("XXXXXXXX: ",str(x)," leader_id: ",x%len(self.nodesDict))
-
-        print(self.nodesDict)
+        #print(self.nodesDict)
         leader = x%(len(self.nodesDict))
-
         print("[Leader-Election] Round-Robin Leader: [{}]".format(leader))
         return leader
     #
