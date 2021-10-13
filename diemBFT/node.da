@@ -1,24 +1,34 @@
-from main import Main
-from block_tree import BlockTree
-from proposal_message import ProposalMessage
-from constants import *
-from pacemaker import Pacemaker
-from mem_pool import MemPool
-from leader_election import LeaderElection
-from safety import Safety
-from ledger import Ledger
+# from main import Main
+# from block_tree import BlockTree
+# from proposal_message import ProposalMessage
+# from constants import *
+# from pacemaker import Pacemaker
+# from mem_pool import MemPool
+# from leader_election import LeaderElection
+# from safety import Safety
+# from ledger import Ledger
 
+Main = import_da('main')
+BlockTree = import_da('block_tree')
+ProposalMessage = import_da('proposal_message')
+Pacemaker = import_da('pacemaker')
+MemPool = import_da('mem_pool')
+LeaderElection = import_da('leader_election')
+Safety = import_da('safety')
+Ledger = import_da('ledger')
 
 class Node(process):
+
     def setup(node_id: int, nodes: set, nodesDict):
-        self.main = Main(self.node_id)
+        output("[Node] [{}] Setup Started".format(self.node_id))
+        self.main = Main.Main(self.node_id)
         self.nodesDict = nodesDict
-        self.ledger = Ledger()
-        self.block_tree = BlockTree([], [], None, None)
-        self.safety = Safety(None, None, -1, -1,self.node_id)
-        self.pacemaker = Pacemaker(0, None, [], self.block_tree)
-        self.mempool = MemPool([],self.node_id)
-        self.leader_election = LeaderElection(nodesDict, 10, 10, {})
+        self.ledger = Ledger.Ledger()
+        self.block_tree = BlockTree.BlockTree([], [], None, None)
+        self.safety = Safety.Safety(None, None, -1, -1,self.node_id)
+        self.pacemaker = Pacemaker.Pacemaker(0, None, [], self.block_tree)
+        self.mempool = MemPool.MemPool([],self.node_id)
+        self.leader_election = LeaderElection.LeaderElection(nodesDict, 10, 10, {})
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():
@@ -30,16 +40,16 @@ class Node(process):
         await(False)
 
     def receive(msg=("TXN", payload), from_=client):
-        output("[Node] [{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
+        output("[Node] [{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
         self.mempool.add_transaction(payload.to_string())
         self.process_new_round_event(None)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
-        output("[Node] [{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
+        output("[Node] [{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"), sender_id)
         self.process_proposal_msg(proposal, sender_id)
 
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
-        output("[Node] [{}] Received {}  message".format(self.node_id, VOTE), "  from Node: [{}]".format(sender_id))
+        output("[Node] [{}] Received {}  message".format(self.node_id, "VOTE"), "  from Node: [{}]".format(sender_id))
         self.process_vote_msg(vote_msg, sender_id)
 
     def process_proposal_msg(proposal, sender_id):
@@ -79,5 +89,5 @@ class Node(process):
         # TODO Get current Round
         if self.node_id == 0 and self.pacemaker.current_round == 0:
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
-            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+            proposal = ProposalMessage.ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)

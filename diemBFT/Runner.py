@@ -18,23 +18,33 @@ class Node_(da.NodeProcess):
     def run(self):
         with open(sys.argv[1]) as config_file:
             conf = json.load(config_file)
-        nodes = self.new(Node, num=conf['nodes'])
-        self.output('**[Runner]** Number of Nodes Intiated: ', len(nodes))
-        clients = self.new(Client, num=conf['clients'])
-        self.output('**[Runner]** Number of Clients Intiated: ', len(clients))
+        nodes = self.new(Node.Node, num=conf['nodes'])
+        self.output('[Runner] Number of Nodes Intiated: ', len(nodes))
+        clients = self.new(Client.Client, num=conf['clients'])
+        self.output('[Runner] Number of Clients Intiated: ', len(clients))
         id = 0
         nodeDict = {}
         for n in nodes:
             nodeDict[id] = n
             id += 1
+        self.output('[Runner] fetch 0 node: ', nodeDict[0])
         id = 0
         for n in nodes:
             self._setup(n, (id, nodes, nodeDict))
             self._start(n)
             id += 1
-        self.output('**[Runner]** Setup Complete for Nodes')
+        self.output('[Runner] Setup Complete for Nodes')
         id = 0
         for c in clients:
             self._setup(c, (nodes, id))
             self._start(c)
             id += 1
+        super()._label('_st_label_286', block=False)
+        _st_label_286 = 0
+        while (_st_label_286 == 0):
+            _st_label_286 += 1
+            if False:
+                _st_label_286 += 1
+            else:
+                super()._label('_st_label_286', block=True)
+                _st_label_286 -= 1

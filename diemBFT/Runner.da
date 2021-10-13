@@ -1,9 +1,10 @@
 import json
 import sys
-from node import Node
-from client import Client
-# Node = import_da('node')
-# Client = import_da('client')
+# from node import Node
+# from client import Client
+
+Node = import_da('node')
+Client = import_da('client')
 
 def main():
     config(clock='Lamport', channel = 'fifo')
@@ -11,9 +12,9 @@ def main():
     with open(sys.argv[1]) as config_file:
         conf = json.load(config_file)
 
-    nodes = new(Node, num = conf['nodes'])
+    nodes = new(Node.Node, num = conf['nodes'])
     output("[Runner] Number of Nodes Intiated: ", len(nodes))
-    clients = new(Client, num = conf['clients'])
+    clients = new(Client.Client, num = conf['clients'])
     output("[Runner] Number of Clients Intiated: ", len(clients))
 
     # Creating a Dictionary of Nodes Vs ID
@@ -35,6 +36,8 @@ def main():
         setup(c, (nodes,id))
         start(c)
         id+=1
+
+    await(False)
 
 if __name__ == '__main__':
     main()

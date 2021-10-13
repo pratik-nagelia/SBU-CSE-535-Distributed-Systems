@@ -1,9 +1,14 @@
-from block import Block
-from quorum_certificate import QC
-from ledger_commit_info import LedgerCommitInfo
-from ledger import Ledger
-from vote_info import VoteInfo
-from vote_message import VoteMsg
+# from block import Block
+# from quorum_certificate import QC
+# from ledger_commit_info import LedgerCommitInfo
+# from ledger import Ledger
+# from vote_info import VoteInfo
+# from vote_message import VoteMsg
+
+Block = import_da('block')
+Ledger = import_da('ledger')
+VoteInfo = import_da('vote_info')
+VoteMsg = import_da('vote_message')
 
 class BlockTree:
     F = 1
@@ -45,8 +50,8 @@ class BlockTree:
 
     def process_vote(self, vote_msg):
         #bypassing make_vote
-        VoteInfo1 = VoteInfo(0,0,0,0,None)
-        vote_msg = VoteMsg(VoteInfo1, None, None, None, None)
+        VoteInfo1 = VoteInfo.VoteInfo(0,0,0,0,None)
+        vote_msg = VoteMsg.VoteMsg(VoteInfo1, None, None, None, None)
         vote_info = vote_msg.vote_info
         print("[Block-Tree] Process Vote Message with id [{}]".format(79))#vote_info.id)," voted in round: {[]}".format(vote_info.round)," for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
         if(vote_msg.high_commit_qc is not None):
@@ -71,7 +76,7 @@ class BlockTree:
             vote_info_id = self.high_qc.vote_info.id
             high_qc_signatures = self.high_qc.signatures
 
-        return Block(author, current_round, transactions, self.high_qc,
+        return Block.Block(author, current_round, transactions, self.high_qc,
                      self.hash_fun(author, current_round, transactions, vote_info_id, high_qc_signatures))
 
     def get_max_round(self, qc, high_commit_qc):
