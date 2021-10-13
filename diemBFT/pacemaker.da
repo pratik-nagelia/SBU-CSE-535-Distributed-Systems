@@ -48,4 +48,8 @@ class Pacemaker:
 #        start_timer(qc.vote_info.round + 1)
 #        return True
 
+    def advance_round(self, round):
+        print("Holaaaaa")
+        pass
+
 
