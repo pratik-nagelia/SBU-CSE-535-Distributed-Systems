@@ -83,7 +83,10 @@ class Node(process):
             self.process_new_round_event(null)
 
     def process_certificate_qc(qc):
-        pass
+        print("[Node] [{}] Process Certificate".format(self.node_id))
+        self.block_tree.process_qc(qc)
+        self.leader_election.update_leaders(qc)
+        self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc):
         # TODO Get current Round

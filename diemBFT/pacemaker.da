@@ -23,6 +23,16 @@ class Pacemaker:
         self.start_timer(tc.round + 1)
         return True
 
+    def advance_round_qc(self, qc):
+        print ("Pacemaker - Advance Round QC")
+        # TODO Remove this None Condition, cannot be None
+        if qc is not None:
+            if qc.vote_info.round < self.current_round:
+                return False
+            last_round_tc = None
+            start_timer(qc.vote_info.round + 1)
+            return True
+
 #    def get_round_timer(self, r):
 #        return round_timer_formula
 
@@ -33,19 +43,5 @@ class Pacemaker:
 
 #    def process_remote_timeout(self, tmo):
 #        tmo_info = tmo.tmo_info
-
-   # def advance_round_tc(self, tc):
-   #     if tc is None or tc.round < self.current_round:
-   #         return False
-   #     self.last_round_tc = tc
-   #     self.start_timer(tc.round + 1)
-   #     return True
-
-#    def advance_round_qc(self, qc):
-#        if qc.vote_info.round < self.current_round:
-#            return False
-#        last_round_tc = None
-#        start_timer(qc.vote_info.round + 1)
-#        return True
 
 

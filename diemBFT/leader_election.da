@@ -1,5 +1,4 @@
 class LeaderElection:
-    F = 1
 
     def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders):
         self.nodesDict = nodesDict #-> Set of nodes
@@ -7,36 +6,41 @@ class LeaderElection:
         self.exclude_size = exclude_size
         self.reputation_leaders = reputation_leaders  # => Dict
 
-    # def elect_reputation_leader(self, quorum_certificate):
-    #     active_validators = []
-    #     last_authors = []
-    #     current_qc = quorum_certificate
-    #
-    #     for(i in range(0,window_size)):
-    #         if(len(last_authors)>=exclude_size):
-    #             break
-    #         current_block = Ledger.committed_block(curren_qc.vote_info.parent_id)
-    #         block_author = current_block.author
-    #         if(i<window_size):
-    #             #TODO
-    #             active_validators = self.merge_authors(active_validators, curren_qc.signatures.signers())
-    #         if(len(last_authors)<exclude_size):
-    #             last_authors = self.merge_authors(last_authors, block_author)
-    #         current_qc = current_block.quorum_certificate
-    #
-    #         #TODO
-    #         active_validators.extend(last_authors)
-    #         return active_validators[0]
-    #
-    # def update_leaders(self, quorum_certificate):
-    #     extended_round = quorum_certificate.vote_info.parent_round
-    #     qc_round = quorum_certificate.vote_info.round
-    #     current_round = Pacemaker.current_round
-    #
-    #     if(extended_round+1==qc_round and qc_round+1==current_round):
-    #         #TODO
-    #         key = current_round+1
-    #         reputation_leaders[key] = elect_reputation_leader(quorum_certificate)
+    def elect_reputation_leader(self, quorum_certificate):
+        active_validators = []
+        last_authors = []
+        current_qc = quorum_certificate
+
+        for i in range(self.window_size):
+            if(len(last_authors)>=exclude_size):
+                break
+            current_block = Ledger.committed_block(current_qc.vote_info.parent_id)
+            block_author = current_block.author
+            if(i<window_size):
+                #TODO
+                active_validators = self.merge_authors(active_validators, current_qc.signatures.signers())
+            if(len(last_authors)<exclude_size):
+                last_authors = self.merge_authors(last_authors, block_author)
+
+            current_qc = current_block.quorum_certificate
+
+            #TODO
+            active_validators.extend(last_authors)
+            return active_validators[0]
+
+    def update_leaders(self, quorum_certificate):
+        print("[Leader-Election] Update Leader")
+
+        # TODO Remove this None Condition, cannot be None
+        if quorum_certificate is not None:
+            extended_round = quorum_certificate.vote_info.parent_round
+            qc_round = quorum_certificate.vote_info.round
+            current_round = Pacemaker.current_round
+
+            if(extended_round+1==qc_round and qc_round+1==current_round):
+                #TODO
+                key = current_round+1
+                reputation_leaders[key] = elect_reputation_leader(quorum_certificate)
 
     def get_leader(self, current_round):
         # if(current_round in reputation_leaders):

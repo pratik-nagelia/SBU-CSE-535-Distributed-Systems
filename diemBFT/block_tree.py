@@ -24,7 +24,7 @@ class BlockTree():
         self.node_id = node_id
 
     def process_qc(self, qc):
-        print('[Block-Tree] Process QC with id [{}]'.format(vote_info.id), ' voted in round: {[]}'.format(vote_info.round), ' for the proposal initiated by parent: {[]}'.format(vote_info.parent_id))
+        print('Block-Tree Process QC')
         if ((not (qc is None)) and (not (qc.ledger_commit_info.commit_state_id is None))):
             Ledger.commit(qc.vote_info.parent_id)
             self.prune(qc.vote_info.parent_id)

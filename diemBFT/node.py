@@ -22,8 +22,8 @@ class Node(da.DistProcess):
         super().__init__(procimpl, props)
         self._events.extend([da.pat.EventPattern(da.pat.ReceivedEvent, '_NodeReceivedEvent_0', PatternExpr_347, sources=[PatternExpr_354], destinations=None, timestamps=None, record_history=None, handlers=[self._Node_handler_346]), da.pat.EventPattern(da.pat.ReceivedEvent, '_NodeReceivedEvent_1', PatternExpr_386, sources=[PatternExpr_395], destinations=None, timestamps=None, record_history=None, handlers=[self._Node_handler_385]), da.pat.EventPattern(da.pat.ReceivedEvent, '_NodeReceivedEvent_2', PatternExpr_416, sources=[PatternExpr_425], destinations=None, timestamps=None, record_history=None, handlers=[self._Node_handler_415])])
 
-    def setup(self, node_id, nodes, nodesDict, **rest_730):
-        super().setup(node_id=node_id, nodes=nodes, nodesDict=nodesDict, **rest_730)
+    def setup(self, node_id, nodes, nodesDict, **rest_759):
+        super().setup(node_id=node_id, nodes=nodes, nodesDict=nodesDict, **rest_759)
         self._state.node_id = node_id
         self._state.nodes = nodes
         self._state.nodesDict = nodesDict
@@ -82,7 +82,10 @@ class Node(da.DistProcess):
             self.process_new_round_event(null)
 
     def process_certificate_qc(self, qc):
-        pass
+        print('[Node] [{}] Process Certificate'.format(self._state.node_id))
+        self._state.block_tree.process_qc(qc)
+        self._state.leader_election.update_leaders(qc)
+        self._state.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(self, last_tc):
         if ((self._state.node_id == 0) and (self._state.pacemaker.current_round == 0)):

@@ -24,3 +24,12 @@ class Pacemaker():
         self.last_round_tc = tc
         self.start_timer((tc.round + 1))
         return True
+
+    def advance_round_qc(self, qc):
+        print('Pacemaker - Advance Round QC')
+        if (not (qc is None)):
+            if (qc.vote_info.round < self.current_round):
+                return False
+            last_round_tc = None
+            start_timer((qc.vote_info.round + 1))
+            return True
