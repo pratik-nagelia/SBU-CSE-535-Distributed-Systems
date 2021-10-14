@@ -1,3 +1,5 @@
+from pacemaker import Pacemaker
+
 class LeaderElection:
 
 
@@ -37,6 +39,7 @@ class LeaderElection:
 
     def update_leaders(self, qc):
         # TODO Remove this None Condition, cannot be None
+        print("[Leader-Election-{}] Update leaders using qc formed for voting done in round [{}] ".format(self.node_id,qc.vote_info.round))
         if qc is not None:
             extended_round = qc.vote_info.parent_round
             qc_round = qc.vote_info.round
