@@ -1,3 +1,6 @@
+from timeout_info import TimeoutInfo
+from quorum_certificate import QC
+
 class TimeoutMessage:
     def __init__(self, timeout_info, last_round_tc, high_commit_qc):
         self.tmo_info = timeout_info
