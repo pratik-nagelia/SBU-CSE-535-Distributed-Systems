@@ -1,12 +1,14 @@
 class LeaderElection:
 
-    def __init__(self, nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger):
-        self.nodesDict = nodesDict  # -> Set of nodes
+
+    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id):
+        self.nodesDict = nodesDict #-> Set of nodes
         self.window_size = window_size
         self.exclude_size = exclude_size
         self.reputation_leaders = reputation_leaders  # => Dict
         self.pacemaker = pacemaker
         self.ledger = ledger
+        self.node_id = node_id
 
     def elect_reputation_leader(self, quorum_certificate):
         active_validators = []
@@ -48,14 +50,13 @@ class LeaderElection:
         # if(current_round in reputation_leaders):
         #     return reputation_leaders[current_round]
 
-        print("[Leader-Election] Get_Leader for round [{}]".format(current_round))
+        print("[Leader-Election-{}] Get_Leader for round [{}]".format(self.node_id,current_round))
         return self.round_robin_leader(current_round)
 
     def round_robin_leader(self, current_round):
         x = (current_round // 2)
-        # print(self.nodesDict)
         leader = x % (len(self.nodesDict))
-        print("[Leader-Election] Round-Robin Leader: [{}]".format(leader))
+        print("[Leader-Election-{}] Round-Robin Leader: [{}]".format(self.node_id,leader))
         return leader
 
 
