@@ -11,15 +11,16 @@ from ledger import Ledger
 
 class Node(process):
     def setup(node_id: int, nodes: set, nodesDict):
-        self.main = Main(self.node_id)
+        print("[Node-{}] Setup completed ".format(self.node_id))
+        #self.main = Main(self.node_id)
         self.nodesDict = nodesDict
         self.ledger = Ledger(self.node_id)
         self.block_tree = BlockTree([], {}, None, None)
         self.safety = Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
-        self.pacemaker = Pacemaker(0, None, [], self.block_tree)
-        self.mempool = MemPool([],self.node_id)
+        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id)
+        self.mempool = MemPool([], self.node_id)
         self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
-        output("[Node] [{}] Setup completed ".format(self.node_id))
+        print("[Node-{}] Setup completed ".format(self.node_id))
 
     def run():
         print("[Node-{}] Running Node".format(self.node_id))
@@ -41,10 +42,6 @@ class Node(process):
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
         print("[Node-{}] Received {} message".format(self.node_id, VOTE), " from Node: [{}]".format(sender_id))
         self.process_vote_msg(vote_msg, sender_id)
-
-    def receive(msg=("TIMEOUT", timeout_message, sender_id), from_=sender):
-        print("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT"), " from Node: [{}]".format(sender_id))
-        self.process_timeout_msg(timeout_msg, sender_id)
 
     def process_proposal_msg(proposal, sender_id):
         print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
@@ -77,24 +74,17 @@ class Node(process):
             self.process_new_round_event(None)
 
     def process_certificate_qc(qc):
-        self.block_tree.process_qc(qc)
-        self.leader_election.update_leaders(qc)
-        self.pacemaker.advance_round_qc(qc)
+        if qc is not None:
+            self.block_tree.process_qc(qc)
+            self.leader_election.update_leaders(qc)
+            self.pacemaker.advance_round(qc.vote_info.round)
 
     def process_new_round_event(last_tc):
+        print("[Node-{}] Process New Round Event".format(self.node_id))
+        current_round = self.pacemaker.current_round
+        current_leader_id = self.leader_election.get_leader(current_round)
         # TODO Get current Round
-        if self.node_id == 0 and self.pacemaker.current_round == 0:
+        if self.node_id == current_leader_id and self.pacemaker.current_round == 0:
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
-
-    def process_timeout_msg(timeout_msg, sender_id):
-        output("[Node] [{}] Start processing the Timeout message".format(self.node_id))
-        self.process_certificate_qc(timeout_msg.timeout_info.high_qc)
-        self.process_certificate_qc(timeout_msg.high_commit_qc)
-        self.pacemaker.advance_round_tc(timeout_msg.last_round_tc)
-        tc = self.pacemaker.process_remote_timeout(timeout_msg)
-        if (tc!=null):
-            self.pacemaker.advance_round_tc(tc)
-            self.process_new_round_event(tc)
-
