@@ -7,7 +7,6 @@ from vote_message import VoteMsg
 
 
 class BlockTree:
-    F = 1
 
     def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc):
         self.pendingBlockTree = pendingBlockTree
@@ -16,6 +15,7 @@ class BlockTree:
         self.high_commit_qc = high_commit_qc
         self.ledger = None
         self.node_id = None
+
 
     # TODO HACK Couldnot init in the constructer
     def set_ledger(self, ledger):

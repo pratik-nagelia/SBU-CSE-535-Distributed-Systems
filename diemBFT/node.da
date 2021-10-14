@@ -1,7 +1,6 @@
 from main import Main
 from block_tree import BlockTree
 from proposal_message import ProposalMessage
-from constants import *
 from pacemaker import Pacemaker
 from mem_pool import MemPool
 from leader_election import LeaderElection
@@ -10,7 +9,7 @@ from ledger import Ledger
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict):
+    def setup(node_id: int, nodes: set, nodesDict, F:int):
         self.main = Main(self.node_id)
         self.nodesDict = nodesDict
         self.ledger = Ledger(self.node_id)
@@ -26,19 +25,20 @@ class Node(process):
         # TODO HACK Couldnot init in the constructer
         self.block_tree.set_ledger(self.ledger)
         self.block_tree.set_node_id(self.node_id)
+        self.block_tree.F = self.F
         await(False)
 
     def receive(msg=("TXN", payload), from_=client):
-        print("[Node-{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
+        print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
         self.mempool.add_transaction(payload.to_string())
         self.process_new_round_event(None)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
-        print("[Node-{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
+        print("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"), sender_id)
         self.process_proposal_msg(proposal, sender_id)
 
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
-        print("[Node-{}] Received {} message".format(self.node_id, VOTE), " from Node: [{}]".format(sender_id))
+        print("[Node-{}] Received {} message".format(self.node_id, "VOTE"), " from Node: [{}]".format(sender_id))
         self.process_vote_msg(vote_msg, sender_id)
 
     def receive(msg=("TIMEOUT", timeout_message, sender_id), from_=sender):
@@ -81,8 +81,7 @@ class Node(process):
         self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc):
-        # TODO Get current Round
-        if self.node_id == 0 and self.pacemaker.current_round == 0:
+        if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)

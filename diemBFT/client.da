@@ -1,5 +1,4 @@
 from transaction import Transaction
-from constants import *
 
 class Client(process):
     def setup(nodes:set, client_id:int):
@@ -7,7 +6,7 @@ class Client(process):
 
     def initiate_new_transaction():
         self.transaction_id += 1
-        curr_trans = Transaction(self.transaction_id , self.client_id,MessageType.PROPOSAL_MESSAGE)
+        curr_trans = Transaction(self.transaction_id , self.client_id)
         return curr_trans
 
     def run():

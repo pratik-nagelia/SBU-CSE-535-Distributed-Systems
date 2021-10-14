@@ -49,10 +49,10 @@ class LeaderElection:
         print("[Leader-Election] Updated Leader")
 
     def get_leader(self, current_round):
-        # if(current_round in reputation_leaders):
-        #     return reputation_leaders[current_round]
+        if current_round in self.reputation_leaders:
+            return self.reputation_leaders[current_round]
 
-        print("[Leader-Election-{}] Get_Leader for round [{}]".format(self.node_id,current_round))
+        print("[Leader-Election-{}] Get_Leader for round [{}]".format(self.node_id, current_round))
         return self.round_robin_leader(current_round)
 
     def round_robin_leader(self, current_round):

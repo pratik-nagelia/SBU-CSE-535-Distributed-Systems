@@ -25,7 +25,7 @@ def main():
     output("[Runner] fetch 0 node: ", nodeDict[0])
     id = 0
     for n in nodes:
-        setup(n, (id, nodes, nodeDict))
+        setup(n, (id, nodes, nodeDict, conf['F']))
         start(n)
         id+=1
     output("[Runner] Setup Complete for Nodes")
