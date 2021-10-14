@@ -15,7 +15,7 @@ class Pacemaker():
         pass
 
     def start_timer(self, new_round):
-        stop_timer(self.current_round)
+        self.stop_timer(self.current_round)
         self.current_round = new_round
 
     def advance_round_tc(self, tc):
@@ -31,5 +31,9 @@ class Pacemaker():
             if (qc.vote_info.round < self.current_round):
                 return False
             last_round_tc = None
-            start_timer((qc.vote_info.round + 1))
+            self.start_timer((qc.vote_info.round + 1))
             return True
+
+    def advance_round(self, round):
+        print('Holaaaaa')
+        pass

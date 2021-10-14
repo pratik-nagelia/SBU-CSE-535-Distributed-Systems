@@ -9,3 +9,12 @@ class Ledger():
 
     def speculate(self, prev_block_id, block_id, txns):
         pass
+
+    def pending_state(self, block_id):
+        return 0
+
+    def commit(self, block_id):
+        pass
+
+    def committed_block(self, block_id):
+        pass

@@ -7,11 +7,11 @@ class Ledger:
         pass
         # ledger_state_id = str(block_id)
 
-    # def pending_state(self, block_id):
-    #     pass
-    #
-    # def commit(self, block_id):
-    #     pass
-    #
-    # def committed_block(self, block_id):
-    #     pass
+    def pending_state(self, block_id):
+        return 0
+
+    def commit(self, block_id):
+        pass
+
+    def committed_block(self, block_id):
+        pass
