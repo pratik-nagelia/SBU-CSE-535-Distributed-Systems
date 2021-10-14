@@ -51,11 +51,6 @@ class Safety:
     #         return False
     #     return self.consecutive(voting_round, qc_round) or self.consecutive(voting_round, timeout_certificate.round)
     #
-    # #TODO
-    # def commit_state_id_candidate(self, block_round, quorum_certificate):
-    #     if(self.consecutive(block_round,quorum_certificate.vote_info.round)):
-    #         return Ledger.pending_state(quorum_certificate.id) #Confirm quorum_certificate.id
-    #     return -1
 
     # TODO
     def valid_signature(self, block, timeout_certificate):
@@ -102,7 +97,7 @@ class Safety:
 
     # #TODO
     def calculate_hash(self, vote_info):
-        print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] ETHE")
+        #print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] ETHE")
         block = str(vote_info.id)
         block_round = str(vote_info.round)
         block_qc_vote_info_id = str(vote_info.parent_id)

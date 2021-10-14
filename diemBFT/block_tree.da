@@ -25,15 +25,20 @@ class BlockTree:
         self.node_id = node_id
 
     def process_qc(self, qc):
-        print("[Block-Tree-{}] Process QC ".format(self.node_id)) #,
-              # " voted in round: {[]}".format(qc.vote_info.round),
-              # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
+        print("[Block-Tree-{}] Process QC formed after collecting 2F+! votes for block id [{}]".format(self.node_id,qc.vote_info.id))  # ,
+        # " voted in round: {[]}".format(qc.vote_info.round),
+        # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
-            print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id, qc.ledger_commit_info.commit_state_id))
+            print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id,
+                                                                                                       qc.ledger_commit_info.commit_state_id))
             self.ledger.commit(qc.vote_info.parent_id)
-            self.prune(qc.vote_info.parent_id)
+            self.prune(qc.vote_info.parent_id)  # TODO Pending
             self.high_commit_qc = self.get_max_round(qc, self.high_commit_qc)
+            print("[Block-Tree-{}] Update high_commit_qc from [{}] to [{}]".format(self.node_id, self.high_commit_qc,
+                                                                                   self.high_commit_qc.vote_info.round))
         self.high_qc = self.get_max_round(qc, self.high_qc)
+        print("[Block-Tree-{}] Update high_qc from [{}] to [{}]".format(self.node_id, self.high_qc,
+                                                                        self.high_qc.vote_info.round))
 
     def execute_and_insert(self, block):
         #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
@@ -58,7 +63,7 @@ class BlockTree:
         print("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
 
         if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
-            #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
+            print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
             self.pendingVotes[str_vote_idx] = []
             #if(str_vote_idx in self.pendingVotes):
                 #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Added to Dict".format(self.node_id, str_vote_idx, str_vote_idx in self.pendingVotes))
@@ -68,9 +73,11 @@ class BlockTree:
         collected_votes.append(vote_msg)
         self.pendingVotes[str_vote_idx] = collected_votes
         if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
-            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW".format(self.node_id))
+            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW================================================================================================================================".format(self.node_id))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
             new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
+            #Before returning, clear pendingVotes
+            self.pendingVotes[str_vote_idx] = []
             return new_qc
         return None
 
@@ -87,7 +94,15 @@ class BlockTree:
                      self.hash_fun(author, current_round, transactions, vote_info_id, high_qc_signatures))
 
     def get_max_round(self, qc, high_commit_qc):
-        pass
+        qc_round = -1
+        if(qc is not None):
+            qc_round = qc.vote_info.round
+        high_commit_qc_round = -5
+        if(high_commit_qc is not None):
+            high_commit_qc_round = high_commit_qc.vote_info.round
+        if(qc_round>high_commit_qc_round):
+            return qc
+        return high_commit_qc
 
     def prune(self, parent_id):
         pass
