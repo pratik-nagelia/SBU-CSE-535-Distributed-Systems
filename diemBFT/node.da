@@ -26,7 +26,6 @@ class Node(process):
         # TODO HACK Couldnot init in the constructer
         self.block_tree.set_ledger(self.ledger)
         self.block_tree.set_node_id(self.node_id)
-        # self.block_tree.set_node_id(self.node_id)
         await(False)
 
     def receive(msg=("TXN", payload), from_=client):
