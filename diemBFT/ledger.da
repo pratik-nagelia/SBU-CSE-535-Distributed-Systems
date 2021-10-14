@@ -28,3 +28,7 @@ class Ledger:
             self.committed_transactions[block_id]=pending_txn
         else:
             print("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
+        pass
+
+    def committed_block(self, block_id):
+        pass

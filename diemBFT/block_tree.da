@@ -25,7 +25,7 @@ class BlockTree:
         self.node_id = node_id
 
     def process_qc(self, qc):
-        print("[Block-Tree-{}] Process QC with id [{}]".format(self.node_id,qc.vote_info.id)) #,
+        print("[Block-Tree-{}] Process QC ".format(self.node_id)) #,
               # " voted in round: {[]}".format(qc.vote_info.round),
               # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
@@ -68,7 +68,7 @@ class BlockTree:
         collected_votes.append(vote_msg)
         self.pendingVotes[str_vote_idx] = collected_votes
         if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
-            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW================================================================================================================================".format(self.node_id))
+            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW".format(self.node_id))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
             new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
             return new_qc
