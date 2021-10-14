@@ -42,6 +42,10 @@ class Node(process):
         print("[Node-{}] Received {} message".format(self.node_id, VOTE), " from Node: [{}]".format(sender_id))
         self.process_vote_msg(vote_msg, sender_id)
 
+    def receive(msg=("TIMEOUT", timeout_message, sender_id), from_=sender):
+        print("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT"), " from Node: [{}]".format(sender_id))
+        self.process_timeout_msg(timeout_msg, sender_id)
+
     def process_proposal_msg(proposal, sender_id):
         print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
         process_certificate_qc(proposal.block.qc)
@@ -84,13 +88,13 @@ class Node(process):
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
 
-    def process timeout msg(timeout_msg, sender_id):
+    def process_timeout_msg(timeout_msg, sender_id):
         output("[Node] [{}] Start processing the Timeout message".format(self.node_id))
-        process_certificate_qc(timeout_msg.timeout_info.high_qc)
-        process_certificate_qc(timeout_msg.high_commit_qc)
-        Pacemaker.advance_round_tc(timeout_msg.last_round_tc)
-        tc = Pacemaker.process_remote_timeout(timeout_msg)
+        self.process_certificate_qc(timeout_msg.timeout_info.high_qc)
+        self.process_certificate_qc(timeout_msg.high_commit_qc)
+        self.pacemaker.advance_round_tc(timeout_msg.last_round_tc)
+        tc = self.pacemaker.process_remote_timeout(timeout_msg)
         if (tc!=null):
-            Pacemaker.advance_round_tc(tc)
-            process_new_round_event(tc)
+            self.pacemaker.advance_round_tc(tc)
+            self.process_new_round_event(tc)
 
