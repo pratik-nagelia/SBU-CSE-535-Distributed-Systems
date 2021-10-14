@@ -25,42 +25,52 @@ class BlockTree:
         self.node_id = node_id
 
     def process_qc(self, qc):
-        print("[Block-Tree] Process QC with id [{}]".format(qc.vote_info.id)) #,
+        print("[Block-Tree-{}] Process QC with id [{}]".format(self.node_id,qc.vote_info.id)) #,
               # " voted in round: {[]}".format(qc.vote_info.round),
               # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
+            print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id, qc.ledger_commit_info.commit_state_id))
             self.ledger.commit(qc.vote_info.parent_id)
             self.prune(qc.vote_info.parent_id)
             self.high_commit_qc = self.get_max_round(qc, self.high_commit_qc)
         self.high_qc = self.get_max_round(qc, self.high_qc)
 
     def execute_and_insert(self, block):
-        print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
+        #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
         block_qc_block_id = None
         if block.qc is not None:
             block_qc_block_id = block.qc.block_id
         self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)  # TODO Pending till now
         self.pendingBlockTree.append(block)
 
-    def process_vote(self, vote_msg):
+    def process_vote(self, vote_msg,sender_id):
         vote_info = vote_msg.vote_info
-        print("[Block-Tree] Process Vote Message with id [{}]".format(vote_info.id)) #,
+        print("[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id,vote_info.id)) #,
         # " voted in round: {[]}".format(vote_info.round),
         # " for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
         if (vote_msg.high_commit_qc is not None):
-            print("[Block-Tree] high_commit_qc of current vote message is not null. See if a commit can be made")
+            print("[Block-Tree-Node-{}] high_commit_qc of current vote message is not null. See if a commit can be made".format(self.node_id))
             self.process_qc(vote_msg.high_commit_qc)  # For the transaction initiated in the first round, high_commit_qc of vote_msg is null, so no commit to be made in this round.
             # Understand how how_commit_qc will be updated and understand its significance in further rounds.
-        vote_idx = self.hash_determine_id_of_vote(vote_msg.ledger_commit_info)  # Determine why hash is being calculated here
-        print("[Block-Tree-Node-{}] VOTE_IDX: [{}]".format(self.node_id, vote_idx))
-        if vote_idx not in self.pendingVotes or self.pendingVotes[vote_idx] is None:
-            self.pendingVotes[vote_idx] = []
-        # MAJOR TODO HERE
-        self.pendingVotes[vote_idx] = [1,2,3]
-        # self.pendingVotes[vote_idx] = (self.pendingVotes[vote_idx]).append(vote_msg.signature)
-        if len(self.pendingVotes[vote_idx]) == (2 * self.F) + 1:
+        LCI = vote_msg.ledger_commit_info;
+        vote_idx = self.calculate_hash(LCI.commit_state_id, LCI.vote_info_hash)  # Determine why hash is being calculated here
+        str_vote_idx = str(vote_idx)
+        print("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
+
+        if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
+            #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
+            self.pendingVotes[str_vote_idx] = []
+            #if(str_vote_idx in self.pendingVotes):
+                #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Added to Dict".format(self.node_id, str_vote_idx, str_vote_idx in self.pendingVotes))
+
+        print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] ".format(self.node_id, str_vote_idx))
+        collected_votes = self.pendingVotes[str_vote_idx]
+        collected_votes.append(vote_msg)
+        self.pendingVotes[str_vote_idx] = collected_votes
+        if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
+            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW================================================================================================================================".format(self.node_id))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
-            new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature)
+            new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
             return new_qc
         return None
 
@@ -95,3 +105,7 @@ class BlockTree:
 
     def hash_determine_id_of_vote(self, ledger_commit_info):  # TODO
         return 0
+
+    def calculate_hash(self, commit_state_id, vote_info_hash):
+        temp_str = str(commit_state_id)+str(vote_info_hash)
+        return hash(temp_str)
