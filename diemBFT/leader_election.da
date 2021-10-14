@@ -1,3 +1,5 @@
+from pacemaker import Pacemaker
+
 class LeaderElection:
 
 

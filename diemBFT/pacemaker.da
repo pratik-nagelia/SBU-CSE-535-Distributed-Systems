@@ -1,6 +1,5 @@
 from block_tree import BlockTree
 
-
 class Pacemaker:
     def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree):
         self.current_round = current_round
@@ -47,5 +46,4 @@ class Pacemaker:
     def advance_round(self, round):
         print("Holaaaaa")
         pass
-
 
