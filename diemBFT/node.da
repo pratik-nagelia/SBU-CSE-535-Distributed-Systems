@@ -28,7 +28,7 @@ class Node(process):
         self.safety = Safety.Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
         self.pacemaker = Pacemaker.Pacemaker(0, None, [], self.block_tree)
         self.mempool = MemPool.MemPool([],self.node_id)
-        self.leader_election = LeaderElection.LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger)
+        self.leader_election = LeaderElection.LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():
@@ -90,7 +90,8 @@ class Node(process):
 
     def process_new_round_event(last_tc):
         # TODO Get current Round
-        if self.node_id == 0 and self.pacemaker.current_round == 0:
+        if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
+            output("[Node] [{}] Leader Elected".format(self.node_id))
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage.ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)

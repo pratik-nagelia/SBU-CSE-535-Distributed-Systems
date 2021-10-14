@@ -4,13 +4,14 @@ _config_object = {}
 
 class LeaderElection():
 
-    def __init__(self, nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger):
+    def __init__(self, nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id):
         self.nodesDict = nodesDict
         self.window_size = window_size
         self.exclude_size = exclude_size
         self.reputation_leaders = reputation_leaders
         self.pacemaker = pacemaker
         self.ledger = ledger
+        self.node_id = node_id
 
     def elect_reputation_leader(self, quorum_certificate):
         active_validators = []
@@ -41,16 +42,18 @@ class LeaderElection():
             if (((extended_round + 1) == qc_round) and ((qc_round + 1) == current_round)):
                 key = (current_round + 1)
                 self.reputation_leaders[key] = self.elect_reputation_leader(qc)
-        print('[Leader-Election] Updated Leader')
+        print('[Leader-Election] [{}] Updated Leader'.format(self.node_id))
 
     def get_leader(self, current_round):
-        print('[Leader-Election] Get_Leader for round [{}]'.format(current_round))
+        if (current_round in self.reputation_leaders):
+            return reputation_leaders[current_round]
+        print('[Leader-Election] [{}] Get_Leader for round [{}]'.format(self.node_id, current_round))
         return self.round_robin_leader(current_round)
 
     def round_robin_leader(self, current_round):
         x = (current_round // 2)
         leader = (x % len(self.nodesDict))
-        print('[Leader-Election] Round-Robin Leader: [{}]'.format(leader))
+        print('[Leader-Election] [{}] Round-Robin Leader: [{}]'.format(self.node_id, leader))
         return leader
 
     def merge_authors(self, active_validators, author):
