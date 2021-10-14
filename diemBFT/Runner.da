@@ -12,9 +12,9 @@ def main():
         conf = json.load(config_file)
 
     nodes = new(Node, num = conf['nodes'])
-    output("[Runner] Number of Nodes Intiated: ", len(nodes))
+    print("[Runner] Number of Nodes Intiated: ", len(nodes))
     clients = new(Client, num = conf['clients'])
-    output("[Runner] Number of Clients Intiated: ", len(clients))
+    print("[Runner] Number of Clients Intiated: ", len(clients))
 
     # Creating a Dictionary of Nodes Vs ID
     id = 0
@@ -22,13 +22,12 @@ def main():
     for n in nodes:
         nodeDict[id] = n;
         id+=1
-    output("[Runner] fetch 0 node: ", nodeDict[0])
-    id = 0
-    for n in nodes:
-        setup(n, (id, nodes, nodeDict, conf['F']))
-        start(n)
-        id+=1
-    output("[Runner] Setup Complete for Nodes")
+    print("[Runner] fetch 0 node: ", nodeDict[0])
+    for i in range(0,id):
+        node_obj = nodeDict[i]
+        setup(node_obj, (i, nodes, nodeDict, conf['F']))
+        start(node_obj)
+    print("[Runner] Setup Complete for Nodes")
 
     id = 0
     for c in clients:

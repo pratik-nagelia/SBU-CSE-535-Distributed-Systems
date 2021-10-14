@@ -1,11 +1,12 @@
 from block_tree import BlockTree
 
 class Pacemaker:
-    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree):
+    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree,node_id):
         self.current_round = current_round
         self.last_round_tc = last_round_tc
         self.pending_timeouts = pending_timeouts
         self.block_tree = block_tree
+        self.node_id = node_id
 
     def stop_timer(self, current_round):
         pass
@@ -43,7 +44,9 @@ class Pacemaker:
 #    def process_remote_timeout(self, tmo):
 #        tmo_info = tmo.tmo_info
     
-    def advance_round(self, round):
+    def advance_round(self, round):#TODO
+        print("[Pacemaker-{}] Advance round [{}]".format(self.node_id, self.current_round))
+        self.current_round = self.current_round+1
         print("Holaaaaa")
         pass
 
