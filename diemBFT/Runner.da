@@ -23,14 +23,9 @@ def main():
         nodeDict[id] = n;
         id+=1
     print("[Runner] fetch 0 node: ", nodeDict[0])
-    '''id = 0
-    for n in nodes:
-        setup(n, (id, nodes, nodeDict))
-        start(n)
-        id=id+1'''
     for i in range(0,id):
         node_obj = nodeDict[i]
-        setup(node_obj, (i, nodes, nodeDict))
+        setup(node_obj, (i, nodes, nodeDict, conf['F']))
         start(node_obj)
     print("[Runner] Setup Complete for Nodes")
 
