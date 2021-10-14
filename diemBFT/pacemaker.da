@@ -11,7 +11,7 @@ class Pacemaker:
         pass
 
     def start_timer(self, new_round):
-        stop_timer(self.current_round)
+        self.stop_timer(self.current_round)
         self.current_round = new_round
         # TODO start local timer
 
@@ -22,6 +22,16 @@ class Pacemaker:
         self.start_timer(tc.round + 1)
         return True
 
+    def advance_round_qc(self, qc):
+        print ("Pacemaker - Advance Round QC")
+        # TODO Remove this None Condition, cannot be None
+        if qc is not None:
+            if qc.vote_info.round < self.current_round:
+                return False
+            last_round_tc = None
+            self.start_timer(qc.vote_info.round + 1)
+            return True
+
 #    def get_round_timer(self, r):
 #        return round_timer_formula
 
@@ -30,15 +40,10 @@ class Pacemaker:
         #timeout_info = Safety.make_timeout(self.current_round, block_tree.high_qc, last_round_tc)
         #broadcast TimeoutMessage(timeout_info, last_round_tc, block_tree.high_commit_qc)
 
-   def process_remote_timeout(self, tmo):
-       pass
-       #tmo_info = tmo.tmo_info
-
-#    def advance_round_qc(self, qc):
-#        if qc.vote_info.round < self.current_round:
-#            return False
-#        last_round_tc = None
-#        start_timer(qc.vote_info.round + 1)
-#        return True
-
+#    def process_remote_timeout(self, tmo):
+#        tmo_info = tmo.tmo_info
+    
+    def advance_round(self, round):
+        print("Holaaaaa")
+        pass
 

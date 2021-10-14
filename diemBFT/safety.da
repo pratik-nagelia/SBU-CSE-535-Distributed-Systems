@@ -1,30 +1,50 @@
+from vote_info import VoteInfo
+from vote_message import VoteMsg
+from ledger import Ledger
+from ledger_commit_info import LedgerCommitInfo
+
+
 class Safety:
     F = 1
 
-    def __init__(self, private_key, public_key, highest_vote_round, highest_qc_round):
+    def __init__(self, private_key, public_key, highest_vote_round, highest_qc_round, node_id, ledger, block_tree):
         self.private_key = private_key
         self.public_key = public_key
         self.highest_vote_round = highest_vote_round
         self.highest_qc_round = highest_qc_round
+        self.node_id = node_id
+        self.ledger = ledger
+        self.block_tree = block_tree
 
-    # def increase_highest_vote_round(self, voting_round):
-    #     self.highest_vote_round = max(self.highest_vote_round,voting_round)
+    def increase_highest_vote_round(self, voting_round):
+        self.highest_vote_round = max(self.highest_vote_round, voting_round)
+
     #
-    # def update_highest_qc_round(self, qc_round):
-    #     self.highest_qc_round = max(self.highest_qc_round,qc_round)
+    def update_highest_qc_round(self, qc_round):
+        self.highest_qc_round = max(self.highest_qc_round, qc_round)
+
     #
-    # def consecutive(self, block_round, voting_round):
-    #     if(block_round == voting_round+1):
-    #         return True
-    #     return False
+    def consecutive(self, block_round, voting_round):
+        if (block_round == voting_round + 1):
+            print("[SAFETY-Node-{}".format(self.node_id),
+                  "] The current block was proposed just after the last QC or TC round.")
+            return True
+        return False
+
     #
-    # def safe_to_extend(self, block_round, qc_round, timeout_certificate):
-    #     return self.consecutive(block_round, timeout_certificate.round)
+    def safe_to_extend(self, block_round, qc_round, timeout_certificate):
+        return self.consecutive(block_round, timeout_certificate.round)
+
     #
-    # def safe_to_vote(self, block_round, qc_round, timeout_certificate):
-    #     if(block_round <= max(self.highest_vote_round, qc_round)):
-    #         return False
-    #     return self.consecutive(block_round, qc_round) or self.safe_to_extend(block_round, qc_round, timeout_certificate)
+    def safe_to_vote(self, block_round, qc_round, timeout_certificate):
+        print("[SAFETY-Node-{}".format(self.node_id), "] Check if it's SAFE TO VOTE for the current proposal")
+        if (block_round <= max(self.highest_vote_round, qc_round)):
+            return False
+        print("[SAFETY-Node-{}".format(self.node_id),
+              "] safe_to_vote. The received block was proposed in a round after the last voting or quorum round in which I participated")
+        return self.consecutive(block_round, qc_round) or self.safe_to_extend(block_round, qc_round,
+                                                                              timeout_certificate)
+
     #
     # def safe_to_timeout(self, voting_round, qc_round, timeout_certificate):
     #     if(qc_round < self.highest_qc_round or voting_round <= max(self.highest_vote_round-1, qc_round)):
@@ -37,32 +57,64 @@ class Safety:
     #         return Ledger.pending_state(quorum_certificate.id) #Confirm quorum_certificate.id
     #     return -1
 
+    # TODO
+    def valid_signature(self, block, timeout_certificate):
+        return True
+
+    def commit_state_id_candidate(self, block_round, block_qc): #TODO
+        block_qc_round = -1
+        if(block_qc is not None):
+            block_qc_round = block_qc.vote_info.round
+        print("[SAFETY-Node-{}] Fetch commit state id candidate for block_qc_round [{}]".format(self.node_id, block_qc_round))
+        if(self.consecutive(block_round,block_qc_round)):
+            return self.ledger.pending_state(block_qc_round)
+        return None
+
     def make_vote(self, block, last_round_tc):
-        # qc_round = block.quorum_certificate.vote_info.round
-        # if(self.valid_signature(block, last_tc) and self.safe_to_vote(block.round, qc_round, last_round_tc)):
-        #     self.update_highest_qc_round(qc_round)
-        #     self.increase_highest_vote_round(block.round)
-        #
-        #     #VoteInfo vote_info = VoteInfo(block.id, block.round, block.quorum_certificate.vote_info.id, qc_round,
-        #     #Ledger.pendingState(block.id)) => Last function needs to be implemented
-        #
-        #     #Needs revisiting
-        #     #CommitStateIdCandidate candidate = CommitStateIdCandidate(block.round, block.quorum_certificate)
-        #     #LedgerCommitInfo ledger_commit_info = LedgerCommitInfo(candidate, calculate_hash(vote_info))
-        #
-        #     #BlockTree Check how block_tree's object will be initialized.
-        #     #VoteMsg msg = VoteMsg(vote_info, ledger_commit_info, BlockTree.high_commit_qc) #=> Confirm last parameter
-        #     return msg
+        print("[SAFETY-Node-{}".format(self.node_id), "] Make VOTE for the current proposal")
+        qc_round = -1  # No QC until now. #TODO Confirm if it can be set to -1.
+        if block.qc is not None:
+            qc_round = block.qc.vote_info.round  # Confirm which round it is. Check after creation of a QC.
 
-        pass
+        if self.valid_signature(block, last_round_tc) and self.safe_to_vote(block.round, qc_round, last_round_tc):
+            print("[SAFETY-Node-{}".format(self.node_id),
+                  "] HURRAYY! GREEN SIGNAL RECEIVED. It is SAFE for me to VOTE for the curr proposal now. Let's prepare a VOTE message now")
+            self.update_highest_qc_round(qc_round)
+            self.increase_highest_vote_round(block.round) #Voted in current round. Update highest_vote_round
+            block_qc_vote_info_id = -1
+            if block.qc is not None:
+                block_qc_vote_info_id = block.qc.vote_info.id
+            vote_info = VoteInfo(block.block_id, block.round, block_qc_vote_info_id, qc_round, self.ledger.pending_state(block.block_id))  # => Last function needs to be implemented
+            print("[SAFETY-Node-{}".format(self.node_id), "] Prepared VOTE message [{}] for the current proposal".format(vote_info))
+
+            commit_state_id = self.commit_state_id_candidate(block.round, block.qc) #Commit # TODO
+            if(commit_state_id is None):
+                commit_state_id = -1
+            #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the commit_state_id [{}]".format(commit_state_id))
+            hash_vote_info = self.calculate_hash(vote_info)
+            #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the prepared VOTE info [{}] for the current proposal".format(hash_vote_info))
+            #Hash is different here. So VOTE_IDX doesn't match for the received votes at the next leader.
+            print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(commit_state_id, hash_vote_info))
+            ledger_commit_info = LedgerCommitInfo(commit_state_id, hash_vote_info)
+            msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, None, None)
+            return msg
+        return None
 
     # #TODO
-    # def calculate_hash(self, vote_info):
-    #     return None
+    def calculate_hash(self, vote_info):
+        print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] ETHE")
+        block = str(vote_info.id)
+        block_round = str(vote_info.round)
+        block_qc_vote_info_id = str(vote_info.parent_id)
+        qc_round = str(vote_info.parent_round)
+        execution_state_id = str(vote_info.execution_state_id)
+        final_str = block + block_round + block_qc_vote_info_id + qc_round + execution_state_id
+        print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] FINAL STR [{}] before calculating hash".format(final_str))
+
+        hash_val = hash(final_str)
+        return hash_val
     #
-    # #TODO
-    # def valid_signature(self, block, timeout_certificate):
-    #     return True
+
     #
     # def make_timeout(self, voting_round, highest_quorum_certificate, last_timeout_tc):
     #     qc_round = highest_quorum_certificate.vote_info.round
@@ -70,7 +122,3 @@ class Safety:
     #         increase_highest_vote_round(voting_round)
     #         return TimeoutInfo(voting_round, highest_quorum_certificate)
     #     return None
-
-
-
-

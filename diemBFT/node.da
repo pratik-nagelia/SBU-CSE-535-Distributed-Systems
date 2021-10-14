@@ -8,68 +8,74 @@ from leader_election import LeaderElection
 from safety import Safety
 from ledger import Ledger
 
+
 class Node(process):
     def setup(node_id: int, nodes: set, nodesDict):
         self.main = Main(self.node_id)
         self.nodesDict = nodesDict
-        self.ledger = Ledger()
-        self.block_tree = BlockTree([], [], None, None)
-        self.safety = Safety(None, None, -1, -1)
+        self.ledger = Ledger(self.node_id)
+        self.block_tree = BlockTree([], {}, None, None)
+        self.safety = Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree)
-        self.mempool = MemPool([])
-        self.leader_election = LeaderElection(nodes, 10, 10, {})
+        self.mempool = MemPool([],self.node_id)
+        self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
         output("[Node] [{}] Setup completed ".format(self.node_id))
 
     def run():
-        output("[Node] [{}] Running Node".format(self.node_id))
+        print("[Node-{}] Running Node".format(self.node_id))
         # TODO HACK Couldnot init in the constructer
         self.block_tree.set_ledger(self.ledger)
-        #self.block_tree.set_node_id(self.node_id)
+        self.block_tree.set_node_id(self.node_id)
+        # self.block_tree.set_node_id(self.node_id)
         await(False)
 
     def receive(msg=("TXN", payload), from_=client):
-        output("[Node] [{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
+        print("[Node-{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
+        self.mempool.add_transaction(payload.to_string())
         self.process_new_round_event(None)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
-        output("[Node] [{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
+        print("[Node-{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
         self.process_proposal_msg(proposal, sender_id)
 
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
-        output("[Node] [{}] Received {}  message from Node :".format(self.node_id, VOTE), sender_id)
+        print("[Node-{}] Received {} message".format(self.node_id, VOTE), " from Node: [{}]".format(sender_id))
         self.process_vote_msg(vote_msg, sender_id)
 
     def process_proposal_msg(proposal, sender_id):
-        print("[Node] [{}] Start processing the PROPOSAL proposal message".format(self.node_id))
+        print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
         process_certificate_qc(proposal.block.qc)
         process_certificate_qc(proposal.high_commit_qc)
         self.pacemaker.advance_round_tc(proposal.last_round_tc)
         current_round = self.pacemaker.current_round
         leader = leader_election.get_leader(current_round)
-        output("[Node] [{}]".format(self.node_id), " Current Round: [{}]".format(current_round)," Leader: [{}]".format(leader))
-        output("[Node] [{}]".format(self.node_id), " proposal.block.round: [{}]".format(proposal.block.round)," sender_id: [{}]".format(sender_id), " proposal.block.author [{}]".format(proposal.block.author))
-        if(proposal.block.round!=current_round or sender_id!=leader  or proposal.block.author!=leader):
-            output("[Node] [{}]".format(self.node_id), " Reject current proposal sent by sender: [{}]".format(sender_id))
+        print("[Node-{}]".format(self.node_id), " Current Round: [{}]".format(current_round), " Leader: [{}]".format(leader))
+        print("[Node-{}]".format(self.node_id), " proposal.block.round: [{}]".format(proposal.block.round), " sender_id: [{}]".format(sender_id), " proposal.block.author [{}]".format(proposal.block.author))
+        if proposal.block.round != current_round or sender_id != leader or proposal.block.author != leader:
+            print("[Node] [{}]".format(self.node_id), " Reject current proposal sent by sender: [{}]".format(sender_id))
             return
-        print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
+        #print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
         self.block_tree.execute_and_insert(proposal.block)
         vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc)
-        # if(vote_msg!=null):
-        #     next_leader = leader_election.get_leader(current_round+1)
-        #     send(("VOTE", vote_msg, self.node_id), to=next_leader)
+        if vote_msg is not None:
+            vote_msg.sender = self.nodesDict[self.node_id]
+            next_leader_id = leader_election.get_leader(current_round + 1)
+            print("[Node-{}] Send the prepared VOTE to the next leader [{}] ".format(self.node_id, next_leader_id))
+            next_leader = self.nodesDict[next_leader_id]
+            send(("VOTE", vote_msg, self.node_id), to=next_leader)
 
     def process_vote_msg(vote_msg, sender_id):
-        print("[Node] [{}] Start processing the VOTE message".format(self.node_id))
-        qc = self.block_tree.process_vote(vote_msg)
-        if(qc!=null):
+        print("[Node-{}] Start processing the VOTE message".format(self.node_id))
+        qc = self.block_tree.process_vote(vote_msg,sender_id)
+        #print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
+        if(qc is not None):
             self.process_certificate_qc(qc)
-            self.process_new_round_event(null)
+            self.process_new_round_event(None)
 
     def process_certificate_qc(qc):
-        BlockTree.process_qc(qc)
-        LeaderElection.update_leaders(qc)
-        # TODO Function not in pseudocode
-        #Pacemaker.advance_round
+        self.block_tree.process_qc(qc)
+        self.leader_election.update_leaders(qc)
+        self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc):
         # TODO Get current Round

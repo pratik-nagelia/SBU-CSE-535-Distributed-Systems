@@ -1,17 +1,34 @@
 
 class Ledger:
-    def __init__(self):
-        self.a = 0
+    def __init__(self,node_id):
+        self.node_id = node_id
+        self.committed_transactions = {}
+        self.pending_transactions = {}
 
     def speculate(self, prev_block_id, block_id, txns):
+        print("[Ledger-Node-{}] Speculate entry for block_id: [{}] with pending transaction: [{}]".format(self.node_id, block_id,txns))
+        self.pending_transactions[block_id] = txns;
         pass
-        # ledger_state_id = str(block_id)
 
-    # def pending_state(self, block_id):
-    #     pass
-    #
-    # def commit(self, block_id):
-    #     pass
-    #
-    # def committed_block(self, block_id):
-    #     pass
+    def pending_state(self, block_id):
+        if(block_id in self.pending_transactions):
+            pending_txn = self.pending_transactions[block_id]
+            print(
+                "[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(
+                    self.node_id, block_id, pending_txn))
+            return pending_txn
+        else:
+            print("[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction doesn't exist".format(self.node_id, block_id))
+
+    def commit(self, block_id):
+        if(block_id in self.pending_transactions):
+            pending_txn = self.pending_transactions[block_id]
+            print("[Ledger-Node-{}] Commit pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(self.node_id, block_id, pending_txn))
+            self.pending_transactions[block_id] = null
+            self.committed_transactions[block_id]=pending_txn
+        else:
+            print("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
+        pass
+
+    def committed_block(self, block_id):
+        pass

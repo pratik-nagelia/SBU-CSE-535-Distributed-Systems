@@ -2,6 +2,9 @@ from block import Block
 from quorum_certificate import QC
 from ledger_commit_info import LedgerCommitInfo
 from ledger import Ledger
+from vote_info import VoteInfo
+from vote_message import VoteMsg
+
 
 class BlockTree:
     F = 1
@@ -12,6 +15,7 @@ class BlockTree:
         self.high_qc = high_qc
         self.high_commit_qc = high_commit_qc
         self.ledger = None
+        self.node_id = None
 
     # TODO HACK Couldnot init in the constructer
     def set_ledger(self, ledger):
@@ -21,29 +25,52 @@ class BlockTree:
         self.node_id = node_id
 
     def process_qc(self, qc):
+        print("[Block-Tree-{}] Process QC ".format(self.node_id)) #,
+              # " voted in round: {[]}".format(qc.vote_info.round),
+              # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
-            Ledger.commit(qc.vote_info.parent_id)
-            # TODO
+            print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id, qc.ledger_commit_info.commit_state_id))
+            self.ledger.commit(qc.vote_info.parent_id)
             self.prune(qc.vote_info.parent_id)
             self.high_commit_qc = self.get_max_round(qc, self.high_commit_qc)
         self.high_qc = self.get_max_round(qc, self.high_qc)
 
     def execute_and_insert(self, block):
-        print("[Block-Tree] [{}] Execute and insert".format(79))
+        #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
         block_qc_block_id = None
         if block.qc is not None:
             block_qc_block_id = block.qc.block_id
-        self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)
+        self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)  # TODO Pending till now
         self.pendingBlockTree.append(block)
 
-    def process_vote(self, vote):
-        print("[Block-Tree] [{}] Process Vote ".format(79))
-        self.process_qc(vote.high_commit_qc)
-        vote_idx = hash(vote.ledger_commit_info)
-        self.pending_votes[vote_idx] = self.pending_votes[vote_idx].add(vote.signature)
-        if len(self.pending_votes[vote_idx]) == (2 * self.F) + 1:
-            signatures_list = list(self.pending_votes[vote_idx])
-            new_qc = QC(vote.vote_info, vote.ledger_commit_info, signatures_list, vote.sender, vote.signature)
+    def process_vote(self, vote_msg,sender_id):
+        vote_info = vote_msg.vote_info
+        print("[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id,vote_info.id)) #,
+        # " voted in round: {[]}".format(vote_info.round),
+        # " for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
+        if (vote_msg.high_commit_qc is not None):
+            print("[Block-Tree-Node-{}] high_commit_qc of current vote message is not null. See if a commit can be made".format(self.node_id))
+            self.process_qc(vote_msg.high_commit_qc)  # For the transaction initiated in the first round, high_commit_qc of vote_msg is null, so no commit to be made in this round.
+            # Understand how how_commit_qc will be updated and understand its significance in further rounds.
+        LCI = vote_msg.ledger_commit_info;
+        vote_idx = self.calculate_hash(LCI.commit_state_id, LCI.vote_info_hash)  # Determine why hash is being calculated here
+        str_vote_idx = str(vote_idx)
+        print("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
+
+        if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
+            #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
+            self.pendingVotes[str_vote_idx] = []
+            #if(str_vote_idx in self.pendingVotes):
+                #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Added to Dict".format(self.node_id, str_vote_idx, str_vote_idx in self.pendingVotes))
+
+        print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] ".format(self.node_id, str_vote_idx))
+        collected_votes = self.pendingVotes[str_vote_idx]
+        collected_votes.append(vote_msg)
+        self.pendingVotes[str_vote_idx] = collected_votes
+        if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
+            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW".format(self.node_id))
+            signatures_list = [] #list(self.pendingVotes[vote_idx])
+            new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
             return new_qc
         return None
 
@@ -57,7 +84,7 @@ class BlockTree:
             high_qc_signatures = self.high_qc.signatures
 
         return Block(author, current_round, transactions, self.high_qc,
-                     self.hash(author, current_round, transactions, vote_info_id, high_qc_signatures))
+                     self.hash_fun(author, current_round, transactions, vote_info_id, high_qc_signatures))
 
     def get_max_round(self, qc, high_commit_qc):
         pass
@@ -65,5 +92,20 @@ class BlockTree:
     def prune(self, parent_id):
         pass
 
-    def hash(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
+    def hash_fun(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
+        temp_str = str(author) + str(current_round)
+        for t in transactions:
+            temp_str = temp_str + t
+        if (vote_info_id is not None):
+            temp_str = temp_str + str(vote_info_id)
+        if (high_qc_signatures is not None):
+            temp_str = temp_str + str(high_qc_signatures)
+        print("[Block-Tree] temp_str: {}".format(temp_str), " hash: {}".format(hash(temp_str)))
+        return hash(temp_str)
+
+    def hash_determine_id_of_vote(self, ledger_commit_info):  # TODO
         return 0
+
+    def calculate_hash(self, commit_state_id, vote_info_hash):
+        temp_str = str(commit_state_id)+str(vote_info_hash)
+        return hash(temp_str)
