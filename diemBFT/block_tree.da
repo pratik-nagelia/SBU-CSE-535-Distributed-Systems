@@ -11,7 +11,7 @@ class BlockTree:
     def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc):
         self.pendingBlockTree = pendingBlockTree
         self.pendingVotes = pendingVotes
-        self.high_qc = high_qc
+        self.high_qc = high_qc # The latest qc available
         self.high_commit_qc = high_commit_qc
         self.ledger = None
         self.node_id = None
@@ -39,21 +39,20 @@ class BlockTree:
         #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
         block_qc_block_id = None
         if block.qc is not None:
-            block_qc_block_id = block.qc.block_id
+            block_qc_block_id = block.qc.ledger_commit_info.commit_state_id
         self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)  # TODO Pending till now
         self.pendingBlockTree.append(block)
 
     def process_vote(self, vote_msg,sender_id):
         vote_info = vote_msg.vote_info
-        print("[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id,vote_info.id)) #,
+        print("[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id, vote_info.id)) #,
         # " voted in round: {[]}".format(vote_info.round),
         # " for the proposal initiated by parent: {[]}".format(vote_info.parent_id))
-        if (vote_msg.high_commit_qc is not None):
+        if vote_msg.high_commit_qc is not None:
             print("[Block-Tree-Node-{}] high_commit_qc of current vote message is not null. See if a commit can be made".format(self.node_id))
             self.process_qc(vote_msg.high_commit_qc)  # For the transaction initiated in the first round, high_commit_qc of vote_msg is null, so no commit to be made in this round.
             # Understand how how_commit_qc will be updated and understand its significance in further rounds.
-        LCI = vote_msg.ledger_commit_info;
-        vote_idx = self.calculate_hash(LCI.commit_state_id, LCI.vote_info_hash)  # Determine why hash is being calculated here
+        vote_idx = self.calculate_hash(vote_msg.ledger_commit_info.commit_state_id, vote_msg.ledger_commit_info.vote_info_hash)  # Determine why hash is being calculated here
         str_vote_idx = str(vote_idx)
         print("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
 
@@ -75,8 +74,7 @@ class BlockTree:
         return None
 
     def generate_block(self, transactions, current_round):
-        author = 0
-
+        author = self.node_id
         vote_info_id = None
         high_qc_signatures = None
         if self.high_qc is not None:
@@ -87,7 +85,16 @@ class BlockTree:
                      self.hash_fun(author, current_round, transactions, vote_info_id, high_qc_signatures))
 
     def get_max_round(self, qc, high_commit_qc):
-        pass
+        if qc is None and high_commit_qc is None:
+            return None
+        if qc is None:
+            return high_commit_qc
+        if high_commit_qc is None:
+            return qc
+        if qc.vote_info.round > high_commit_qc.vote_info.round:
+            return qc
+        else:
+            return high_commit_qc
 
     def prune(self, parent_id):
         pass
