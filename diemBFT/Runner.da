@@ -31,7 +31,7 @@ def main():
 
     id = 0
     for c in clients:
-        setup(c, (nodes,id))
+        setup(c, (nodes, id, conf))
         start(c)
         id+=1
 

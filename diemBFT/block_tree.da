@@ -111,8 +111,9 @@ class BlockTree:
 
     def hash_fun(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
         temp_str = str(author) + str(current_round)
-        for t in transactions:
-            temp_str = temp_str + t
+        if transactions is not None:
+            for t in transactions:
+                temp_str = temp_str + t
         if vote_info_id is not None:
             temp_str = temp_str + str(vote_info_id)
         if high_qc_signatures is not None:

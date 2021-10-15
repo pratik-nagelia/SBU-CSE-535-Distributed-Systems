@@ -3,5 +3,6 @@
   "nodes": 4,
   "clients": 1,
   "initial_leader": 0,
-  "delta" : 20000
+  "delta" : 20000,
+  "client_requests" : 4
 }
