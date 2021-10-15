@@ -1,20 +1,22 @@
 from block_tree import BlockTree
 
 class Pacemaker:
-    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree,node_id):
+    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, delta):
         self.current_round = current_round
         self.last_round_tc = last_round_tc
         self.pending_timeouts = pending_timeouts
         self.block_tree = block_tree
         self.node_id = node_id
+        self.delta = delta
 
     def stop_timer(self, current_round):
         pass
 
     def start_timer(self, new_round):
         self.stop_timer(self.current_round)
+        print("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}]".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
-        # TODO start local timer
+
 
     def advance_round_tc(self, tc):
         if tc is None or tc.round < self.current_round:
@@ -24,14 +26,11 @@ class Pacemaker:
         return True
 
     def advance_round_qc(self, qc):
-        print ("Pacemaker - Advance Round QC")
-        # TODO Remove this None Condition, cannot be None
-        if qc is not None:
-            if qc.vote_info.round < self.current_round:
-                return False
-            last_round_tc = None
-            self.start_timer(qc.vote_info.round + 1)
-            return True
+        if qc.vote_info.round < self.current_round:
+            return False
+        self.last_round_tc = None
+        self.start_timer(qc.vote_info.round + 1)
+        return True
 
 #    def get_round_timer(self, r):
 #        return round_timer_formula
@@ -43,10 +42,4 @@ class Pacemaker:
 
 #    def process_remote_timeout(self, tmo):
 #        tmo_info = tmo.tmo_info
-    
-    def advance_round(self, round):#TODO
-        print("[Pacemaker-{}] Advance round [{}]".format(self.node_id, self.current_round))
-        self.current_round = self.current_round+1
-        print("Holaaaaa")
-        pass
 

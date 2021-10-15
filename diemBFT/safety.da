@@ -2,6 +2,7 @@ from vote_info import VoteInfo
 from vote_message import VoteMsg
 from ledger import Ledger
 from ledger_commit_info import LedgerCommitInfo
+from timeout_certificate import TimeoutCertificate
 
 
 class Safety:
@@ -33,7 +34,10 @@ class Safety:
 
     #
     def safe_to_extend(self, block_round, qc_round, timeout_certificate):
-        return self.consecutive(block_round, timeout_certificate.round)
+        max_tmo_high_qc_rounds = -1
+        if timeout_certificate is not None and timeout_certificate.tmo_high_qc_rounds is not None:
+            max_tmo_high_qc_rounds = max(timeout_certificate.tmo_high_qc_rounds)
+        return self.consecutive(block_round, timeout_certificate.round) and qc_round >= max_tmo_high_qc_rounds
 
     #
     def safe_to_vote(self, block_round, qc_round, timeout_certificate):
@@ -42,8 +46,7 @@ class Safety:
             return False
         print("[SAFETY-Node-{}".format(self.node_id),
               "] safe_to_vote. The received block was proposed in a round after the last voting or quorum round in which I participated")
-        return self.consecutive(block_round, qc_round) or self.safe_to_extend(block_round, qc_round,
-                                                                              timeout_certificate)
+        return self.consecutive(block_round, qc_round) or self.safe_to_extend(block_round, qc_round, timeout_certificate)
 
     #
     # def safe_to_timeout(self, voting_round, qc_round, timeout_certificate):
@@ -83,19 +86,18 @@ class Safety:
             print("[SAFETY-Node-{}".format(self.node_id), "] Prepared VOTE message [{}] for the current proposal".format(vote_info))
 
             commit_state_id = self.commit_state_id_candidate(block.round, block.qc) #Commit # TODO
-            if(commit_state_id is None):
+            if commit_state_id is None:
                 commit_state_id = -1
             #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the commit_state_id [{}]".format(commit_state_id))
             hash_vote_info = self.calculate_hash(vote_info)
             #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the prepared VOTE info [{}] for the current proposal".format(hash_vote_info))
             #Hash is different here. So VOTE_IDX doesn't match for the received votes at the next leader.
-            print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(commit_state_id, hash_vote_info))
+            print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(commit_state_id, hash_vote_info))
             ledger_commit_info = LedgerCommitInfo(commit_state_id, hash_vote_info)
             msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, None, None)
             return msg
         return None
 
-    # #TODO
     def calculate_hash(self, vote_info):
         #print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] ETHE")
         block = str(vote_info.id)

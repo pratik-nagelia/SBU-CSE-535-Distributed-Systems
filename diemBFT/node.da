@@ -9,15 +9,17 @@ from ledger import Ledger
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict, F:int):
+    def setup(node_id: int, nodes: set, nodesDict, conf):
         self.nodesDict = nodesDict
         self.ledger = Ledger(self.node_id)
         self.block_tree = BlockTree([], {}, None, None)
         self.safety = Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
-        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id)
+        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'])
         self.mempool = MemPool([], self.node_id)
         self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
+        self.F = conf['F']
         print("[Node-{}] Setup completed ".format(self.node_id))
+
 
     def run():
         print("[Node-{}] Running Node".format(self.node_id))
@@ -73,12 +75,13 @@ class Node(process):
     def process_certificate_qc(qc):
         if qc is not None:
             self.block_tree.process_qc(qc)
-            self.leader_election.update_leaders(qc)
+            # TODO Uncomment below
+            # self.leader_election.update_leaders(qc)
             self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
-            output("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
+            print("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
