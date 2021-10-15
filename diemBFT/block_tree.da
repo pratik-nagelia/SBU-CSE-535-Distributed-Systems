@@ -42,10 +42,10 @@ class BlockTree:
 
     def execute_and_insert(self, block):
         #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
-        block_qc_block_id = None
+        block_qc_vote_info_id = None
         if block.qc is not None:
-            block_qc_block_id = block.qc.ledger_commit_info.commit_state_id
-        self.ledger.speculate(block_qc_block_id, block.block_id, block.payload)  # TODO Pending till now
+            block_qc_vote_info_id = block.qc.vote_info.id
+        self.ledger.speculate(block_qc_vote_info_id, block.block_id, block.payload)  # TODO Pending till now
         self.pendingBlockTree.append(block)
 
     def process_vote(self, vote_msg,sender_id):
@@ -67,16 +67,19 @@ class BlockTree:
             #if(str_vote_idx in self.pendingVotes):
                 #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Added to Dict".format(self.node_id, str_vote_idx, str_vote_idx in self.pendingVotes))
 
-        print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] ".format(self.node_id, str_vote_idx))
+        # Appending Vote based on Vote Index
         collected_votes = self.pendingVotes[str_vote_idx]
         collected_votes.append(vote_msg)
         self.pendingVotes[str_vote_idx] = collected_votes
+
+        print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] | No. of votes collected: {}".format(self.node_id, str_vote_idx, len(collected_votes)))
+
         if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
             print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW================================================================================================================================".format(self.node_id))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
             new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
-            #Before returning, clear pendingVotes
-            self.pendingVotes[str_vote_idx] = []
+            # Not clearing pending votes - corner case scenarios
+            #self.pendingVotes[str_vote_idx] = []
             return new_qc
         return None
 
@@ -110,9 +113,9 @@ class BlockTree:
         temp_str = str(author) + str(current_round)
         for t in transactions:
             temp_str = temp_str + t
-        if (vote_info_id is not None):
+        if vote_info_id is not None:
             temp_str = temp_str + str(vote_info_id)
-        if (high_qc_signatures is not None):
+        if high_qc_signatures is not None:
             temp_str = temp_str + str(high_qc_signatures)
         print("[Block-Tree] temp_str: {}".format(temp_str), " hash: {}".format(hash(temp_str)))
         return hash(temp_str)

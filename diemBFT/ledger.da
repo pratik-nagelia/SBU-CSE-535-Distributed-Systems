@@ -23,12 +23,11 @@ class Ledger:
     def commit(self, block_id):
         if(block_id in self.pending_transactions):
             pending_txn = self.pending_transactions[block_id]
-            print("[Ledger-Node-{}] Commit pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(self.node_id, block_id, pending_txn))
-            self.pending_transactions[block_id] = null
-            self.committed_transactions[block_id]=pending_txn
+            print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
+            self.pending_transactions[block_id] = None
+            self.committed_transactions[block_id] = pending_txn
         else:
             print("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
-        pass
 
     def committed_block(self, block_id):
         pass

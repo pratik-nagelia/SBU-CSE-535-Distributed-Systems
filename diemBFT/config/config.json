@@ -2,5 +2,6 @@
   "F": 1,
   "nodes": 4,
   "clients": 1,
-  "initial_leader": 0
+  "initial_leader": 0,
+  "delta" : 20000
 }

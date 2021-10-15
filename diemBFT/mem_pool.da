@@ -6,9 +6,9 @@ class MemPool:
         self.node_id = node_id
     
     def get_transactions(self):
-        print("[MEMPOOL-Node-{}".format(self.node_id), "] Get Transactions: {}".format(self.transactions), "from the mem pool")
+        print("[MEMPOOL-Node-{}".format(self.node_id), "] Get Transactions: {}".format(self.transactions))
         return self.transactions
 
     def add_transaction(self, transaction):
-        print("[MEMPOOL-Node-{}".format(self.node_id), "] Add Transaction: {}".format(transaction),"to the mem pool")
+        print("[MEMPOOL-Node-{}".format(self.node_id), "] Add Transaction: {}".format(transaction))
         self.transactions.append(transaction)
