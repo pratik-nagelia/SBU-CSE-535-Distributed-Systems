@@ -113,9 +113,9 @@ class BlockTree:
         temp_str = str(author) + str(current_round)
         for t in transactions:
             temp_str = temp_str + t
-        if (vote_info_id is not None):
+        if vote_info_id is not None:
             temp_str = temp_str + str(vote_info_id)
-        if (high_qc_signatures is not None):
+        if high_qc_signatures is not None:
             temp_str = temp_str + str(high_qc_signatures)
         print("[Block-Tree] temp_str: {}".format(temp_str), " hash: {}".format(hash(temp_str)))
         return hash(temp_str)
