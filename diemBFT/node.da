@@ -32,7 +32,7 @@ class Node(process):
     def receive(msg=("TXN", payload), from_=client):
         print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
         self.mempool.add_transaction(payload.to_string())
-        self.process_new_round_event(None)
+        self.process_new_round_event(None, payload.to_string())
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         print("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"), sender_id)
@@ -70,7 +70,10 @@ class Node(process):
         #print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
         if qc is not None:
             self.process_certificate_qc(qc)
-            self.process_new_round_event(None)
+            # if no pending transactions, dont process a new round evnt
+            if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
+                 return
+            self.process_new_round_event(None, None)
 
     def process_certificate_qc(qc):
         if qc is not None:
@@ -79,9 +82,9 @@ class Node(process):
             # self.leader_election.update_leaders(qc)
             self.pacemaker.advance_round_qc(qc)
 
-    def process_new_round_event(last_tc):
+    def process_new_round_event(last_tc, transactions):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             print("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
-            block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
+            block = self.block_tree.generate_block(transactions, self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
