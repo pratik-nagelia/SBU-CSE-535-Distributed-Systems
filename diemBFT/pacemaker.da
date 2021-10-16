@@ -14,7 +14,7 @@ class Pacemaker:
 
     def start_timer(self, new_round):
         self.stop_timer(self.current_round)
-        print("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}]".format(self.node_id, self.current_round, new_round))
+        print("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
 
 

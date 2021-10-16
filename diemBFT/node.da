@@ -12,12 +12,12 @@ class Node(process):
     def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict):
         self.nodesDict = nodesDict
         self.ledger = Ledger(self.node_id, clientsDict)
-        self.block_tree = BlockTree([], {}, None, None)
-        self.safety = Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
+        self.block_tree = BlockTree([], {}, None, None, self.nodesDict)
+        self.safety = Safety(None, None, -1, -1, self.node_id, self.ledger, self.block_tree, self.nodesDict)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'])
         self.mempool = MemPool([], self.node_id)
-        self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
         self.F = conf['F']
+        self.leader_election = LeaderElection(nodesDict, 2*self.F+1,self.F, {}, self.pacemaker, self.ledger, self.node_id)
         print("[Node-{}] Setup completed ".format(self.node_id))
 
 
@@ -42,7 +42,7 @@ class Node(process):
         self.process_proposal_msg(proposal, sender_id)
 
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
-        print("[Node-{}] Received {} message".format(self.node_id, "VOTE"), " from Node: [{}]".format(sender_id))
+        print("[Node-{}] Received {} message".format(self.node_id, "VOTE"), " from Node: [{}] for the proposal sent in block[{}]".format(sender_id, vote_msg.vote_info.id))
         self.process_vote_msg(vote_msg, sender_id)
 
     def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
@@ -67,7 +67,7 @@ class Node(process):
         if vote_msg is not None:
             vote_msg.sender = self.nodesDict[self.node_id]
             next_leader_id = leader_election.get_leader(current_round + 1)
-            print("[Node-{}] Send the prepared VOTE to the next leader [{}] ".format(self.node_id, next_leader_id))
+            print("[Node-{}] Send the prepared VOTE to the next leader [{}] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ".format(self.node_id, next_leader_id))
             next_leader = self.nodesDict[next_leader_id]
             send(("VOTE", vote_msg, self.node_id), to=next_leader)
 
@@ -85,13 +85,13 @@ class Node(process):
     def process_certificate_qc(qc):
         if qc is not None:
             committed_txn = self.block_tree.process_qc(qc)
-            if committed_txn is not None:
+            if committed_txn is not None: # and self.node_id == qc.author:
                 client_id = committed_txn.fetch_client_id()
                 print("[Node-{}] Notify client of committed transaction [{}] to client [{}]".format(self.node_id, committed_txn.to_string(), client_id))
                 send(("TRANSACTION_COMMITTED", committed_txn.to_string()), to=self.clientsDict[client_id])
 
             # TODO Uncomment below
-            # self.leader_election.update_leaders(qc)
+            self.leader_election.update_leaders(qc)
             self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc, transaction):
@@ -99,4 +99,5 @@ class Node(process):
             print("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+            print("[Node-{}] Send PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
             send(("PROPOSAL", proposal, self.node_id), to=nodes)

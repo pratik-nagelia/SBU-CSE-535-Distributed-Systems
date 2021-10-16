@@ -8,14 +8,15 @@ from vote_message import VoteMsg
 
 class BlockTree:
 
-    def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc):
+    def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc, nodesDict):
         self.pendingBlockTree = pendingBlockTree
         self.pendingVotes = pendingVotes
+        self.signers_pending_votes = {}
         self.high_qc = high_qc # The latest qc available
         self.high_commit_qc = high_commit_qc
         self.ledger = None
         self.node_id = None
-
+        self.nodesDict = nodesDict
 
     # TODO HACK Couldnot init in the constructer
     def set_ledger(self, ledger):
@@ -48,7 +49,7 @@ class BlockTree:
         block_qc_vote_info_id = None
         if block.qc is not None:
             block_qc_vote_info_id = block.qc.vote_info.id
-        self.ledger.speculate(block_qc_vote_info_id, block.block_id, block.payload)  # TODO Pending till now
+        self.ledger.speculate(block_qc_vote_info_id, block, block.payload)  # TODO Pending till now
         self.pendingBlockTree.append(block)
 
     def process_vote(self, vote_msg,sender_id):
@@ -67,6 +68,7 @@ class BlockTree:
         if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
             print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
             self.pendingVotes[str_vote_idx] = []
+            self.signers_pending_votes[str_vote_idx] = []
             #if(str_vote_idx in self.pendingVotes):
                 #print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Added to Dict".format(self.node_id, str_vote_idx, str_vote_idx in self.pendingVotes))
 
@@ -75,15 +77,25 @@ class BlockTree:
         collected_votes.append(vote_msg)
         self.pendingVotes[str_vote_idx] = collected_votes
 
+        # Appending Vote based on Vote Index
+        collected_signers = self.signers_pending_votes[str_vote_idx]
+        collected_signers.append(sender_id)
+        self.signers_pending_votes[str_vote_idx] = collected_signers
+
         print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] | No. of votes collected: {}".format(self.node_id, str_vote_idx, len(collected_votes)))
 
         if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
-            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW================================================================================================================================".format(self.node_id))
+            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW Signers: [{}]================================================================================================================================".format(self.node_id,self.signers_pending_votes[str_vote_idx]))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
-            new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, vote_msg.signature) #TODO Signatures missing.
+            print()
+            new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, self.signers_pending_votes[str_vote_idx]) #TODO Signatures missing.
+            print("SIgnersss OHH LAA LAAA [{}]".format(new_qc.signers))
             # Not clearing pending votes - corner case scenarios
             #self.pendingVotes[str_vote_idx] = []
             return new_qc
+        elif len(self.pendingVotes[str_vote_idx]) > (2 * self.F) + 1:
+            print("[Block-Tree-Node-{}] VOTES received > 2F+1 VOTES received. Discard these votes now>>>>DUMP".format(self.node_id))
+
         return None
 
     def generate_block(self, transactions, current_round):

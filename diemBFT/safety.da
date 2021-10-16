@@ -8,7 +8,7 @@ from timeout_certificate import TimeoutCertificate
 class Safety:
     F = 1
 
-    def __init__(self, private_key, public_key, highest_vote_round, highest_qc_round, node_id, ledger, block_tree):
+    def __init__(self, private_key, public_key, highest_vote_round, highest_qc_round, node_id, ledger, block_tree,nodesDict):
         self.private_key = private_key
         self.public_key = public_key
         self.highest_vote_round = highest_vote_round
@@ -16,6 +16,7 @@ class Safety:
         self.node_id = node_id
         self.ledger = ledger
         self.block_tree = block_tree
+        self.nodesDict = nodesDict
 
     def increase_highest_vote_round(self, voting_round):
         self.highest_vote_round = max(self.highest_vote_round, voting_round)
@@ -27,8 +28,8 @@ class Safety:
     #
     def consecutive(self, block_round, voting_round):
         if (block_round == voting_round + 1):
-            print("[SAFETY-Node-{}".format(self.node_id) +
-                  "] The current block was proposed just after the last QC or TC round.")
+            #print("[SAFETY-Node-{}".format(self.node_id),
+                  #"] The current block was proposed just after the last QC or TC round.")
             return True
         return False
 
@@ -41,11 +42,10 @@ class Safety:
 
     #
     def safe_to_vote(self, block_round, qc_round, timeout_certificate):
-        print("[SAFETY-Node-{}".format(self.node_id) + "] Check if it's SAFE TO VOTE for the current proposal")
+        #print("[SAFETY-Node-{}".format(self.node_id), "] Check if it's SAFE TO VOTE for the current proposal")
         if (block_round <= max(self.highest_vote_round, qc_round)):
             return False
-        print("[SAFETY-Node-{}".format(self.node_id) +
-              "] safe_to_vote. The received block was proposed in a round after the last voting or quorum round in which I participated")
+        #print("[SAFETY-Node-{}".format(self.node_id),"] safe_to_vote. The received block was proposed in a round after the last voting or quorum round in which I participated")
         return self.consecutive(block_round, qc_round) or self.safe_to_extend(block_round, qc_round, timeout_certificate)
 
     #
@@ -60,30 +60,31 @@ class Safety:
         return True
 
     def commit_state_id_candidate(self, block_round, block_qc): #TODO
-        block_qc_round = -1
-        if(block_qc is not None):
-            block_qc_round = block_qc.vote_info.round
-        print("[SAFETY-Node-{}] Fetch commit state id candidate for block_qc_round [{}]".format(self.node_id, block_qc_round))
+        if(block_qc is None):
+            return None
+
+        block_qc_round = block_qc.vote_info.round
         if(self.consecutive(block_round,block_qc_round)):
-            return self.ledger.pending_state(block_qc_round)
+            print("[SAFETY-Node-{}] Fetch commit state id candidate for block with id [{}]".format(self.node_id, block_qc.vote_info.parent_id))
+            return self.ledger.pending_state(block_qc.vote_info.parent_id)
+        print("[SAFETY-Node-{}".format(self.node_id),"] CHECK CHECK")
         return None
 
     def make_vote(self, block, last_round_tc):
-        print("[SAFETY-Node-{}".format(self.node_id) + "] Make VOTE for the current proposal")
+        #print("[SAFETY-Node-{}".format(self.node_id), "] Make VOTE for the current proposal")
         qc_round = -1  # No QC until now. #TODO Confirm if it can be set to -1.
         if block.qc is not None:
             qc_round = block.qc.vote_info.round  # Confirm which round it is. Check after creation of a QC.
 
         if self.valid_signature(block, last_round_tc) and self.safe_to_vote(block.round, qc_round, last_round_tc):
-            print("[SAFETY-Node-{}".format(self.node_id) +
-                  "] HURRAYY! GREEN SIGNAL RECEIVED. It is SAFE for me to VOTE for the curr proposal now. Let's prepare a VOTE message now")
+            print("[SAFETY-Node-{}] HURRAYY! GREEN SIGNAL RECEIVED. It is SAFE for me to VOTE for the curr proposal contained in block: [{}]".format(self.node_id,block.block_id))
             self.update_highest_qc_round(qc_round)
             self.increase_highest_vote_round(block.round) #Voted in current round. Update highest_vote_round
             block_qc_vote_info_id = -1
             if block.qc is not None:
                 block_qc_vote_info_id = block.qc.vote_info.id
             vote_info = VoteInfo(block.block_id, block.round, block_qc_vote_info_id, qc_round, self.ledger.pending_state(block.block_id))  # => Last function needs to be implemented
-            print("[SAFETY-Node-{}".format(self.node_id) + "] Prepared VOTE message [{}] for the current proposal".format(vote_info))
+            print("[SAFETY-Node-{}".format(self.node_id), "] Prepared VOTE message [{}] for the current proposal".format(vote_info))
 
             commit_state_id = self.commit_state_id_candidate(block.round, block.qc) #Commit # TODO
             if commit_state_id is None:
@@ -92,20 +93,23 @@ class Safety:
             hash_vote_info = self.calculate_hash(vote_info)
             #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the prepared VOTE info [{}] for the current proposal".format(hash_vote_info))
             #Hash is different here. So VOTE_IDX doesn't match for the received votes at the next leader.
-            print("[SAFETY-Node-{}".format(self.node_id) + "][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(commit_state_id, hash_vote_info))
             ledger_commit_info = LedgerCommitInfo(commit_state_id, hash_vote_info)
-            msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, None, None)
+
+            msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, self.node_id, None)
+            print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] commit_state_id: [{}] hash_vote_info: [{}] Sender: [{}]".format(commit_state_id, hash_vote_info, msg.sender))
+
             return msg
         return None
 
     def calculate_hash(self, vote_info):
+        #print("[SAFETY-Node-{}".format(self.node_id), "][DEBUG] ETHE")
         block = str(vote_info.id)
         block_round = str(vote_info.round)
         block_qc_vote_info_id = str(vote_info.parent_id)
         qc_round = str(vote_info.parent_round)
         execution_state_id = str(vote_info.execution_state_id)
         final_str = block + block_round + block_qc_vote_info_id + qc_round + execution_state_id
-        print("[SAFETY-Node-{}".format(self.node_id) + "][DEBUG] FINAL STR [{}] before calculating hash".format(final_str))
+        #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] FINAL STR [{}] before calculating hash".format(final_str))
 
         hash_val = hash(final_str)
         return hash_val
