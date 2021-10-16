@@ -89,7 +89,6 @@ class BlockTree:
             signatures_list = [] #list(self.pendingVotes[vote_idx])
             print()
             new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, self.signers_pending_votes[str_vote_idx]) #TODO Signatures missing.
-            print("SIgnersss OHH LAA LAAA [{}]".format(new_qc.signers))
             # Not clearing pending votes - corner case scenarios
             #self.pendingVotes[str_vote_idx] = []
             return new_qc
@@ -139,5 +138,7 @@ class BlockTree:
         return 0
 
     def calculate_hash(self, commit_state_id, vote_info_hash):
+        if commit_state_id is None:
+            return hash(vote_info_hash)
         temp_str = str(commit_state_id)+str(vote_info_hash)
         return hash(temp_str)

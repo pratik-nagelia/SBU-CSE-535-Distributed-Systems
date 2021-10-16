@@ -51,8 +51,9 @@ class Node(process):
 
     def process_proposal_msg(proposal, sender_id):
         print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
-        process_certificate_qc(proposal.block.qc)
-        process_certificate_qc(proposal.high_commit_qc)
+        if sender_id != self.node_id:
+            process_certificate_qc(proposal.block.qc)
+            process_certificate_qc(proposal.high_commit_qc)
         self.pacemaker.advance_round_tc(proposal.last_round_tc)
         current_round = self.pacemaker.current_round
         leader = leader_election.get_leader(current_round)

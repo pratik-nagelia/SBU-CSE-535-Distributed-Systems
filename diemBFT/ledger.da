@@ -6,6 +6,7 @@ class Ledger:
         self.pending_transactions = {}
         self.clientsDict = clientsDict
         self.saveBlocks = {}
+        self.parent_map = {}
         filename = 'ledger-' + str(self.node_id) + '.txt'
         self.file = open(filename, 'a')
         #raw.seek(0)  # <- This is the missing piece
@@ -20,6 +21,7 @@ class Ledger:
         if txns is None:
             return
         block_id = block.block_id
+        self.parent_map[block_id] = prev_block_id
         print("[Ledger-Node-{}] Speculate entry for block_id: [{}] with pending transaction: [{}]".format(self.node_id, block_id,txns.to_string()))
         self.pending_transactions[block_id] = txns;
         self.saveBlocks[block_id] = block
@@ -34,6 +36,7 @@ class Ledger:
             return pending_txn.to_string()
         else:
             print("[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction doesn't exist".format(self.node_id, block_id))
+            return None
 
     def commit(self, block_id):
 

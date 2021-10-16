@@ -66,7 +66,7 @@ class Safety:
         block_qc_round = block_qc.vote_info.round
         if(self.consecutive(block_round,block_qc_round)):
             print("[SAFETY-Node-{}] Fetch commit state id candidate for block with id [{}]".format(self.node_id, block_qc.vote_info.parent_id))
-            return self.ledger.pending_state(block_qc.vote_info.parent_id)
+            return self.ledger.pending_state(block_qc.vote_info.id) #or vote_info.parent_id
         print("[SAFETY-Node-{}".format(self.node_id),"] CHECK CHECK")
         return None
 
@@ -87,8 +87,8 @@ class Safety:
             print("[SAFETY-Node-{}".format(self.node_id), "] Prepared VOTE message [{}] for the current proposal".format(vote_info))
 
             commit_state_id = self.commit_state_id_candidate(block.round, block.qc) #Commit # TODO
-            if commit_state_id is None:
-                commit_state_id = -1
+            #if commit_state_id is None:
+             #   commit_state_id = None
             #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the commit_state_id [{}]".format(commit_state_id))
             hash_vote_info = self.calculate_hash(vote_info)
             #print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the prepared VOTE info [{}] for the current proposal".format(hash_vote_info))
