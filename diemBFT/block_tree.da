@@ -28,10 +28,11 @@ class BlockTree:
         print("[Block-Tree-{}] Process QC formed after collecting 2F+! votes for block id [{}]".format(self.node_id,qc.vote_info.id))  # ,
         # " voted in round: {[]}".format(qc.vote_info.round),
         # " for the proposal initiated by parent: {[]}".format(qc.vote_info.parent_id))
+        committed_txn = None
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
             print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id,
                                                                                                        qc.ledger_commit_info.commit_state_id))
-            self.ledger.commit(qc.vote_info.parent_id)
+            committed_txn = self.ledger.commit(qc.vote_info.parent_id)
             self.prune(qc.vote_info.parent_id)  # TODO Pending
             self.high_commit_qc = self.get_max_round(qc, self.high_commit_qc)
             print("[Block-Tree-{}] Update high_commit_qc from [{}] to [{}]".format(self.node_id, self.high_commit_qc,
@@ -39,6 +40,8 @@ class BlockTree:
         self.high_qc = self.get_max_round(qc, self.high_qc)
         print("[Block-Tree-{}] Update high_qc from [{}] to [{}]".format(self.node_id, self.high_qc,
                                                                         self.high_qc.vote_info.round))
+        return committed_txn
+
 
     def execute_and_insert(self, block):
         #print("[Block-Tree-Node-{}".format(self.node_id), "] Execute and insert")
@@ -109,11 +112,10 @@ class BlockTree:
     def prune(self, parent_id):
         pass
 
-    def hash_fun(self, author, current_round, transactions, vote_info_id, high_qc_signatures):
+    def hash_fun(self, author, current_round, transaction, vote_info_id, high_qc_signatures):
         temp_str = str(author) + str(current_round)
-        if transactions is not None:
-            for t in transactions:
-                temp_str = temp_str + t
+        if transaction is not None:
+            temp_str = temp_str + transaction.to_string()
         if vote_info_id is not None:
             temp_str = temp_str + str(vote_info_id)
         if high_qc_signatures is not None:

@@ -16,6 +16,15 @@ def main():
     clients = new(Client, num = conf['clients'])
     print("[Runner] Number of Clients Intiated: ", len(clients))
 
+    clientsDict = {}
+    id = 0
+    for c in clients:
+        clientsDict[id] = c
+        setup(c, (nodes, id, conf))
+        start(c)
+        id += 1
+
+
     # Creating a Dictionary of Nodes Vs ID
     id = 0
     nodeDict = {}
@@ -25,15 +34,11 @@ def main():
     print("[Runner] fetch 0 node: ", nodeDict[0])
     for i in range(0,id):
         node_obj = nodeDict[i]
-        setup(node_obj, (i, nodes, nodeDict, conf))
+        setup(node_obj, (i, nodes, nodeDict, conf,clientsDict))
         start(node_obj)
     print("[Runner] Setup Complete for Nodes")
 
-    id = 0
-    for c in clients:
-        setup(c, (nodes, id, conf))
-        start(c)
-        id+=1
+
 
 if __name__ == '__main__':
     main()
