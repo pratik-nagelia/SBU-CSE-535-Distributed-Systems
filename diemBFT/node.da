@@ -9,11 +9,13 @@ from ledger import Ledger
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict):
+    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict, private_key, public_keys):
         self.nodesDict = nodesDict
+        self.private_key = private_key
+        self.public_keys = public_keys
         self.ledger = Ledger(self.node_id, clientsDict)
-        self.block_tree = BlockTree([], {}, None, None)
-        self.safety = Safety(None, None, -1, -1,self.node_id, self.ledger, self.block_tree)
+        self.block_tree = BlockTree([], {}, None, None, public_keys, node_id)
+        self.safety = Safety(private_key, public_keys, -1, -1,self.node_id, self.ledger, self.block_tree)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'])
         self.mempool = MemPool([], self.node_id)
         self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
@@ -90,5 +92,8 @@ class Node(process):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             print("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
-            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc, self.sign(block.block_id), self.node_id)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
+
+    def sign(self, block_id):
+        return bytes(str(block_id), encode='utf-8')
