@@ -1,4 +1,3 @@
-from main import Main
 from block_tree import BlockTree
 from proposal_message import ProposalMessage
 from pacemaker import Pacemaker
@@ -6,36 +5,39 @@ from mem_pool import MemPool
 from leader_election import LeaderElection
 from safety import Safety
 from ledger import Ledger
+import nacl.exceptions
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict):
+    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict, private_key, public_keys, clientPublicKeyDict):
         self.nodesDict = nodesDict
+        self.F = conf['F']
+        self.private_key = private_key
+        self.public_keys = public_keys
         self.ledger = Ledger(self.node_id, clientsDict)
-        self.block_tree = BlockTree([], {}, None, None, self.nodesDict)
-        self.safety = Safety(None, None, -1, -1, self.node_id, self.ledger, self.block_tree, self.nodesDict)
+        self.block_tree = BlockTree([], {}, None, None, public_keys, self.node_id, self.ledger, self.F)
+        self.safety = Safety(private_key, public_keys, -1, -1,self.node_id, self.ledger, self.block_tree)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'])
         self.mempool = MemPool([], self.node_id)
-        self.F = conf['F']
-        self.leader_election = LeaderElection(nodesDict, 2*self.F+1,self.F, {}, self.pacemaker, self.ledger, self.node_id)
+        self.leader_election = LeaderElection(nodesDict, 2 * self.F +1, self.F, {}, self.pacemaker, self.ledger, self.node_id)
+        self.clientPublicKeyDict = clientPublicKeyDict
         print("[Node-{}] Setup completed ".format(self.node_id))
 
 
     def run():
         print("[Node-{}] Running Node".format(self.node_id))
-        # TODO HACK Couldnot init in the constructer
-        self.block_tree.set_ledger(self.ledger)
-        self.block_tree.set_node_id(self.node_id)
-        self.block_tree.F = self.F
         await False
 
-    def receive(msg=("TXN", payload), from_=client):
-        print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
-        self.mempool.add_transaction(payload)
-        pending_txn = self.mempool.get_transactions()
-        if pending_txn is None:
-            return
-        self.process_new_round_event(None, pending_txn)
+    def receive(msg=("TXN", client_request), from_=client):
+        payload = client_request.transaction
+        if self.valid_client_signature(client_request.signature, payload.client_id):
+            print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
+            self.mempool.add_transaction(payload)
+            print(type(payload))
+            pending_txn = self.mempool.get_transactions()
+            if pending_txn is None:
+                return
+            self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         print("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"), sender_id)
@@ -44,10 +46,6 @@ class Node(process):
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
         print("[Node-{}] Received {} message".format(self.node_id, "VOTE"), " from Node: [{}] for the proposal sent in block[{}]".format(sender_id, vote_msg.vote_info.id))
         self.process_vote_msg(vote_msg, sender_id)
-
-    def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
-        print("TXXXXN Commite ================")
-        # print("[CLIENT-{}]".format(self.client_id) +" Transaction committed successfully: {}".format(payload))
 
     def process_proposal_msg(proposal, sender_id):
         print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
@@ -64,9 +62,8 @@ class Node(process):
             return
         #print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
         self.block_tree.execute_and_insert(proposal.block)
-        vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc)
+        vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc, proposal.signature)
         if vote_msg is not None:
-            vote_msg.sender = self.nodesDict[self.node_id]
             next_leader_id = leader_election.get_leader(current_round + 1)
             print("[Node-{}] Send the prepared VOTE to the next leader [{}] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ".format(self.node_id, next_leader_id))
             next_leader = self.nodesDict[next_leader_id]
@@ -99,6 +96,19 @@ class Node(process):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             print("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
-            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
+            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
+                                       self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             print("[Node-{}] Send PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
+
+    def valid_client_signature(signature, client_id):
+        try:
+            self.clientPublicKeyDict[client_id].verify(signature)
+        except nacl.exceptions.BadSignatureError:
+            print("[Node-{}] Signature Invalidated for client Id {} ".format(self.node_id, client_id))
+            return False
+        return True
+
+    #
+    # def sign(self, block_id):
+    #     return bytes(str(block_id), encoding='utf-8')
