@@ -18,7 +18,7 @@ class Ledger:
         pass
 
     def pending_state(self, block_id):
-        if(block_id in self.pending_transactions):
+        if block_id in self.pending_transactions:
             pending_txn = self.pending_transactions[block_id]
             print(
                 "[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(
@@ -29,16 +29,12 @@ class Ledger:
 
     def commit(self, block_id):
         file = open(self.filename, 'a')
-        if(block_id in self.pending_transactions):
+        if block_id in self.pending_transactions:
             pending_txn = self.pending_transactions[block_id]
             # TODO Check pending transactions coming as None
             file.write(str(pending_txn) + '\n')
             print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
-            # print("~~~~~~~~~~~~~~~~~~~~~", str(self.pending_transactions) , "~~~~~~~~~~~~~~~~~~")
-            #self.pending_transactions.pop(block_id)
             self.pending_transactions[block_id] = None
-            # print("~~~~~~~~~~~~~~~~~~~~~", str(self.pending_transactions) , "~~~~~~~~~~~~~~~~~~")
-            #del self.pending_transactions[block_id]
             self.committed_transactions[block_id] = pending_txn
         else:
             print("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
