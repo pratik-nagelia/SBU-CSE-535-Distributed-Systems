@@ -5,10 +5,11 @@ from mem_pool import MemPool
 from leader_election import LeaderElection
 from safety import Safety
 from ledger import Ledger
+import nacl.exceptions
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict, private_key, public_keys):
+    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict, private_key, public_keys, clientPublicKeyDict):
         self.nodesDict = nodesDict
         self.F = conf['F']
         self.private_key = private_key
@@ -19,6 +20,7 @@ class Node(process):
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'])
         self.mempool = MemPool([], self.node_id)
         self.leader_election = LeaderElection(nodesDict, 10, 10, {}, self.pacemaker, self.ledger, self.node_id)
+        self.clientPublicKeyDict = clientPublicKeyDict
 
         print("[Node-{}] Setup completed ".format(self.node_id))
 
@@ -27,13 +29,16 @@ class Node(process):
         print("[Node-{}] Running Node".format(self.node_id))
         await False
 
-    def receive(msg=("TXN", payload), from_=client):
-        print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
-        self.mempool.add_transaction(payload)
-        pending_txn = self.mempool.get_transactions()
-        if pending_txn is None:
-            return
-        self.process_new_round_event(None, pending_txn)
+    def receive(msg=("TXN", client_request), from_=client):
+        payload = client_request.transaction
+        if self.valid_client_signature(client_request.signature, payload.client_id):
+            print("[Node-{}] Received {} message:".format(self.node_id, "TXN"), " | Message: ", payload.to_string())
+            self.mempool.add_transaction(payload)
+            print(type(payload))
+            pending_txn = self.mempool.get_transactions()
+            if pending_txn is None:
+                return
+            self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         print("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"), sender_id)
@@ -94,6 +99,15 @@ class Node(process):
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             send(("PROPOSAL", proposal, self.node_id), to=nodes)
+
+    def valid_client_signature(signature, client_id):
+        try:
+            self.clientPublicKeyDict[client_id].verify(signature)
+        except nacl.exceptions.BadSignatureError:
+            print("[Node-{}] Signature Invalidated for client Id {} ".format(self.node_id, client_id))
+            return False
+        return True
+
     #
     # def sign(self, block_id):
     #     return bytes(str(block_id), encoding='utf-8')
