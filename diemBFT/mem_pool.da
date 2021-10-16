@@ -1,14 +1,30 @@
-
 class MemPool:
-    
-    def __init__(self, transactions,node_id):
+
+    def __init__(self, transactions, node_id):
+        self.deduplication_set = set()
+        self.pending_transactions = []
+        self.in_process_transactions = []
+        self.committed_transactions = []
         self.transactions = transactions
         self.node_id = node_id
-    
+
     def get_transactions(self):
-        print("[MEMPOOL-Node-{}".format(self.node_id), "] Get Transactions: {}".format(self.transactions), "from the mem pool")
-        return self.transactions
+        if len(self.pending_transactions)==0:
+            return None
+        pending_txn = self.pending_transactions.pop(0)
+        print("[MEMPOOL-Node-{}".format(self.node_id),"] Get a pending transaction for proposing: {}".format(pending_txn.to_string()))
+        self.in_process_transactions.append(pending_txn)
+        return pending_txn
 
     def add_transaction(self, transaction):
-        print("[MEMPOOL-Node-{}".format(self.node_id), "] Add Transaction: {}".format(transaction),"to the mem pool")
-        self.transactions.append(transaction)
+        hash_txn = hash(transaction.to_string())
+        if hash_txn in self.deduplication_set:
+            print("[MEMPOOL-Node-{}".format(self.node_id), "] DUPLICATE Transaction: {}".format(transaction))
+            return
+        self.deduplication_set.add(hash_txn)
+        self.pending_transactions.append(transaction)
+        print("[MEMPOOL-Node-{}".format(self.node_id),"] Transaction added to the pending queue: {}".format(transaction.to_string()))
+
+    def commit_transaction(self, transaction):
+        # More logic to be added to commit this transaction and remove it from the in process queue.
+        pass

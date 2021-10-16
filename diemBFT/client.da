@@ -1,22 +1,24 @@
 from transaction import Transaction
-from constants import *
-
+import time
 class Client(process):
-    def setup(nodes:set, client_id:int):
+    def setup(nodes:set, client_id:int, conf):
         self.transaction_id = -1
 
     def initiate_new_transaction():
-        self.transaction_id += 1
-        curr_trans = Transaction(self.transaction_id , self.client_id,MessageType.PROPOSAL_MESSAGE)
+        self.transaction_id += 0
+        curr_trans = Transaction(self.transaction_id , self.client_id)
         return curr_trans
 
     def run():
         output('[CLIENT] Starting Client....')
-        txn = initiate_new_transaction()
-        msg = txn.to_string()
-        send(("TXN", txn), to=nodes)
-        output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
-        await(False)
+        total_rounds = conf['client_requests']
+        while total_rounds > 0:
+            total_rounds-=1
+            txn = initiate_new_transaction()
+            msg = txn.to_string()
+            send(("TXN", txn), to=nodes)
+            output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
+        await False
 
-    def receive(msg = (message), from_ = node):
-        output('[Client] Received Message', message)
+    def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
+        print("[CLIENT- {}] Received Committed Transaction : {}".format(self.client_id, payload))

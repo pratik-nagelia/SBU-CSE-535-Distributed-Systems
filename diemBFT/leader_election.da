@@ -1,12 +1,15 @@
+from pacemaker import Pacemaker
+
 class LeaderElection:
 
-    def __init__(self, nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger):
-        self.nodesDict = nodesDict  # -> Set of nodes
+    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id):
+        self.nodesDict = nodesDict #-> Set of nodes
         self.window_size = window_size
         self.exclude_size = exclude_size
         self.reputation_leaders = reputation_leaders  # => Dict
         self.pacemaker = pacemaker
         self.ledger = ledger
+        self.node_id = node_id
 
     def elect_reputation_leader(self, quorum_certificate):
         active_validators = []
@@ -34,7 +37,7 @@ class LeaderElection:
             return active_validators[0]
 
     def update_leaders(self, qc):
-        # TODO Remove this None Condition, cannot be None
+        print("[Leader-Election-{}] Update leaders using qc formed for voting done in round [{}] ".format(self.node_id,qc.vote_info.round))
         if qc is not None:
             extended_round = qc.vote_info.parent_round
             qc_round = qc.vote_info.round
@@ -45,17 +48,18 @@ class LeaderElection:
         print("[Leader-Election] Updated Leader")
 
     def get_leader(self, current_round):
-        # if(current_round in reputation_leaders):
-        #     return reputation_leaders[current_round]
-
-        print("[Leader-Election] Get_Leader for round [{}]".format(current_round))
-        return self.round_robin_leader(current_round)
+        # if current_round in self.reputation_leaders:
+        #     return self.reputation_leaders[current_round]
+        next_leader = self.round_robin_leader(current_round)
+        print("[Leader-Election-{}] Get_Leader for round [{}], New Leader: [{}]".format(self.node_id, current_round, next_leader))
+        # Returning index instead of the leader directly to handle getLeader
+        # return current_round % len(self.nodesDict)
+        return next_leader
 
     def round_robin_leader(self, current_round):
         x = (current_round // 2)
-        # print(self.nodesDict)
         leader = x % (len(self.nodesDict))
-        print("[Leader-Election] Round-Robin Leader: [{}]".format(leader))
+        print("[Leader-Election-{}] Round-Robin Leader: [{}]".format(self.node_id,leader))
         return leader
 
 
