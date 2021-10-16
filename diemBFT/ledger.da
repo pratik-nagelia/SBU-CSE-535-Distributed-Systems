@@ -1,3 +1,5 @@
+import datetime;
+
 
 class Ledger:
     def __init__(self, node_id, clientsDict):
@@ -32,10 +34,10 @@ class Ledger:
         file = open(self.filename, 'a')
         if block_id in self.pending_transactions:
             pending_txn = self.pending_transactions[block_id]
-            # TODO Check pending transactions coming as None
-            file.write(str(pending_txn) + '\n')
+            msg = str(datetime.datetime.now()) + " " + pending_txn.to_string() + '\n'
+            file.write(msg)
             print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
-            self.pending_transactions[block_id] = None
+            self.pending_transactions.pop(block_id) #[block_id] = None
             self.committed_transactions[block_id] = pending_txn
             return pending_txn
 
