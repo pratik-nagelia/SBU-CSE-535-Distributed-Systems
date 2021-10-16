@@ -7,3 +7,9 @@ class QC:
         self.signatures = signatures
         self.author = author
         self.author_signature = author_signature
+
+    def __bytes__(self):
+        qc = str(self.vote_info) + str(self.ledger_commit_info) + str(self.signatures) + str(self.author) + str(
+            self.author_signature)
+        return bytes(qc, encoding='utf-8')
+

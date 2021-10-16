@@ -3,10 +3,9 @@ from vote_message import VoteMsg
 from ledger import Ledger
 from ledger_commit_info import LedgerCommitInfo
 from timeout_certificate import TimeoutCertificate
-
+import nacl.exceptions
 
 class Safety:
-    F = 1
 
     def __init__(self, private_key, public_key, highest_vote_round, highest_qc_round, node_id, ledger, block_tree):
         self.private_key = private_key
@@ -20,11 +19,9 @@ class Safety:
     def increase_highest_vote_round(self, voting_round):
         self.highest_vote_round = max(self.highest_vote_round, voting_round)
 
-    #
     def update_highest_qc_round(self, qc_round):
         self.highest_qc_round = max(self.highest_qc_round, qc_round)
 
-    #
     def consecutive(self, block_round, voting_round):
         if (block_round == voting_round + 1):
             print("[SAFETY-Node-{}".format(self.node_id) +
@@ -55,8 +52,13 @@ class Safety:
     #     return self.consecutive(voting_round, qc_round) or self.consecutive(voting_round, timeout_certificate.round)
     #
 
-    # TODO
-    def valid_signature(self, block, timeout_certificate):
+    def valid_signature(self, block, timeout_certificate, signature):
+        # Verify Vote_msg signature based on ledger commit info since this is the object we were signing
+        try:
+            self.public_key[block.author].verify(signature)
+        except nacl.exceptions.BadSignatureError:
+            print("[Block-Tree-Node-{}] BLOCK_IDX: [{}] Signature Invalidated ".format(self.node_id, block.block_id))
+            return False
         return True
 
     def commit_state_id_candidate(self, block_round, block_qc): #TODO
@@ -68,13 +70,13 @@ class Safety:
             return self.ledger.pending_state(block_qc_round)
         return None
 
-    def make_vote(self, block, last_round_tc):
+    def make_vote(self, block, last_round_tc, signature):
         print("[SAFETY-Node-{}".format(self.node_id) + "] Make VOTE for the current proposal")
         qc_round = -1  # No QC until now. #TODO Confirm if it can be set to -1.
         if block.qc is not None:
             qc_round = block.qc.vote_info.round  # Confirm which round it is. Check after creation of a QC.
 
-        if self.valid_signature(block, last_round_tc) and self.safe_to_vote(block.round, qc_round, last_round_tc):
+        if self.valid_signature(block, last_round_tc, signature) and self.safe_to_vote(block.round, qc_round, last_round_tc):
             print("[SAFETY-Node-{}".format(self.node_id) +
                   "] HURRAYY! GREEN SIGNAL RECEIVED. It is SAFE for me to VOTE for the curr proposal now. Let's prepare a VOTE message now")
             self.update_highest_qc_round(qc_round)
@@ -94,7 +96,7 @@ class Safety:
             #Hash is different here. So VOTE_IDX doesn't match for the received votes at the next leader.
             print("[SAFETY-Node-{}".format(self.node_id) + "][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(commit_state_id, hash_vote_info))
             ledger_commit_info = LedgerCommitInfo(commit_state_id, hash_vote_info)
-            msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, None, None)
+            msg = VoteMsg(vote_info, ledger_commit_info, self.block_tree.high_commit_qc, self.node_id, self.sign(ledger_commit_info))
             return msg
         return None
 
@@ -106,10 +108,11 @@ class Safety:
         execution_state_id = str(vote_info.execution_state_id)
         final_str = block + block_round + block_qc_vote_info_id + qc_round + execution_state_id
         print("[SAFETY-Node-{}".format(self.node_id) + "][DEBUG] FINAL STR [{}] before calculating hash".format(final_str))
-
         hash_val = hash(final_str)
         return hash_val
-    #
+
+    def sign(self, ledger_commit_info):
+        return self.private_key.sign(bytes(ledger_commit_info))
 
     #
     # def make_timeout(self, voting_round, highest_quorum_certificate, last_timeout_tc):

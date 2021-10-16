@@ -4,6 +4,7 @@ from node import Node
 from client import Client
 # Node = import_da('node')
 # Client = import_da('client')
+from nacl.signing import SigningKey, VerifyKey
 
 def main():
     config(clock='Lamport', channel = 'fifo')
@@ -28,13 +29,20 @@ def main():
     # Creating a Dictionary of Nodes Vs ID
     id = 0
     nodeDict = {}
+    privateKeyDict = {}
+    publicKeyDict = {}
+
     for n in nodes:
-        nodeDict[id] = n;
-        id+=1
+        nodeDict[id] = n
+        private_key = SigningKey.generate()
+        verify_key = private_key.verify_key
+        privateKeyDict[id] = private_key
+        publicKeyDict[id] = verify_key
+        id += 1
     print("[Runner] fetch 0 node: ", nodeDict[0])
-    for i in range(0,id):
+    for i in range(0, id):
         node_obj = nodeDict[i]
-        setup(node_obj, (i, nodes, nodeDict, conf,clientsDict))
+        setup(node_obj, (i, nodes, nodeDict, conf, clientsDict, privateKeyDict[i], publicKeyDict))
         start(node_obj)
     print("[Runner] Setup Complete for Nodes")
 
