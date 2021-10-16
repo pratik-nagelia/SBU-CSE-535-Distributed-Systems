@@ -120,7 +120,7 @@ class BlockTree:
             temp_str = temp_str + str(vote_info_id)
         if high_qc_signatures is not None:
             temp_str = temp_str + str(high_qc_signatures)
-        print("[Block-Tree] temp_str: {}".format(temp_str), " hash: {}".format(hash(temp_str)))
+        print("[Block-Tree-Node-{}] temp_str: {}".format(self.node_id, temp_str) + " hash: {}".format(hash(temp_str)))
         return hash(temp_str)
 
     def hash_determine_id_of_vote(self, ledger_commit_info):  # TODO
