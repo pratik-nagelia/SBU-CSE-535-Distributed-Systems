@@ -1,3 +1,5 @@
+import datetime;
+
 
 class Ledger:
     def __init__(self, node_id, clientsDict):
@@ -5,11 +7,9 @@ class Ledger:
         self.committed_transactions = {}
         self.pending_transactions = {}
         self.clientsDict = clientsDict
-        filename = 'ledger-' + str(self.node_id) + '.txt'
-        self.file = open(filename, 'a')
+        self.filename = 'ledger-' + str(self.node_id) + '.txt'
 
     def get_pending_transactions(self, block_id):
-        print("^^^^^^^^^^^^^^^^^^^", len(self.pending_transactions) ,"^^^^^^^^^^^^^^^^^^^^^^")
         if block_id in self.pending_transactions:
             return self.pending_transactions[block_id]
 
@@ -21,7 +21,7 @@ class Ledger:
         pass
 
     def pending_state(self, block_id):
-        if(block_id in self.pending_transactions):
+        if block_id in self.pending_transactions:
             pending_txn = self.pending_transactions[block_id]
             print(
                 "[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(
@@ -31,22 +31,20 @@ class Ledger:
             print("[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction doesn't exist".format(self.node_id, block_id))
 
     def commit(self, block_id):
-
-        if(block_id in self.pending_transactions):
+        file = open(self.filename, 'a')
+        if block_id in self.pending_transactions:
             pending_txn = self.pending_transactions[block_id]
-            print(pending_txn.to_string, file=self.file)
+            msg = str(datetime.datetime.now()) + " " + pending_txn.to_string() + '\n'
+            file.write(msg)
             print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
-            # print("~~~~~~~~~~~~~~~~~~~~~", str(self.pending_transactions) , "~~~~~~~~~~~~~~~~~~")
-            #self.pending_transactions.pop(block_id)
-            self.pending_transactions[block_id] = None
-            # print("~~~~~~~~~~~~~~~~~~~~~", str(self.pending_transactions) , "~~~~~~~~~~~~~~~~~~")
-            #del self.pending_transactions[block_id]
+            self.pending_transactions.pop(block_id) #[block_id] = None
             self.committed_transactions[block_id] = pending_txn
             return pending_txn
 
         else:
             print("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
             return None
+        file.close()
 
     def committed_block(self, block_id):
         pass
