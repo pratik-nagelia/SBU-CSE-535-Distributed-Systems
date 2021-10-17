@@ -28,9 +28,6 @@ class Node(process):
         print("[Node-{}] Setup completed ".format(self.node_id))
 
     def output_to_files(string_msg):
-        #string_msg = string_msg + " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        #print(string_msg)
-        #msg = "\n" + str(datetime.datetime.now()) + " " + string_msg #+ "\\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         msg = str(datetime.datetime.now()) + " " + string_msg
         self.common_file.write("\n")
         self.node_file.write("\n")
