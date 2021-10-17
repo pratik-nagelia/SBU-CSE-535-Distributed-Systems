@@ -1,12 +1,26 @@
+import datetime
+
 class MemPool:
 
-    def __init__(self, transactions, node_id):
+    def __init__(self, transactions, node_id, node_specific_file, common_logging):
         self.deduplication_set = set()
         self.pending_transactions = []
         self.in_process_transactions = []
         self.committed_transactions = []
         self.transactions = transactions
         self.node_id = node_id
+        self.node_specific_file = node_specific_file
+        self.common_logging = common_logging
+
+    def output_to_files(self, string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.write(msg)
+        self.common_logging.write(msg)
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        print(msg)
 
     def get_transactions(self):
         if len(self.pending_transactions)==0:
@@ -14,18 +28,18 @@ class MemPool:
         pending_txn = self.pending_transactions.pop(0)
         if pending_txn is None:
             return None
-        print("[MEMPOOL-Node-{}".format(self.node_id),"] Get a pending transaction for proposing: {}".format(pending_txn.to_string()))
+        self.output_to_files("[MEMPOOL-Node-{}] Get a pending transaction for proposing: {}".format(self.node_id, pending_txn.to_string()))
         self.in_process_transactions.append(pending_txn)
         return pending_txn
 
     def add_transaction(self, transaction):
         hash_txn = hash(transaction.to_string())
         if hash_txn in self.deduplication_set:
-            print("[MEMPOOL-Node-{}".format(self.node_id), "] DUPLICATE Transaction: {}".format(transaction.to_string))
+            self.output_to_files("[MEMPOOL-Node-{}] DUPLICATE Transaction: {}".format(self.node_id, transaction.to_string))
             return
         self.deduplication_set.add(hash_txn)
         self.pending_transactions.append(transaction)
-        print("[MEMPOOL-Node-{}".format(self.node_id),"] Transaction added to the pending queue: {}".format(transaction.to_string()))
+        self.output_to_files("[MEMPOOL-Node-{}] Transaction added to the pending queue: {}".format(self.node_id, transaction.to_string()))
 
     def commit_transaction(self, transaction):
         # More logic to be added to commit this transaction and remove it from the in process queue.

@@ -5,11 +5,11 @@ from ledger import Ledger
 from vote_info import VoteInfo
 from vote_message import VoteMsg
 import nacl.exceptions
-
+import datetime
 
 class BlockTree:
 
-    def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc, public_keys, node_id, ledger, F):
+    def __init__(self, pendingBlockTree, pendingVotes, high_qc, high_commit_qc, public_keys, node_id, ledger, F, node_specific_file, common_logging):
         self.pendingBlockTree = pendingBlockTree
         self.pendingVotes = pendingVotes
         self.signers_pending_votes = {}
@@ -19,20 +19,32 @@ class BlockTree:
         self.public_keys = public_keys
         self.ledger = ledger
         self.F = F
+        self.node_specific_file = node_specific_file
+        self.common_logging = common_logging
+
+    def output_to_files(self, string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.write(msg)
+        self.common_logging.write(msg)
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        print(msg)
 
     def process_qc(self, qc):
-        print("\n[Block-Tree-{}] Process QC formed after collecting 2F+! votes for block id [{}]".format(self.node_id,qc.vote_info.id))
+        self.output_to_files("[Block-Tree-{}] Process QC formed after collecting 2F+! votes for block id [{}]".format(self.node_id,qc.vote_info.id))
         committed_txn = None
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:
-            print("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id,
+            self.output_to_files("[Block-Tree-{}] Process QC's ledger_commit_state_id of the parent_node [{}]".format(self.node_id,
                                                                                                        qc.ledger_commit_info.commit_state_id))
             committed_txn = self.ledger.commit(qc.vote_info.parent_id)
             self.prune(qc.vote_info.parent_id)  # TODO Pending
             self.high_commit_qc = self.get_max_round(qc, self.high_commit_qc)
-            print("[Block-Tree-{}] Update high_commit_qc from [{}] to [{}]".format(self.node_id, self.high_commit_qc,
+            self.output_to_files("[Block-Tree-{}] Update high_commit_qc from [{}] to [{}]".format(self.node_id, self.high_commit_qc,
                                                                                    self.high_commit_qc.vote_info.round))
         self.high_qc = self.get_max_round(qc, self.high_qc)
-        print("[Block-Tree-{}] Update high_qc from [{}] to [{}]".format(self.node_id, self.high_qc,
+        self.output_to_files("[Block-Tree-{}] Update high_qc from [{}] to [{}]".format(self.node_id, self.high_qc,
                                                                         self.high_qc.vote_info.round))
         return committed_txn
 
@@ -47,17 +59,17 @@ class BlockTree:
 
     def process_vote(self, vote_msg, sender_id):
         vote_info = vote_msg.vote_info
-        print("\n[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id, vote_info.id))
+        self.output_to_files("[Block-Tree-Node-{}] Process Vote Message with id [{}]".format(self.node_id, vote_info.id))
         if vote_msg.high_commit_qc is not None:
-            print("[Block-Tree-Node-{}] high_commit_qc of current vote message is not null. See if a commit can be made".format(self.node_id))
+            self.output_to_files("[Block-Tree-Node-{}] high_commit_qc of current vote message is not null. See if a commit can be made".format(self.node_id))
             self.process_qc(vote_msg.high_commit_qc)  # For the transaction initiated in the first round, high_commit_qc of vote_msg is null, so no commit to be made in this round.
             # Understand how how_commit_qc will be updated and understand its significance in further rounds.
         vote_idx = self.calculate_hash(vote_msg.ledger_commit_info.commit_state_id, vote_msg.ledger_commit_info.vote_info_hash)  # Determine why hash is being calculated here
         str_vote_idx = str(vote_idx)
-        print("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
+        self.output_to_files("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx,sender_id))
 
         if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
-            print("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
+            self.output_to_files("[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
             self.pendingVotes[str_vote_idx] = []
             self.signers_pending_votes[str_vote_idx] = []
             #if(str_vote_idx in self.pendingVotes):
@@ -69,7 +81,7 @@ class BlockTree:
             self.public_keys[vote_msg.sender].verify(vote_msg.signature)
             collected_votes.append(vote_msg)
         except nacl.exceptions.BadSignatureError:
-            print("[Block-Tree-Node-{}] VOTE_IDX: [{}] Signature Invalidated ".format(self.node_id, str_vote_idx))
+            self.output_to_files("[Block-Tree-Node-{}] VOTE_IDX: [{}] Signature Invalidated ".format(self.node_id, str_vote_idx))
 
         self.pendingVotes[str_vote_idx] = collected_votes
 
@@ -78,18 +90,18 @@ class BlockTree:
         collected_signers.append(sender_id)
         self.signers_pending_votes[str_vote_idx] = collected_signers
 
-        print("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] | No. of votes collected: {}".format(self.node_id, str_vote_idx, len(collected_votes)))
+        self.output_to_files("[Block-Tree-Node-{}] Collect Pending Votes for VOTE_IDX: [{}] | No. of votes collected: {}".format(self.node_id, str_vote_idx, len(collected_votes)))
 
         if len(self.pendingVotes[str_vote_idx]) == (2 * self.F) + 1:
-            print("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW Signers: [{}]================================================================================================================================".format(self.node_id,self.signers_pending_votes[str_vote_idx]))
+            self.output_to_files("[Block-Tree-Node-{}] 2F+1 VOTES received. Forming QUORUM CERTIFICATE NOW Signers: [{}]================================================================================================================================".format(self.node_id,self.signers_pending_votes[str_vote_idx]))
             signatures_list = [] #list(self.pendingVotes[vote_idx])
-            print()
+            #print()
             new_qc = QC(vote_msg.vote_info, vote_msg.ledger_commit_info, signatures_list, vote_msg.sender, self.signers_pending_votes[str_vote_idx], vote_msg.signature) #TODO Signatures missing.
 
             # Not clearing pending votes - corner case scenarios
             return new_qc
         elif len(self.pendingVotes[str_vote_idx]) > (2 * self.F) + 1:
-            print("[Block-Tree-Node-{}] VOTES received > 2F+1 VOTES received. Discard these votes now>>>>DUMP".format(self.node_id))
+            self.output_to_files("[Block-Tree-Node-{}] VOTES received > 2F+1 VOTES received. Discard these votes now>>>>DUMP".format(self.node_id))
 
         return None
 
@@ -127,7 +139,7 @@ class BlockTree:
             temp_str = temp_str + str(vote_info_id)
         if high_qc_signatures is not None:
             temp_str = temp_str + str(high_qc_signatures)
-        print("[Block-Tree-Node-{}] temp_str: {}".format(self.node_id, temp_str) + " hash: {}".format(hash(temp_str)))
+        self.output_to_files("[Block-Tree-Node-{}] temp_str: {}".format(self.node_id, temp_str) + " hash: {}".format(hash(temp_str)))
         return hash(temp_str)
 
     def hash_determine_id_of_vote(self, ledger_commit_info):  # TODO
