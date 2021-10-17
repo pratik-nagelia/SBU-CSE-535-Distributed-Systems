@@ -18,11 +18,11 @@ class Node(process):
         self.F = conf['F']
         self.private_key = private_key
         self.public_keys = public_keys
-        self.ledger = Ledger(self.node_id, clientsDict, self.node_file, self.common_file)
+        self.mempool = MemPool([], self.node_id, self.node_file, self.common_file)
+        self.ledger = Ledger(self.node_id, clientsDict, self.node_file, self.common_file, self.mempool)
         self.block_tree = BlockTree([], {}, None, None, public_keys, self.node_id, self.ledger, self.F, self.node_file, self.common_file)
         self.safety = Safety(private_key, public_keys, -1, -1, self.node_id, self.ledger, self.block_tree, self.node_file, self.common_file)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf, self.safety, nodesDict, self.node_file, self.common_file)
-        self.mempool = MemPool([], self.node_id, self.node_file, self.common_file)
         self.leader_election = LeaderElection(nodesDict, 2 * self.F +1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
         self.clientPublicKeyDict = clientPublicKeyDict
         self.kill_flag = False
@@ -130,7 +130,8 @@ class Node(process):
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
-            self.output_to_files("[Node-{}] Send PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
+            self.output_to_files("[Node-{}] Generated PROPOSAL message ({})".format(self.node_id, proposal))
+            self.output_to_files("[Node-{}] Sending PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
             send(("PROPOSAL", proposal, self.node_id), to=nodesDict.values())
 
     def valid_client_signature(signature, client_id):

@@ -38,7 +38,7 @@ class BlockTree:
 
     def process_qc(self, qc):
         self.output_to_files(
-            "[Block-Tree-{}] Process QC formed after collecting 2F+! votes for block id [{}]".format(self.node_id,
+            "[Block-Tree-{}] Process QC formed after collecting 2F+1 votes for block id [{}]".format(self.node_id,
                                                                                                      qc.vote_info.id))
         committed_txn = None
         if qc is not None and qc.ledger_commit_info.commit_state_id is not None:

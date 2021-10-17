@@ -5,3 +5,6 @@ class Block:
         self.payload = payload
         self.qc = qc
         self.block_id = block_id
+
+    def __str__(self):
+        return "(author=" + str(self.author)+",round=" + str(self.round)+",payload=" + str(self.payload)+",qc=" + str(self.qc)+",block_id=" + str(self.block_id)+")"
