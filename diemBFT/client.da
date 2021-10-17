@@ -9,6 +9,7 @@ class Client(process):
         self.received_flag = False
         self.private_key = private_key
         self.count = 0
+        self.txn_set = {}
 
     def initiate_new_transaction():
         self.transaction_id += 1
@@ -23,6 +24,7 @@ class Client(process):
             self.received_flag = False
             total_rounds -= 1
             txn = initiate_new_transaction()
+            self.txn_set.append(txn)
             client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
             send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
@@ -35,3 +37,11 @@ class Client(process):
         if self.count >= (conf['nodes']):
             send(("KILL", self.client_id), to=nodes)
             self.received_flag = True
+
+
+    def check_commited_transaction(self):
+        for txn in self.txn_set:
+            client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
+            send(("CHECK_COMMITTED", client_req), to=nodes)
+            output('[CLIENT] Initiated Check Commited transaction sent to all nodes. Waiting for a reply....')
+            time.sleep(1)
