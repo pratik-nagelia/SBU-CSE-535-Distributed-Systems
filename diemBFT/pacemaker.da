@@ -1,16 +1,20 @@
 from block_tree import BlockTree
+from timeout_message import TimeoutMessage
 import datetime
 
 class Pacemaker:
-    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, delta, node_specific_file, common_logging):
+    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, conf, safety, nodes_dict, node_specific_file, common_logging):
         self.current_round = current_round
         self.last_round_tc = last_round_tc
         self.pending_timeouts = pending_timeouts
         self.block_tree = block_tree
         self.node_id = node_id
-        self.delta = delta
+        self.delta = conf['delta']
+        self.F = conf['F']
         self.node_specific_file = node_specific_file
         self.common_logging = common_logging
+        self.safety = safety
+        self.nodes_dict = nodes_dict
 
     def output_to_files(self, string_msg):
         msg = str(datetime.datetime.now()) + " " + string_msg
@@ -22,6 +26,10 @@ class Pacemaker:
         self.node_specific_file.write("\n")
         print(msg)
 
+    def get_round_timer(self, r):
+        return 4 * self.delta
+
+
     def stop_timer(self, current_round):
         pass
 
@@ -30,6 +38,31 @@ class Pacemaker:
         self.output_to_files("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
 
+    def local_timeout_round(self):
+        timeout_info = self.safety.make_timeout(self.current_round, self.block_tree.high_qc, self.last_round_tc)
+        tmo_msg = TimeoutMessage(timeout_info, self.last_round_tc, self.block_tree.high_commit_qc)
+        send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
+
+    def process_remote_timeout(self, tmo):
+        tmo_info = tmo.tmo_info
+        if tmo_info.round < self.current_round:
+            return None
+
+        if tmo_info.sender not in self.pending_timeouts[tmo_info.round].senders:
+            self.pending_timeouts[tmo_info.round].append(tmo_info)
+            self.pending_timeouts_senders[tmo_info.block_round].add(tmo_info.sender)
+
+        if len(self.pending_timeouts[tmo_info.round].senders) == self.F + 1:
+            self.stop_timer(self.current_round)
+            self.local_timeout_round()
+
+        if len(self.pending_timeouts[tmo_info.block_round].senders) == (2 * self.F) + 1:
+            high_qc_rounds_vector = [tmo_info.high_qc.vote_info.round for tmo_info in
+                                     self.pending_timeouts[tmo_info.round] if tmo_info.high_qc is not None]
+            signature_list = [tmo_info.signature for tmo_info in self.pending_timeouts[tmo_info.block_round]]
+            return TimeoutCertificate(tmo_info.round, high_qc_rounds_vector, signature_list)
+
+        return None
 
     def advance_round_tc(self, tc):
         if tc is None or tc.round < self.current_round:
@@ -44,15 +77,3 @@ class Pacemaker:
         self.last_round_tc = None
         self.start_timer(qc.vote_info.round + 1)
         return True
-
-#    def get_round_timer(self, r):
-#        return round_timer_formula
-
-   # def local_timeout_round(self):
-        # timeout_info = Safety.make_timeout(self.current_round, block_tree.high_qc, last_round_tc)
-        # broadcast TimeoutMessage(timeout_info, last_round_tc, block_tree.high_commit_qc)
-        # pass
-
-#    def process_remote_timeout(self, tmo):
-#        tmo_info = tmo.tmo_info
-

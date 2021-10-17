@@ -1,12 +1,13 @@
+import nacl.exceptions
 from block_tree import BlockTree
-from proposal_message import ProposalMessage
-from pacemaker import Pacemaker
-from mem_pool import MemPool
 from leader_election import LeaderElection
-from safety import Safety
 from ledger import Ledger
 import nacl.exceptions
 import datetime
+from mem_pool import MemPool
+from pacemaker import Pacemaker
+from proposal_message import ProposalMessage
+from safety import Safety
 
 
 class Node(process):
@@ -20,7 +21,7 @@ class Node(process):
         self.ledger = Ledger(self.node_id, clientsDict, self.node_file, self.common_file)
         self.block_tree = BlockTree([], {}, None, None, public_keys, self.node_id, self.ledger, self.F, self.node_file, self.common_file)
         self.safety = Safety(private_key, public_keys, -1, -1,self.node_id, self.ledger, self.block_tree, self.node_file, self.common_file)
-        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf['delta'], self.node_file, self.common_file)
+        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf, self.safety, nodesDict, self.node_file, self.common_file)
         self.mempool = MemPool([], self.node_id, self.node_file, self.common_file)
         self.leader_election = LeaderElection(nodesDict, 2 * self.F +1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
         self.clientPublicKeyDict = clientPublicKeyDict
@@ -65,6 +66,16 @@ class Node(process):
         self.output_to_files(string)
         self.process_vote_msg(vote_msg, sender_id)
 
+    def receive(msg=("TIMEOUT", tmo_msg, sender_id), from_=sender):
+        print("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT"),
+              " from Node: [{}] ".format(sender_id))
+        self.process_timeout_message(tmo_msg)
+
+    def receive(msg=("LOCAL_TIMEOUT", local_tmo, sender_id), from_=sender):
+        print("[Node-{}] Received {} message".format(self.node_id, "LOCAL_TIMEOUT"),
+              " from Node: [{}] ".format(sender_id))
+        self.pacemaker.local_timeout_round(local_tmo)
+
     def receive(msg=("KILL", client_id), from_=sender):
         string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL")+" from Client ID: [{}] ".format(client_id)
         self.output_to_files(string)
@@ -90,25 +101,21 @@ class Node(process):
         if vote_msg is not None:
             next_leader_id = leader_election.get_leader(current_round + 1)
             self.output_to_files("[Node-{}] Send the prepared VOTE to the next leader [{}] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ".format(self.node_id, next_leader_id))
-
             next_leader = self.nodesDict[next_leader_id]
             send(("VOTE", vote_msg, self.node_id), to=next_leader)
 
     def process_vote_msg(vote_msg, sender_id):
         self.output_to_files(("[Node-{}] Start processing the VOTE message".format(self.node_id)))
         qc = self.block_tree.process_vote(vote_msg, sender_id)
-        #print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
+        # print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
         if qc is not None:
             self.process_certificate_qc(qc)
-            # if no pending transactions, dont process a new round evnt
-            #if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
-            #     return
             self.process_new_round_event(None, None)
 
     def process_certificate_qc(qc):
         if qc is not None:
             committed_txn = self.block_tree.process_qc(qc)
-            if committed_txn is not None: # and self.node_id == qc.author:
+            if committed_txn is not None:  # and self.node_id == qc.author:
                 client_id = committed_txn.fetch_client_id()
                 output_to_files(("[Node-{}] Notify client of committed transaction [{}] to client [{}]".format(self.node_id, committed_txn.to_string(), client_id)))
                 send(("TRANSACTION_COMMITTED", committed_txn.to_string()), to=self.clientsDict[client_id])
@@ -132,6 +139,12 @@ class Node(process):
             return False
         return True
 
-    #
-    # def sign(self, block_id):
-    #     return bytes(str(block_id), encoding='utf-8')
+    def process_timeout_message(tmo_msg):
+        if tmo_msg is not None:
+            self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
+            self.process_certificate_qc(tmo_msg.high_commit_qc)
+            self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)
+            tc = self.pacemaker.process_remote_timeout(tmo_msg)
+            if tc is not None:
+                self.pacemaker.advance_round_tc(tc)
+                self.process_new_round_event(tc)
