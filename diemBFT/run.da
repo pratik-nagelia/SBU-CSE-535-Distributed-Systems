@@ -7,6 +7,7 @@ from nacl.signing import SigningKey, VerifyKey
 
 class Run(process):
     def setup(conf):
+        output("\n \n \n **** STARTING TEST **** : ", conf['test_name'])
         self.nodes = new(Node, num=conf['nodes'])
         output("[Runner] Number of Nodes Created: ", len(nodes))
         self.clients = new(Client, num=conf['clients'])
@@ -17,7 +18,6 @@ class Run(process):
         self.client_private_key_dict = {}
         setup_clients()
         setup_nodes()
-        output("SETUP COMPLETE")
 
     def setup_nodes():
         id = 0
