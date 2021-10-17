@@ -4,7 +4,6 @@ from node import Node
 from client import Client
 from nacl.signing import SigningKey, VerifyKey
 
-
 def main():
     config(clock='Lamport', channel = 'fifo')
 
@@ -17,10 +16,16 @@ def main():
     print("[Runner] Number of Clients Intiated: ", len(clients))
 
     clientsDict = {}
+    clientPrivateKeyDict = {}
+    clientPublicKeyDict = {}
     id = 0
     for c in clients:
         clientsDict[id] = c
-        setup(c, (nodes, id, conf))
+        private_key = SigningKey.generate()
+        verify_key = private_key.verify_key
+        clientPrivateKeyDict[id] = private_key
+        clientPublicKeyDict[id] = verify_key
+        setup(c, (nodes, id, conf, private_key))
         start(c)
         id += 1
 
@@ -32,16 +37,17 @@ def main():
     publicKeyDict = {}
 
     for n in nodes:
-        nodeDict[id] = n;
+        nodeDict[id] = n
         private_key = SigningKey.generate()
         verify_key = private_key.verify_key
         privateKeyDict[id] = private_key
         publicKeyDict[id] = verify_key
-        id+=1
+        id += 1
+
     print("[Runner] fetch 0 node: ", nodeDict[0])
-    for i in range(0,id):
+    for i in range(0, id):
         node_obj = nodeDict[i]
-        setup(node_obj, (i, nodes, nodeDict, conf,clientsDict, private_key[i], publicKeyDict))
+        setup(node_obj, (i, nodes, nodeDict, conf, clientsDict, privateKeyDict[i], publicKeyDict, clientPublicKeyDict))
         start(node_obj)
     print("[Runner] Setup Complete for Nodes")
 

@@ -4,5 +4,5 @@ class LedgerCommitInfo:
         self.vote_info_hash = vote_info_hash
 
     def __bytes__(self):
-        ledgerCommitInfo =  str(self.commit_state_id) + str(self.vote_info_hash)
+        ledgerCommitInfo = str(self.commit_state_id) + str(self.vote_info_hash)
         return bytes(ledgerCommitInfo, encoding='utf-8')
