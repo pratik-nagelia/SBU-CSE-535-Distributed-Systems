@@ -1,8 +1,8 @@
-{
+[{
+  "test_name" : "Test 1 : Client 1 Nodes 4, 4 Transactions",
   "F": 1,
   "nodes": 4,
-  "clients": 1,
-  "initial_leader": 0,
+  "clients": 2,
   "delta" : 20000,
   "client_requests" : 4
-}
+}]

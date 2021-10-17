@@ -29,11 +29,9 @@ class Client(process):
             time.sleep(1)
         await self.received_flag
 
-
-
     def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
         print("[CLIENT- {}] Received Committed Transaction : {}".format(self.client_id, payload))
         self.count += 1
-        if self.count >= 4:
+        if self.count >= (conf['nodes']):
             send(("KILL", self.client_id), to=nodes)
             self.received_flag = True
