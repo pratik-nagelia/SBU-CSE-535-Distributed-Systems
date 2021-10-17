@@ -1,0 +1,17 @@
+import json
+import sys
+from run import Run
+
+
+def main():
+    config(clock='Lamport', channel='fifo')
+    with open(sys.argv[1]) as config_file:
+        conf = json.load(config_file)
+
+    run = new(Run, num=1)
+    setup(run, (conf,))
+    start(run)
+
+
+if __name__ == '__main__':
+    main()
