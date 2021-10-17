@@ -38,7 +38,7 @@ class Safety:
 
     def safe_to_vote(self, block_round, qc_round, timeout_certificate):
         print("[SAFETY-Node-{}".format(self.node_id) + "] Check if it's SAFE TO VOTE for the current proposal")
-        if (block_round <= max(self.highest_vote_round, qc_round)):
+        if block_round <= max(self.highest_vote_round, qc_round):
             return False
         print("[SAFETY-Node-{}".format(self.node_id) +
               "] safe_to_vote. The received block was proposed in a round after the last voting or quorum round in which I participated")
@@ -58,13 +58,13 @@ class Safety:
             return False
         return True
 
-    def commit_state_id_candidate(self, block_round, block_qc):  # TODO
+    def commit_state_id_candidate(self, block_round, block_qc):
         block_qc_round = -1
-        if (block_qc is not None):
+        if block_qc is not None:
             block_qc_round = block_qc.vote_info.round
         print("[SAFETY-Node-{}] Fetch commit state id candidate for block_qc_round [{}]".format(self.node_id,
                                                                                                 block_qc_round))
-        if (self.consecutive(block_round, block_qc_round)):
+        if self.consecutive(block_round, block_qc_round):
             return self.ledger.pending_state(block_qc_round)
         return None
 
@@ -84,17 +84,15 @@ class Safety:
             if block.qc is not None:
                 block_qc_vote_info_id = block.qc.vote_info.id
             vote_info = VoteInfo(block.block_id, block.round, block_qc_vote_info_id, qc_round,
-                                 self.ledger.pending_state(block.block_id))  # => Last function needs to be implemented
+                                 self.ledger.pending_state(block.block_id))
             print(
                 "[SAFETY-Node-{}".format(self.node_id) + "] Prepared VOTE message [{}] for the current proposal".format(
                     vote_info))
 
-            commit_state_id = self.commit_state_id_candidate(block.round, block.qc)  # Commit # TODO
+            commit_state_id = self.commit_state_id_candidate(block.round, block.qc)
             if commit_state_id is None:
                 commit_state_id = -1
-            # print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the commit_state_id [{}]".format(commit_state_id))
             hash_vote_info = self.calculate_hash(vote_info)
-            # print("[SAFETY-Node-{}".format(self.node_id),"][DEBUG] Check Hash value of the prepared VOTE info [{}] for the current proposal".format(hash_vote_info))
             # Hash is different here. So VOTE_IDX doesn't match for the received votes at the next leader.
             print("[SAFETY-Node-{}".format(self.node_id) + "][DEBUG] commit_state_id: [{}] hash_vote_info: [{}]".format(
                 commit_state_id, hash_vote_info))
@@ -126,11 +124,3 @@ class Safety:
 
     def sign(self, ledger_commit_info):
         return self.private_key.sign(bytes(ledger_commit_info))
-
-    #
-    # def make_timeout(self, voting_round, highest_quorum_certificate, last_timeout_tc):
-    #     qc_round = highest_quorum_certificate.vote_info.round
-    #     if(self.valid_signature(highest_quorum_certificate, last_timeout_tc) and self.safe_to_timeout(voting_round, qc_round, last_timeout_tc)):
-    #         increase_highest_vote_round(voting_round)
-    #         return TimeoutInfo(voting_round, highest_quorum_certificate)
-    #     return None

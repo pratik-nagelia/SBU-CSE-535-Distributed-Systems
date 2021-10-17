@@ -142,7 +142,3 @@ class Node(process):
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
                 self.process_new_round_event(tc)
-
-    #
-    # def sign(self, block_id):
-    #     return bytes(str(block_id), encoding='utf-8')
