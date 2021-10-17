@@ -1,7 +1,7 @@
 from ledger_commit_info import LedgerCommitInfo
 
 class QC:
-    def __init__(self, vote_info, ledger_commit_info, signatures, author, signers,author_signature):
+    def __init__(self, vote_info, ledger_commit_info, signatures, author, signers, author_signature):
         self.vote_info = vote_info
         self.ledger_commit_info = ledger_commit_info
         self.signatures = signatures
@@ -13,4 +13,7 @@ class QC:
         qc = str(self.vote_info) + str(self.ledger_commit_info) + str(self.signatures) + str(self.author) + str(
             self.author_signature)
         return bytes(qc, encoding='utf-8')
+
+    def __str__(self):
+        return "(" + str(self.vote_info) + str(self.ledger_commit_info) + ", Author=" + str(self.author) + ")"
 

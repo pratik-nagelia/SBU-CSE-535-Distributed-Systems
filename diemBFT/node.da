@@ -20,7 +20,7 @@ class Node(process):
         self.public_keys = public_keys
         self.ledger = Ledger(self.node_id, clientsDict, self.node_file, self.common_file)
         self.block_tree = BlockTree([], {}, None, None, public_keys, self.node_id, self.ledger, self.F, self.node_file, self.common_file)
-        self.safety = Safety(private_key, public_keys, -1, -1,self.node_id, self.ledger, self.block_tree, self.node_file, self.common_file)
+        self.safety = Safety(private_key, public_keys, -1, -1, self.node_id, self.ledger, self.block_tree, self.node_file, self.common_file)
         self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf, self.safety, nodesDict, self.node_file, self.common_file)
         self.mempool = MemPool([], self.node_id, self.node_file, self.common_file)
         self.leader_election = LeaderElection(nodesDict, 2 * self.F +1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
@@ -36,6 +36,8 @@ class Node(process):
         self.common_file.write(msg)
         self.common_file.write("\n")
         self.node_file.write("\n")
+        self.node_file.flush()
+        self.common_file.flush()
         print(msg)
 
     def run():

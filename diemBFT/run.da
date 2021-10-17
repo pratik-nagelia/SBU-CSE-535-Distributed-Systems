@@ -33,8 +33,8 @@ class Run(process):
             id += 1
         for i in range(0, id):
             node_obj = nodesDict[i]
-            filename = "node_:"+str(i)+".txt"
-            common_logging = "logs.txt"
+            filename = "node_"+str(i)+".log"
+            common_logging = "diemBFT_run.log"
             setup(node_obj, (i, nodesDict, conf, clientsDict, private_key_dict[i], public_key_dict, client_public_key_dict, filename, common_logging))
 
     def setup_clients():

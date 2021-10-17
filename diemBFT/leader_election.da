@@ -7,7 +7,7 @@ class LeaderElection:
 
 
     def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id, node_specific_file, common_logging):
-        self.nodesDict = nodesDict #-> Set of nodes
+        self.nodesDict = nodesDict
         self.window_size = window_size
         self.exclude_size = exclude_size
         self.reputation_leaders = {}  # => Dict
@@ -25,6 +25,8 @@ class LeaderElection:
         self.common_logging.write(msg)
         self.common_logging.write("\n")
         self.node_specific_file.write("\n")
+        self.node_specific_file.flush()
+        self.common_logging.flush()
         print(msg)
 
     def elect_reputation_leader(self, quorum_certificate):
@@ -78,9 +80,9 @@ class LeaderElection:
         self.output_to_files("[Leader-Election-{}] Updated Leader".format(self.node_id))
 
     def get_leader(self, current_round):
-        if current_round in self.reputation_leaders:
-             next_leader = self.reputation_leaders[current_round]
-             return next_leader
+        # if current_round in self.reputation_leaders:
+        #      next_leader = self.reputation_leaders[current_round]
+        #      return next_leader
         next_leader = self.round_robin_leader(current_round)
         self.output_to_files("[Leader-Election-{}] Get_Leader for round [{}], New Leader: [{}]".format(self.node_id, current_round, next_leader))
         # Returning index instead of the leader directly to handle getLeader

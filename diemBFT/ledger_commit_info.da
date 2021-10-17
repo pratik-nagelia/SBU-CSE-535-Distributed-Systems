@@ -7,3 +7,5 @@ class LedgerCommitInfo:
         ledgerCommitInfo = str(self.commit_state_id) + str(self.vote_info_hash)
         return bytes(ledgerCommitInfo, encoding='utf-8')
 
+    def __str__(self):
+        return "(LegderCommitInfo=" + str(self.commit_state_id) + ", " + str(self.vote_info_hash) + ")"

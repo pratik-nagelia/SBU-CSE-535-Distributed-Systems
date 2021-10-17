@@ -28,6 +28,8 @@ class Safety:
         self.common_logging.write(msg)
         self.common_logging.write("\n")
         self.node_specific_file.write("\n")
+        self.node_specific_file.flush()
+        self.common_logging.flush()
         print(msg)
 
     def increase_highest_vote_round(self, voting_round):
