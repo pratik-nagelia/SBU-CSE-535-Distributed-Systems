@@ -1,9 +1,0 @@
-from qc import QC
-from author import Author
-
-class TimeoutInfo:
-    def setup(_round:int, high_qc:QC, sender:Author, signature:str):
-        self.round = _round
-        self.high_qc = QC
-        self.sender = Author
-        self.signature = signature
