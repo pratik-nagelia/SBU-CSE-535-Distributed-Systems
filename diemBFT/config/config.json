@@ -4,11 +4,5 @@
   "nodes": 4,
   "clients": 2,
   "delta" : 20000,
-<<<<<<< HEAD
-  "client_requests" : 2
+  "client_requests" : 3
 }]
-=======
-  "client_requests" : 4
-}]
-
->>>>>>> 23b6ceceb252ae74448680e7fc7f4fa7a678143d

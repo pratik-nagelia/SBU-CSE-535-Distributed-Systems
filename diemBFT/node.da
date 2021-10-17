@@ -50,7 +50,6 @@ class Node(process):
             self.output_to_files(string)
 
             self.mempool.add_transaction(payload)
-            print(type(payload))
             pending_txn = self.mempool.get_transactions()
             if pending_txn is None:
                 return
@@ -84,10 +83,8 @@ class Node(process):
         self.output_to_files(("[Node-{}] proposal.block.round: [{}] sender_id: [{}] proposal.block.author [{}]").format(self.node_id, proposal.block.round, sender_id, proposal.block.author))
         if proposal.block.round != current_round or sender_id != leader or proposal.block.author != leader:
             temp_str = "[Node] [{}] Reject current proposal sent by sender: [{}]".format(self.node_id, sender_id)
-            #print(temp_str)
             self.output_to_files(temp_str)
             return
-        #print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
         self.block_tree.execute_and_insert(proposal.block)
         vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc, proposal.signature)
         if vote_msg is not None:

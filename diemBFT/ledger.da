@@ -11,9 +11,6 @@ class Ledger:
         self.filename = 'ledger-' + str(self.node_id) + '.txt'
         self.node_specific_file = node_specific_file
         self.common_logging = common_logging
-        #self.file = open(filename, 'a')
-        #raw.seek(0)  # <- This is the missing piece
-        #raw.truncate()
 
     def output_to_files(self, string_msg):
         msg = str(datetime.datetime.now()) + " " + string_msg
