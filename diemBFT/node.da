@@ -9,7 +9,7 @@ import nacl.exceptions
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict, conf, clientsDict, private_key, public_keys, clientPublicKeyDict):
+    def setup(node_id: int, nodesDict, conf, clientsDict, private_key, public_keys, clientPublicKeyDict):
         self.nodesDict = nodesDict
         self.F = conf['F']
         self.private_key = private_key
@@ -21,12 +21,13 @@ class Node(process):
         self.mempool = MemPool([], self.node_id)
         self.leader_election = LeaderElection(nodesDict, 2 * self.F +1, self.F, {}, self.pacemaker, self.ledger, self.node_id)
         self.clientPublicKeyDict = clientPublicKeyDict
+        self.kill_flag = False
         print("[Node-{}] Setup completed ".format(self.node_id))
 
 
     def run():
         print("[Node-{}] Running Node".format(self.node_id))
-        await False
+        await self.kill_flag
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -46,6 +47,10 @@ class Node(process):
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
         print("[Node-{}] Received {} message".format(self.node_id, "VOTE"), " from Node: [{}] for the proposal sent in block[{}]".format(sender_id, vote_msg.vote_info.id))
         self.process_vote_msg(vote_msg, sender_id)
+
+    def receive(msg=("KILL", client_id), from_=sender):
+        print("[Node-{}] Received {} Notification".format(self.node_id, "KILL"), " from Client ID: [{}] ".format(client_id))
+        self.kill_flag = True
 
     def process_proposal_msg(proposal, sender_id):
         print("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
@@ -87,8 +92,6 @@ class Node(process):
                 client_id = committed_txn.fetch_client_id()
                 print("[Node-{}] Notify client of committed transaction [{}] to client [{}]".format(self.node_id, committed_txn.to_string(), client_id))
                 send(("TRANSACTION_COMMITTED", committed_txn.to_string()), to=self.clientsDict[client_id])
-
-            # TODO Uncomment below
             self.leader_election.update_leaders(qc)
             self.pacemaker.advance_round_qc(qc)
 
@@ -99,7 +102,7 @@ class Node(process):
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             print("[Node-{}] Send PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
-            send(("PROPOSAL", proposal, self.node_id), to=nodes)
+            send(("PROPOSAL", proposal, self.node_id), to=nodesDict.values())
 
     def valid_client_signature(signature, client_id):
         try:
