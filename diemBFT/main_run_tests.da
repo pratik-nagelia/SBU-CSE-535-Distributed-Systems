@@ -8,7 +8,7 @@ def main():
     config(clock='Lamport', channel='fifo')
     with open(sys.argv[1]) as config_file:
         configs = json.load(config_file)
-        
+
     for conf in configs:
         run = new(Run, num=1)
         setup(run, (conf,))
