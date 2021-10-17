@@ -47,7 +47,7 @@ def main():
     print("[Runner] fetch 0 node: ", nodeDict[0])
     for i in range(0, id):
         node_obj = nodeDict[i]
-        setup(node_obj, (i, nodes, nodeDict, conf, clientsDict, privateKeyDict[i], publicKeyDict, clientPublicKeyDict))
+        setup(node_obj, (i, nodeDict, conf, clientsDict, privateKeyDict[i], publicKeyDict, clientPublicKeyDict))
         start(node_obj)
     print("[Runner] Setup Complete for Nodes")
 
