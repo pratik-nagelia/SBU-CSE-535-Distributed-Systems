@@ -1,11 +1,13 @@
 from transaction import Transaction
+from client_request import ClientRequest
 import time
 
 
 class Client(process):
-    def setup(nodes: set, client_id: int, conf):
+    def setup(nodes: set, client_id: int, conf, private_key):
         self.transaction_id = -1
         self.received_flag = False
+        self.private_key = private_key
 
     def initiate_new_transaction():
         self.transaction_id += 1
@@ -20,8 +22,8 @@ class Client(process):
             self.received_flag = False
             total_rounds -= 1
             txn = initiate_new_transaction()
-            msg = txn.to_string()
-            send(("TXN", txn), to=nodes)
+            client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
+            send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
             # time.sleep(5)
             await (self.received_flag is True)

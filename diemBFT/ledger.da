@@ -1,3 +1,4 @@
+import datetime
 
 class Ledger:
     def __init__(self, node_id, clientsDict):
@@ -45,7 +46,7 @@ class Ledger:
             #if pending_txn is None:
             #    return None
             print(pending_txn.to_string, file=self.file)
-            print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
+            print("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn.to_string()))
             self.pending_transactions[block_id] = None
             #del self.pending_transactions[block_id]
             self.committed_transactions[block_id] = pending_txn
@@ -58,7 +59,7 @@ class Ledger:
     def committed_block(self, block_id):
         if block_id in self.committed_transactions:
             committed_txn = self.committed_transactions[block_id]
-            print("[Ledger-Node-{}] Check committed transaction for block [{}]: [{}]".format(self.node_id, block_id, committed_txn))
+            print("[Ledger-Node-{}] Check committed transaction for block [{}]: [{}]".format(self.node_id, block_id, committed_txn.to_string()))
             return self.saveBlocks[block_id]
         else:
             print("[Ledger-Node-{}] Transaction corresponding to [{}] has not been committed yet".format(self.node_id, block_id))
