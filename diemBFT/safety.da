@@ -107,7 +107,7 @@ class Safety:
             qc_round = high_qc.vote_info.round
             if self.valid_signature(high_qc, last_tc) and self.safe_to_timeout(round, qc_round, last_tc):
                 self.increase_highest_vote_round(round)
-                return TimeoutInfo(round, high_qc, self.node_id, self.signTimeoutInfo(round, high_qc.round))
+                return TimeoutInfo(round, high_qc, self.node_id, self.sign_timeout_info(round, high_qc.round))
         return None
 
     def calculate_hash(self, vote_info):
@@ -125,5 +125,5 @@ class Safety:
     def sign(self, ledger_commit_info):
         return self.private_key.sign(bytes(ledger_commit_info))
 
-    def signTimeoutInfo(self, round, highqc_round):
-        return self.private_key.sign(bytes(str(round)+str(highqc_round)))
+    def sign_timeout_info(self, round, high_qc_round):
+        return self.private_key.sign(bytes(str(round) + str(high_qc_round)))
