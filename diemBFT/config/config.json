@@ -4,7 +4,9 @@
   "nodes": 4,
   "clients": 2,
   "delta" : 20000,
-  "client_requests" : 4
+  "client_requests" : 4,
+  "client_delay" : 2,
+  "seed" : 1
 },
 {
   "test_name" : "Test 1 : F 2, N 7 Scenario",
@@ -12,5 +14,7 @@
   "nodes": 7,
   "clients": 2,
   "delta" : 20000,
-  "client_requests" : 2
+  "client_requests" : 2,
+  "client_delay" : 2,
+  "seed" : 1
 }]
