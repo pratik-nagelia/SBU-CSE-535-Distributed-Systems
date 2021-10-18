@@ -75,30 +75,30 @@ Non Blank Non-comment lines of code
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-DAL                             22            127              1            743
-Markdown                         1             36              0             59
+DAL                             22            142              1            889
+JSON                             2              0              0             90
+Markdown                         1             30              0             79
 Python                           1              3              1             36
-JSON                             1              0              0             16
 -------------------------------------------------------------------------------
-SUM:                            25            166              2            854
+SUM:                            26            175              2           1094
 -------------------------------------------------------------------------------
 ```
-Algorithm: 743  
-Other:  
-Total:   
+Algorithm: 889  
+Other:  205
+Total:   1094
 (Numbers generated using CLOC https://github.com/AlDanial/cloc) 
 
-Approximately __ Lines are the main algorithm. Remaining __ functionalities interleaved with the algorithm.
+Approximately 622 Lines (Algo) are the main algorithm. Remaining 266 (0.30%) functionalities interleaved with the algorithm.
 
 ### Language Feature Usage
 
-list comprehensions: 0  
-dictionary comprehensions: 0  
-set comprehensions: 0  
-aggregations: 0  
-quantifications: 0  
-await statements: 0  
-receive handlers: 0  
+list comprehensions: 6  
+dictionary comprehensions:  8 
+set comprehensions:   
+aggregations:   
+quantifications:   
+await statements: 3  
+receive handlers: 7  
 
 ### Contributions
 
