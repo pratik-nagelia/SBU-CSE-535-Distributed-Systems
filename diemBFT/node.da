@@ -144,10 +144,11 @@ class Node(process):
                 self.pacemaker.advance_round_tc(tc)
                 self.process_new_round_event(tc)
 
-    def valid_timeout_message(self, tmo_msg):
+    def valid_timeout_message(tmo_msg):
         try:
             self.public_keys[tmo_msg.tmo_info.sender].verify(tmo_msg.tmo_info.signature)
         except nacl.exceptions.BadSignatureError:
             print("[Node-{}] Signature Invalidated for Timeout Message from Node- {} ".format(self.node_id, tmo_msg.tmo_info.sender))
             return False
         return True
+
