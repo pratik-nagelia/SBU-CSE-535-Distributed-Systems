@@ -30,35 +30,49 @@ class MemPool:
         if len(self.pending_transactions)==0:
             return None
         pending_txn = self.pending_transactions.pop(0)
-
-        while pending_txn is not None and self.transaction_status[hash(pending_txn.to_string())] is not 'PENDING':
+        not_pending_txn = ['IN_PROGRESS', 'COMMITTED']
+        while len(self.pending_transactions)>0 and pending_txn is not None and self.get_transaction_status not in not_pending_txn:
             pending_txn = self.pending_transactions.pop(0)
 
         if pending_txn is None:
             return None
         self.output_to_files("[MEMPOOL-Node-{}] Get a pending transaction for proposing: {}".format(self.node_id, pending_txn.to_string()))
-        self.in_process_transactions.append(pending_txn)
-        hash_txn = hash(pending_txn.to_string())
-        self.transaction_status[hash_txn] = 'IN_PROGRESS'
+        #self.in_process_transactions.append(pending_txn)
+
+        self.update_transaction_status(pending_txn, 'IN_PROGRESS')
+        #hash_txn = hash(pending_txn.to_string())
+        #self.transaction_status[hash_txn] = 'IN_PROGRESS'
         return pending_txn
 
     def add_transaction(self, transaction):
         hash_txn = hash(transaction.to_string())
-        if hash_txn in self.deduplication_set:
+        status = self.get_transaction_status(transaction)
+        if hash_txn in self.deduplication_set or status is not "NEW_TRANSACTION":
             self.output_to_files("[MEMPOOL-Node-{}] DUPLICATE Transaction: {}".format(self.node_id, transaction.to_string))
             return
         self.deduplication_set.add(hash_txn)
         self.pending_transactions.append(transaction)
-        self.transaction_status[hash_txn] = 'PENDING'
+        self.update_transaction_status(transaction, "PENDING") #self.transaction_status[hash_txn] = 'PENDING'
         self.output_to_files("[MEMPOOL-Node-{}] Transaction added to the pending queue: {}".format(self.node_id, transaction.to_string()))
 
-    def commit_transaction(self, transaction):
+    '''def commit_transaction(self, transaction):
         hash_txn = hash(transaction.to_string())
-        self.transaction_status[hash_txn] = 'COMMITTED'
+        self.transaction_status[hash_txn] = 'COMMITTED'''''
 
-    def change_status(self, transaction):
+    def update_transaction_status(self, transaction, new_status):
+        if transaction is None:
+            return
+        self.output_to_files("[MEMPOOL-Node-{}] Update Status of TXN: {} to {}".format(self.node_id, transaction.to_string(), new_status))
         hash_txn = hash(transaction.to_string())
-        self.transaction_status[hash_txn] = 'IN_PROGRESS'
+        self.transaction_status[hash_txn] = new_status
+
+    def get_transaction_status(self, transaction):
+        if transaction is None:
+            return "IGNORE"
+        hash_txn = hash(transaction.to_string())
+        if hash_txn not in self.transaction_status:
+            return "NEW_TRANSACTION"
+        return self.transaction_status[hash_txn]
 
     def check_txn_status(self, transaction):
         hash_txn = hash(transaction.to_string())

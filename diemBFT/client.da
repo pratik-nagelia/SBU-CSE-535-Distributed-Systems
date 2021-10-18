@@ -9,6 +9,8 @@ class Client(process):
         self.received_flag = False
         self.private_key = private_key
         self.count = 0
+        self.committed_txn = 0
+        self.next_transaction = False
 
     def initiate_new_transaction():
         self.transaction_id += 1
@@ -20,18 +22,26 @@ class Client(process):
         total_rounds = conf['client_requests']
 
         while total_rounds > 0:
+            self.committed_txn = 0
+            self.next_transaction = False
             self.received_flag = False
             total_rounds -= 1
             txn = initiate_new_transaction()
             client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
             send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
-            time.sleep(1)
+            sleep(1)
+        await self.next_transaction
+
+            #time.sleep(1)
         await self.received_flag
 
     def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
         print("[CLIENT- {}] Received Committed Transaction : {}".format(self.client_id, payload))
         self.count += 1
+        self.committed_txn +=1
+        if self.committed_txn==conf['nodes']:
+            self.next_transaction = True
         if self.count >= (conf['nodes'] * conf['client_requests']):
             send(("KILL", self.client_id), to=nodes)
             self.received_flag = True

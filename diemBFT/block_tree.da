@@ -80,8 +80,7 @@ class BlockTree:
         vote_idx = self.calculate_hash(vote_msg.ledger_commit_info.commit_state_id,
                                        vote_msg.ledger_commit_info.vote_info_hash)  # Determine why hash is being calculated here
         str_vote_idx = str(vote_idx)
-        self.output_to_files(
-            "[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx, sender_id))
+        self.output_to_files("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx, sender_id))
 
         if str_vote_idx not in self.pendingVotes:  # or self.pendingVotes[str_vote_idx] is None:
             self.output_to_files(
@@ -163,8 +162,7 @@ class BlockTree:
             temp_str = temp_str + str(vote_info_id)
         if high_qc_signatures is not None:
             temp_str = temp_str + str(high_qc_signatures)
-        self.output_to_files(
-            "[Block-Tree-Node-{}] temp_str: {}".format(self.node_id, temp_str) + " hash: {}".format(hash(temp_str)))
+        self.output_to_files("[Block-Tree-Node-{}] New Block Formed with the hash value: {}".format(self.node_id, hash(temp_str)))
         return hash(temp_str)
 
     def hash_determine_id_of_vote(self, ledger_commit_info):  # TODO

@@ -53,10 +53,10 @@ class Node(process):
             self.output_to_files(string)
 
             self.mempool.add_transaction(payload)
-            pending_txn = self.mempool.get_transactions()
-            if pending_txn is None:
-                return
-            self.process_new_round_event(None, pending_txn)
+            #pending_txn = self.mempool.get_transactions()
+            #if pending_txn is None:
+             #   return
+            self.process_new_round_event(None, payload)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         string = ("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"))+str(sender_id)
@@ -101,6 +101,8 @@ class Node(process):
         self.block_tree.execute_and_insert(proposal.block)
         vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc, proposal.signature)
         if vote_msg is not None:
+            processing_txn = proposal.block.payload
+            self.mempool.update_transaction_status(processing_txn, "IN_PROGRESS")
             next_leader_id = leader_election.get_leader(current_round + 1)
             self.output_to_files("[Node-{}] Send the prepared VOTE to the next leader [{}] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ".format(self.node_id, next_leader_id))
             next_leader = self.nodesDict[next_leader_id]
@@ -112,6 +114,8 @@ class Node(process):
         # print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
         if qc is not None:
             self.process_certificate_qc(qc)
+            if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
+                return
             self.process_new_round_event(None, None)
 
     def process_certificate_qc(qc):
@@ -125,14 +129,29 @@ class Node(process):
             self.pacemaker.advance_round_qc(qc)
 
     def process_new_round_event(last_tc, transaction):
-        if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
+        if transaction is None or self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             output_to_files("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
-            block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
+
+            pending_txn = None
+            if transaction is not None:
+                pending_txn = self.mempool.get_transactions()
+                output_to_files("[Node-{}] Fetch transaction to be proposed next: [{}]".format(self.node_id, pending_txn.to_string()))
+
+            block = self.block_tree.generate_block(pending_txn, self.pacemaker.current_round)
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             self.output_to_files("[Node-{}] Generated PROPOSAL message ({})".format(self.node_id, proposal))
+
+            next_validators = self.nodesDict.values()
+            if transaction is None:
+                next_validators = []
+                for dict_node_id, node_obj in self.nodesDict.items():
+                    if dict_node_id != self.node_id:
+                        next_validators.append(node_obj)
+
+
             self.output_to_files("[Node-{}] Sending PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
-            send(("PROPOSAL", proposal, self.node_id), to=nodesDict.values())
+            send(("PROPOSAL", proposal, self.node_id), to=next_validators)#nodesDict.values())
 
     def valid_client_signature(signature, client_id):
         try:
