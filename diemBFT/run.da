@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from node import Node
 from client import Client
 from nacl.signing import SigningKey, VerifyKey
@@ -54,3 +55,4 @@ class Run(process):
 
         for client in clientsDict.values():
             start(client)
+            time.sleep(1)
