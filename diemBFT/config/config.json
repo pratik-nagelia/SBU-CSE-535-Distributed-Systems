@@ -1,20 +1,80 @@
 [{
-  "test_name" : "Test 0 : Client 1 Nodes 4, 4 Transactions",
+  "test_name" : "Test 1 : Client 1 Nodes 4, 1 Transaction",
   "F": 1,
   "nodes": 4,
-  "clients": 2,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 1,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 2 : Client 1 Nodes 4, 4 Transactions",
+  "F": 1,
+  "nodes": 4,
+  "clients": 1,
   "delta" : 20000,
   "client_requests" : 4,
   "client_delay" : 2,
   "seed" : 1
 },
 {
-  "test_name" : "Test 1 : F 2, N 7 Scenario",
+  "test_name" : "Test 3 : Client 1 Nodes 4, 5 Transactions, 1 Node Timeout",
+  "F": 1,
+  "nodes": 4,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 5,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 4 : Faulty Replica: 2, Client 1 Nodes: 7, 1 Transaction",
   "F": 2,
   "nodes": 7,
   "clients": 2,
   "delta" : 20000,
-  "client_requests" : 2,
+  "client_requests" : 1,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 5 : F:2, Client 1  Nodes 7, 4 Transactions",
+  "F": 2,
+  "nodes": 7,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 1,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 6 : F:2, Client 1  Nodes 7, 5 Transactions, 1 Node Timeout",
+  "F": 2,
+  "nodes": 7,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 5,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 7 : F:1, Client 1  Nodes 4, 6 Transactions, Multiple Node Timeouts",
+  "F": 1,
+  "nodes": 4,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 6,
+  "client_delay" : 2,
+  "seed" : 1
+},
+{
+  "test_name" : "Test 8 : F:1, Client 1  Nodes 4, 7 Transactions, Deduplication Detection",
+  "F": 1,
+  "nodes": 4,
+  "clients": 1,
+  "delta" : 20000,
+  "client_requests" : 7,
   "client_delay" : 2,
   "seed" : 1
 }]
