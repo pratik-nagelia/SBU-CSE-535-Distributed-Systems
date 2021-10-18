@@ -5,3 +5,6 @@ class ProposalMessage:
         self.high_commit_qc = high_commit_qc
         self.signature = signature
         self.sender = senders
+
+    def __str__(self):
+        return "(block=" + str(self.block)+",last_round_tc=" + str(self.last_round_tc)+",high_commit_qc=" + str(self.high_commit_qc)+",senders=" + str(self.sender)+")"

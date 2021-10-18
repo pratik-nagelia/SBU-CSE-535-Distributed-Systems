@@ -13,3 +13,6 @@ class QC:
             self.author_signature)
         return bytes(qc, encoding='utf-8')
 
+    def __str__(self):
+        return "(" + str(self.vote_info) + str(self.ledger_commit_info) + ", Author=" + str(self.author) + ")"
+

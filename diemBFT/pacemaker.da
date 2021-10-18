@@ -1,8 +1,9 @@
 from block_tree import BlockTree
 from timeout_message import TimeoutMessage
+import datetime
 
 class Pacemaker:
-    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, conf, safety, nodes_dict):
+    def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, conf, safety, nodes_dict, node_specific_file, common_logging):
         self.current_round = current_round
         self.last_round_tc = last_round_tc
         self.pending_timeouts = pending_timeouts
@@ -10,18 +11,33 @@ class Pacemaker:
         self.node_id = node_id
         self.delta = conf['delta']
         self.F = conf['F']
+        self.node_specific_file = node_specific_file
+        self.common_logging = common_logging
         self.safety = safety
         self.nodes_dict = nodes_dict
 
+    def output_to_files(self, string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.write(msg)
+        self.common_logging.write(msg)
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.flush()
+        self.common_logging.flush()
+        print(msg)
+
     def get_round_timer(self, r):
         return 4 * self.delta
+
 
     def stop_timer(self, current_round):
         pass
 
     def start_timer(self, new_round):
         self.stop_timer(self.current_round)
-        print("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}]".format(self.node_id, self.current_round, new_round))
+        self.output_to_files("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
 
     def local_timeout_round(self):
