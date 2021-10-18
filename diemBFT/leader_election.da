@@ -1,9 +1,10 @@
 from pacemaker import Pacemaker
+import datetime
 
 class LeaderElection:
 
 
-    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id):
+    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id, node_specific_file, common_logging):
         self.nodesDict = nodesDict
         self.window_size = window_size
         self.exclude_size = exclude_size

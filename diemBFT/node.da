@@ -50,10 +50,10 @@ class Node(process):
             string = "[Node-{}] Received {} message:".format(self.node_id, "TXN") + " | Message: " + payload.to_string()
             self.output_to_files(string)
             self.mempool.add_transaction(payload)
-
             pending_txn = self.mempool.get_transactions()
             if pending_txn is None:
                 return
+
             self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
@@ -77,7 +77,7 @@ class Node(process):
         self.pacemaker.local_timeout_round(local_tmo)
 
     def receive(msg=("KILL", client_id), from_=sender):
-        string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL")+" from Client ID: [{}] ".format(client_id)
+        string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL") + " from Client ID: [{}] ".format(client_id)
         self.output_to_files(string)
         self.kill_flag = True
         self.node_file.close()
