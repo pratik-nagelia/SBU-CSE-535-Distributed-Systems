@@ -162,7 +162,8 @@ class Node(process):
         return True
 
     def process_timeout_message(tmo_msg):
-        if tmo_msg is not None:
+
+        if tmo_msg is not None and self.valid_timeout_message(tmo_msg):
             self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
             self.process_certificate_qc(tmo_msg.high_commit_qc)
             self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)
@@ -170,3 +171,12 @@ class Node(process):
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
                 self.process_new_round_event(tc)
+
+    def valid_timeout_message(tmo_msg):
+        try:
+            self.public_keys[tmo_msg.tmo_info.sender].verify(tmo_msg.tmo_info.signature)
+        except nacl.exceptions.BadSignatureError:
+            print("[Node-{}] Signature Invalidated for Timeout Message from Node- {} ".format(self.node_id, tmo_msg.tmo_info.sender))
+            return False
+        return True
+
