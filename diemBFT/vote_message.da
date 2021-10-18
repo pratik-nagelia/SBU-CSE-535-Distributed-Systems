@@ -5,3 +5,6 @@ class VoteMsg:
         self.high_commit_qc = high_commit_qc
         self.sender = sender
         self.signature = signature
+
+    def __str__(self):
+        return "(vote_info=" + str(self.vote_info)+"ledger_commit_info=" + str(self.ledger_commit_info)+ "high_commit_qc=" + str(self.high_commit_qc)+"sender=" + str(self.sender)+") "
