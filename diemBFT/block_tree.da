@@ -80,7 +80,7 @@ class BlockTree:
         self.output_to_files("[Block-Tree-Node-{}] VOTE_IDX: [{}] from Sender-id [{}]".format(self.node_id, str_vote_idx, sender_id))
 
         if str_vote_idx not in self.pendingVotes:# or self.pendingVotes[str_vote_idx] is None:
-            pself.output_to_files(
+            self.output_to_files(
                 "[Block-Tree-Node-{}] VOTE_IDX: [{}] NOT PRESENT IN DICT ".format(self.node_id, str_vote_idx))
             self.pendingVotes[str_vote_idx] = []
             #if(str_vote_idx in self.pendingVotes):
