@@ -5,6 +5,6 @@
   "clients": 1,
   "delta" : 20000,
   "client_requests" : 4,
-  "client_delay" : 0.3,
+  "client_delay" : 1,
   "seed" : 1
 }]
