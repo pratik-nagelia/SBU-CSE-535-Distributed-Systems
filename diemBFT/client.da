@@ -28,7 +28,7 @@ class Client(process):
             client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
             send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
-            time.sleep(1)
+            time.sleep(conf['client_delay'])
         await self.received_flag
 
     def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
