@@ -51,7 +51,7 @@ class Node(process):
                 self.received_msg = False
             elif timeout(timer_duration):
                 tmo_msg = self.pacemaker.local_timeout_round()
-                self.output_to_files('Timeout Hone Laga')
+                self.output_to_files('[Node-{}] Timed out for Round {}'.format(self.node_id, self.pacemaker.current_round))
                 send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
 
     def receive(msg=("TXN", client_request), from_=client):

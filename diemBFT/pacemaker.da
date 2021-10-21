@@ -41,7 +41,7 @@ class Pacemaker:
 
     def start_timer(self, new_round):
         self.stop_timer(self.current_round)
-        self.output_to_files("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
+        self.output_to_files("[Pacemaker-{}] Advance round. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
 
     def local_timeout_round(self):
@@ -74,7 +74,7 @@ class Pacemaker:
                                      self.pending_timeouts[tmo_info.round] if tmo_info.high_qc is not None]
             signature_list = [tmo_info.signature for tmo_info in self.pending_timeouts[tmo_info.round]]
             certificate = TimeoutCertificate(tmo_info.round, high_qc_rounds_vector, signature_list)
-            self.output_to_files("[PACEMAKER] Generated TC : {}".format(certificate))
+            self.output_to_files("[PACEMAKER-{}] Generated TC : {}".format(self.node_id, certificate))
             return certificate
 
         return None
