@@ -42,7 +42,14 @@ class Node(process):
     def run():
         string = "[Node-{}] Running Node".format(self.node_id)
         self.output_to_files(string)
-        await self.kill_flag
+        while True:
+            if self.kill_flag == True:
+                break
+            await self.pacemaker.timer
+            timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
+            tmo_msg = timeout(timer_duration)
+            self.pacemaker.timer = False
+            send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -53,7 +60,6 @@ class Node(process):
             pending_txn = self.mempool.get_transactions()
             if pending_txn is None:
                 return
-
             self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
