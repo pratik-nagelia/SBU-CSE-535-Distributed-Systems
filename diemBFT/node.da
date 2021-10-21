@@ -47,7 +47,8 @@ class Node(process):
                 break
             await self.pacemaker.timer
             timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
-            tmo_msg = timeout(timer_duration)
+            timeout(timer_duration)
+            tmo_msg = self.pacemaker.local_timeout_round()
             self.pacemaker.timer = False
             send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
 
