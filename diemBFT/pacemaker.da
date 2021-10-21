@@ -6,7 +6,8 @@ class Pacemaker:
     def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, conf, safety, nodes_dict, node_specific_file, common_logging):
         self.current_round = current_round
         self.last_round_tc = last_round_tc
-        self.pending_timeouts = pending_timeouts
+        self.pending_timeouts = {}
+        self.pending_timeouts_senders = {}
         self.block_tree = block_tree
         self.node_id = node_id
         self.delta = conf['delta']
@@ -49,12 +50,13 @@ class Pacemaker:
 
     def process_remote_timeout(self, tmo):
         tmo_info = tmo.tmo_info
+        
         if tmo_info.round < self.current_round:
             return None
 
         if tmo_info.sender not in self.pending_timeouts[tmo_info.round].senders:
-            self.pending_timeouts[tmo_info.round].append(tmo_info)
-            self.pending_timeouts_senders[tmo_info.block_round].add(tmo_info.sender)
+            self.pending_timeouts[tmo_info.round] = tmo_info
+            self.pending_timeouts[tmo_info.block_round].senders.add(tmo_info.sender)
 
         if len(self.pending_timeouts[tmo_info.round].senders) == self.F + 1:
             self.stop_timer(self.current_round)

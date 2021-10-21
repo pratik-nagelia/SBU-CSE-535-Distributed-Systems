@@ -51,8 +51,8 @@ class Node(process):
                 self.received_msg = False
             elif timeout(timer_duration):
                 tmo_msg = self.pacemaker.local_timeout_round()
-                self.pacemaker.timer = False
-                send(("TIMEOUT", tmo_msg), to=self.nodesDict.values())
+                self.output_to_files('Timeout Hone Laga')
+                send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -77,8 +77,8 @@ class Node(process):
         self.process_vote_msg(vote_msg, sender_id)
 
     def receive(msg=("TIMEOUT", tmo_msg, sender_id), from_=sender):
-        print("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT"),
-              " from Node: [{}] ".format(sender_id))
+        self.received_msg = True
+        self.output_to_files("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT") + " from Node: [{}] ".format(sender_id))
         self.process_timeout_message(tmo_msg)
 
     def receive(msg=("LOCAL_TIMEOUT", local_tmo, sender_id), from_=sender):
@@ -140,6 +140,8 @@ class Node(process):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             output_to_files("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
+            if self.pacemaker.current_round >= 2:
+                return
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             self.output_to_files("[Node-{}] Generated PROPOSAL message ({})".format(self.node_id, proposal))
@@ -155,8 +157,8 @@ class Node(process):
         return True
 
     def process_timeout_message(tmo_msg):
-
         if tmo_msg is not None and self.valid_timeout_message(tmo_msg):
+            self.output_to_files("INSIDE Process Timeout Message")
             self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
             self.process_certificate_qc(tmo_msg.high_commit_qc)
             self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)
