@@ -45,12 +45,12 @@ class Node(process):
         while True:
             if self.kill_flag == True:
                 break
-            await self.pacemaker.timer
             timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
-            timeout(timer_duration)
-            tmo_msg = self.pacemaker.local_timeout_round()
-            self.pacemaker.timer = False
-            send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
+            if await self.pacemaker.timer:
+            elif timeout(timer_duration):
+                tmo_msg = self.pacemaker.local_timeout_round()
+                self.pacemaker.timer = False
+                send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
