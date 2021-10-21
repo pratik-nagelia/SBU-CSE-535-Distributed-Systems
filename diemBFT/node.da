@@ -63,6 +63,7 @@ class Node(process):
             pending_txn = self.mempool.get_transactions()
             if pending_txn is None:
                 return
+
             self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
@@ -157,8 +158,8 @@ class Node(process):
         return True
 
     def process_timeout_message(tmo_msg):
+
         if tmo_msg is not None and self.valid_timeout_message(tmo_msg):
-            self.output_to_files("INSIDE Process Timeout Message")
             self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
             self.process_certificate_qc(tmo_msg.high_commit_qc)
             self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)

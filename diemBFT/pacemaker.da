@@ -16,7 +16,6 @@ class Pacemaker:
         self.common_logging = common_logging
         self.safety = safety
         self.nodes_dict = nodes_dict
-        self.timer = False
 
     def output_to_files(self, string_msg):
         msg = str(datetime.datetime.now()) + " " + string_msg
@@ -75,7 +74,6 @@ class Pacemaker:
             return False
         self.last_round_tc = tc
         self.start_timer(tc.round + 1)
-        self.timer = True
         return True
 
     def advance_round_qc(self, qc):
@@ -83,5 +81,4 @@ class Pacemaker:
             return False
         self.last_round_tc = None
         self.start_timer(qc.vote_info.round + 1)
-        self.timer = True
         return True
