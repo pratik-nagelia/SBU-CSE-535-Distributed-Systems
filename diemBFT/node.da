@@ -25,6 +25,7 @@ class Node(process):
         self.leader_election = LeaderElection(nodesDict, 2 * self.F + 1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
         self.clientPublicKeyDict = clientPublicKeyDict
         self.kill_flag = False
+        self.received_msg = False
         print("[Node-{}] Setup completed ".format(self.node_id))
 
     def output_to_files(string_msg):
@@ -46,11 +47,12 @@ class Node(process):
             if self.kill_flag == True:
                 break
             timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
-            if await self.pacemaker.timer:
+            if await self.received_msg:
+                self.received_msg = False
             elif timeout(timer_duration):
                 tmo_msg = self.pacemaker.local_timeout_round()
                 self.pacemaker.timer = False
-                send(("TIMEOUT", tmo_msg), to=self.nodes_dict.values())
+                send(("TIMEOUT", tmo_msg), to=self.nodesDict.values())
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -65,6 +67,7 @@ class Node(process):
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         string = ("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"))+str(sender_id)
+        self.received_msg = True
         self.output_to_files(string)
         self.process_proposal_msg(proposal, sender_id)
 
