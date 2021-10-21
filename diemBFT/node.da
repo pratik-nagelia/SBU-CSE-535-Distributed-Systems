@@ -54,6 +54,9 @@ class Node(process):
                 self.output_to_files('[Node-{}] Timed out for Round {}'.format(self.node_id, self.pacemaker.current_round))
                 send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
 
+        self.node_file.close()
+        self.common_file.close()
+
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
         if self.valid_client_signature(client_request.signature, payload.client_id):
@@ -92,8 +95,6 @@ class Node(process):
         self.output_to_files(string)
         send(("KILL", None), to=self.clientsDict[client_id])
         self.kill_flag = True
-        self.node_file.close()
-        self.common_file.close()
 
     def process_proposal_msg(proposal, sender_id):
         output_to_files("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
