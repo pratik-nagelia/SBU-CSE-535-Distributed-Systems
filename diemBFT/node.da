@@ -90,9 +90,10 @@ class Node(process):
     def receive(msg=("KILL", client_id), from_=sender):
         string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL") + " from Client ID: [{}] ".format(client_id)
         self.output_to_files(string)
-        self.kill_flag = True
         self.node_file.close()
         self.common_file.close()
+        send(("KILL", None), to=self.clientsDict[client_id])
+        self.kill_flag = True
 
     def process_proposal_msg(proposal, sender_id):
         output_to_files("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
