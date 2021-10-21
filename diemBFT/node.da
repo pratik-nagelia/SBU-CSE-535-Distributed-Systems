@@ -166,7 +166,7 @@ class Node(process):
             tc = self.pacemaker.process_remote_timeout(tmo_msg)
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
-                self.process_new_round_event(tc)
+                self.process_new_round_event(tc, None)
 
     def valid_timeout_message(tmo_msg):
         try:
