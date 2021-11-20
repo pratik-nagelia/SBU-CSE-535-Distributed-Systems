@@ -4,3 +4,6 @@ class TimeoutCertificate:
         self.round = round
         self.tmo_high_qc_rounds = tmo_high_qc_rounds
         self.tmo_signatures = tmo_signatures
+
+    def __str__(self):
+        return "(TC = " + str(self.round) + " TMOHIGHQC" + str(self.tmo_high_qc_rounds)+ ")"

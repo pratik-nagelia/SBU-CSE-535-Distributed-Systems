@@ -51,8 +51,11 @@ class Node(process):
                 self.received_msg = False
             elif timeout(timer_duration):
                 tmo_msg = self.pacemaker.local_timeout_round()
-                self.output_to_files('Timeout Hone Laga')
+                self.output_to_files('[Node-{}] Timed out for Round {}'.format(self.node_id, self.pacemaker.current_round))
                 send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
+
+        self.node_file.close()
+        self.common_file.close()
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -90,9 +93,8 @@ class Node(process):
     def receive(msg=("KILL", client_id), from_=sender):
         string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL") + " from Client ID: [{}] ".format(client_id)
         self.output_to_files(string)
+        send(("KILL", None), to=self.clientsDict[client_id])
         self.kill_flag = True
-        self.node_file.close()
-        self.common_file.close()
 
     def process_proposal_msg(proposal, sender_id):
         output_to_files("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
@@ -164,7 +166,7 @@ class Node(process):
             tc = self.pacemaker.process_remote_timeout(tmo_msg)
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
-                self.process_new_round_event(tc)
+                self.process_new_round_event(tc, None)
 
     def valid_timeout_message(tmo_msg):
         try:

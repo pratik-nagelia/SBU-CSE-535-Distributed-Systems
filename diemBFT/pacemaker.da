@@ -1,6 +1,9 @@
 from block_tree import BlockTree
 from timeout_message import TimeoutMessage
+from timeout_certificate import TimeoutCertificate
 import datetime
+
+
 
 class Pacemaker:
     def __init__(self, current_round, last_round_tc, pending_timeouts, block_tree, node_id, conf, safety, nodes_dict, node_specific_file, common_logging):
@@ -38,7 +41,7 @@ class Pacemaker:
 
     def start_timer(self, new_round):
         self.stop_timer(self.current_round)
-        self.output_to_files("[Pacemaker-{}] Advance round QC. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
+        self.output_to_files("[Pacemaker-{}] Advance round. Current Round : [{}], New Round :[{}] @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@".format(self.node_id, self.current_round, new_round))
         self.current_round = new_round
 
     def local_timeout_round(self):
@@ -53,19 +56,26 @@ class Pacemaker:
         if tmo_info.round < self.current_round:
             return None
 
-        if tmo_info.sender not in self.pending_timeouts[tmo_info.round].senders:
-            self.pending_timeouts[tmo_info.round] = tmo_info
-            self.pending_timeouts[tmo_info.block_round].senders.add(tmo_info.sender)
+        if tmo_info.round in self.pending_timeouts_senders:
 
-        if len(self.pending_timeouts[tmo_info.round].senders) == self.F + 1:
+            if tmo_info.sender not in self.pending_timeouts_senders[tmo_info.round]:
+                self.pending_timeouts[tmo_info.round].add(tmo_info)
+                self.pending_timeouts_senders[tmo_info.round].add(tmo_info.sender)
+        else:
+            self.pending_timeouts[tmo_info.round] = {tmo_info}
+            self.pending_timeouts_senders[tmo_info.round] = {tmo_info.sender}
+
+        if len(self.pending_timeouts_senders[tmo_info.round]) == self.F + 1:
             self.stop_timer(self.current_round)
             self.local_timeout_round()
 
-        if len(self.pending_timeouts[tmo_info.block_round].senders) == (2 * self.F) + 1:
+        if len(self.pending_timeouts_senders[tmo_info.round]) == (2 * self.F) + 1:
             high_qc_rounds_vector = [tmo_info.high_qc.vote_info.round for tmo_info in
                                      self.pending_timeouts[tmo_info.round] if tmo_info.high_qc is not None]
-            signature_list = [tmo_info.signature for tmo_info in self.pending_timeouts[tmo_info.block_round]]
-            return TimeoutCertificate(tmo_info.round, high_qc_rounds_vector, signature_list)
+            signature_list = [tmo_info.signature for tmo_info in self.pending_timeouts[tmo_info.round]]
+            certificate = TimeoutCertificate(tmo_info.round, high_qc_rounds_vector, signature_list)
+            self.output_to_files("[PACEMAKER-{}] Generated TC : {}".format(self.node_id, certificate))
+            return certificate
 
         return None
 
