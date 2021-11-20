@@ -141,8 +141,6 @@ class Node(process):
         if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
             output_to_files("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
             block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
-            if self.pacemaker.current_round >= 2:
-                return
             proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
                                        self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
             self.output_to_files("[Node-{}] Generated PROPOSAL message ({})".format(self.node_id, proposal))
