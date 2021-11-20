@@ -27,11 +27,17 @@ class Client(process):
             send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
             time.sleep(conf['client_delay'])
+        if self.client_id == (conf['clients']-1):
+            send(("KILL", self.client_id), to=nodes)
         await self.received_flag
 
     def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
         print("[CLIENT- {}] Received Committed Transaction : {}".format(self.client_id, payload))
         self.count += 1
-        if self.count >= (conf['nodes']):
-            send(("KILL", self.client_id), to=nodes)
-            self.received_flag = True
+
+
+    def receive(msg=("KILL", payload), from_=node):
+        print("[CLIENT- {}] Received Kill Transaction : {}".format(self.client_id, payload))
+        self.received_flag = True
+
+

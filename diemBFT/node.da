@@ -25,6 +25,7 @@ class Node(process):
         self.leader_election = LeaderElection(nodesDict, 2 * self.F + 1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
         self.clientPublicKeyDict = clientPublicKeyDict
         self.kill_flag = False
+        self.received_msg = False
         print("[Node-{}] Setup completed ".format(self.node_id))
 
     def output_to_files(string_msg):
@@ -42,7 +43,19 @@ class Node(process):
     def run():
         string = "[Node-{}] Running Node".format(self.node_id)
         self.output_to_files(string)
-        await self.kill_flag
+        while True:
+            if self.kill_flag == True:
+                break
+            timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
+            if await self.received_msg:
+                self.received_msg = False
+            elif timeout(timer_duration):
+                tmo_msg = self.pacemaker.local_timeout_round()
+                self.output_to_files('[Node-{}] Timed out for Round {}'.format(self.node_id, self.pacemaker.current_round))
+                send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
+
+        self.node_file.close()
+        self.common_file.close()
 
     def receive(msg=("TXN", client_request), from_=client):
         payload = client_request.transaction
@@ -58,6 +71,7 @@ class Node(process):
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         string = ("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"))+str(sender_id)
+        self.received_msg = True
         self.output_to_files(string)
         self.process_proposal_msg(proposal, sender_id)
 
@@ -67,8 +81,8 @@ class Node(process):
         self.process_vote_msg(vote_msg, sender_id)
 
     def receive(msg=("TIMEOUT", tmo_msg, sender_id), from_=sender):
-        print("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT"),
-              " from Node: [{}] ".format(sender_id))
+        self.received_msg = True
+        self.output_to_files("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT") + " from Node: [{}] ".format(sender_id))
         self.process_timeout_message(tmo_msg)
 
     def receive(msg=("LOCAL_TIMEOUT", local_tmo, sender_id), from_=sender):
@@ -79,9 +93,8 @@ class Node(process):
     def receive(msg=("KILL", client_id), from_=sender):
         string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL") + " from Client ID: [{}] ".format(client_id)
         self.output_to_files(string)
+        send(("KILL", None), to=self.clientsDict[client_id])
         self.kill_flag = True
-        self.node_file.close()
-        self.common_file.close()
 
     def process_proposal_msg(proposal, sender_id):
         output_to_files("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
@@ -153,7 +166,7 @@ class Node(process):
             tc = self.pacemaker.process_remote_timeout(tmo_msg)
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
-                self.process_new_round_event(tc)
+                self.process_new_round_event(tc, None)
 
     def valid_timeout_message(tmo_msg):
         try:

@@ -55,4 +55,4 @@ class Run(process):
 
         for client in clientsDict.values():
             start(client)
-            time.sleep(1)
+            time.sleep(4)

@@ -3,7 +3,7 @@
   "F": 1,
   "nodes": 4,
   "clients": 2,
-  "delta" : 20000,
+  "delta" : 0.25,
   "client_requests" : 4,
   "client_delay" : 1,
   "seed" : 1
