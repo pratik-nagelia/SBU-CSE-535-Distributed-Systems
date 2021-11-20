@@ -1,12 +1,8 @@
-# SBU-CSE535-Distributed-Systems
-
-CSE 525 | Fall 2021 | Distributed Systems | Scott Stoller
-
 # DiemBFT Consensus Algorithm
 
 Team Members - 
-1. Pratik Nagelia
-2. Sumeet Pannu
+1. Sumeet Pannu
+2. Pratik Nagelia
 3. Shubham Agrawal
 
 ## Platform
