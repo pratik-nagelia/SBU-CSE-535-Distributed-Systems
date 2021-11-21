@@ -1,0 +1,12 @@
+class Message:
+    def __init__(self, round, source, destination, message_type, payload):
+        self.round = round
+        self.source = source
+        self.destination = destination
+        self.message_type = message_type
+        self.payload = payload
+
+    def __str__(self):
+        return "Message( round= " + str(self.round) + ", source= " + str(
+            self.source) + ", destination= " + str(self.destination) + ", message_type= " + str(
+            self.message_type) + ", payload= " + str(self.payload) + ")"

@@ -1,0 +1,15 @@
+{
+  "total_nodes": 4,
+  "faulty_nodes": 1,
+  "only_faulty_leaders": false,
+  "intra_partition_drop_rounds": [2,4],
+  "intra_partition_drop_message_type": "VOTE",
+  "intra_partition_drop_message_from": 4,
+  "enumeration_type": "DETERMINISTIC",
+  "seed": 4,
+  "enumeration_limit": {
+    "partition_views": 10,
+    "leaders": 3,
+    "total_round_views": 20
+  }
+}
