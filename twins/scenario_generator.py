@@ -1,18 +1,27 @@
 import random
-
-
-def main():
-    with open(sys.argv[1]) as config_file:
-        configs = json.load(config_file)
-    generate_test_scenarios(configs)
-
-
-if __name__ == '__main__':
-    main()
+import json
+import sys
+from partition_view import PartitionView
 
 
 def generate_liveness_partitions(all_nodes):
-    return []
+    liveness = []
+    liveness.append(all_nodes)
+
+    return liveness
+
+
+def generate_ids(honest_nodes_count, faulty_nodes_count):
+    total = honest_nodes_count + faulty_nodes_count
+    all_nodes = list(range(1, total + 1))
+    faulty_nodes = random.sample(all_nodes, faulty_nodes_count)
+    honest_nodes = list(set(all_nodes) - set(faulty_nodes))
+    return honest_nodes, faulty_nodes
+
+
+def generate_twins_ids(faulty_nodes):
+    faulty_twins = [(item * -1) for item in faulty_nodes]
+    return faulty_twins
 
 
 def generate_test_scenarios(configs):
@@ -26,26 +35,26 @@ def generate_test_scenarios(configs):
 
     # Combine all the nodes present in the system
     all_nodes = []
-    all_nodes.append(honest_nodes)
-    all_nodes.append(faulty_nodes)
-    all_nodes.append(faulty_twins)
+    all_nodes += honest_nodes + faulty_nodes + faulty_twins
 
     # Generate partitions for all node Ids
-    partitions = generate_partitions(all_nodes)
+    partition_generator = generate_partitions(all_nodes)
 
-    # Generate partitions for liveness partitions
-    partitions.append(generate_liveness_partitions(all_nodes))
+    partitions = []
+    for partition in partition_generator:
+        partitions.append(partition)
 
     # Selection of leaders : Only faulty leaders or all nodes
-    leaders = [faulty_nodes]
+    leaders = faulty_nodes.copy()
     if not configs["only_faulty_leaders"]:
-        leaders.append(honest_nodes)
+        leaders.extend(honest_nodes)
 
     # Pruning Partitions to remove redundant test cases.
-    partitions = prune_partition_views(partitions, honest_nodes, faulty_nodes, faulty_twins)
+    # TODO
+    # partitions = prune_partition_views(partitions, honest_nodes, faulty_nodes, faulty_twins)
 
     # Liveness testing: Append a partition of all nodes in one set to ensure quorum is created and a commit happens
-    partitions.append(all_nodes)
+    partitions.append(generate_liveness_partitions(all_nodes))
 
     partition_views = assignLeadersToPartitions(leaders, partitions, configs)
 
@@ -61,21 +70,21 @@ def generate_test_scenarios(configs):
 def assignLeadersToPartitions(leaders, partitions, config):
     limit_views = config["enumeration_limit"]["partition_views"]
     # Limit number of leaders to associate with
-    trim(leaders, config["enumeration_limit"]["leaders"])
+    selected_leaders = random.sample(leaders, config["enumeration_limit"]["leaders"])
     partition_views = []
-    for partition in partitions:
-        for leader in leaders:
-            view = PartitionView(partition, leader)
+    for partition in partitions[0: limit_views]:
+        for leader in selected_leaders:
+            view = PartitionView(partition, leader, False, None, None)
             partition_views.append(view)
-    return partition_views[0: limit_views]  # Enumeration Limit
+    return partition_views  # Enumeration Limit
 
 
 # Tag a partion_view till a particular round and message Type for an intra-partition drop
 def tag_intra_partition_drop(round_arrangements, config):
-    message_type = config["intra_partiton_drop_message_type"]
-    id = config["intra_partiton_drop_message_from"]
+    message_type = config["intra_partition_drop_message_type"]
+    id = config["intra_partition_drop_message_from"]
 
-    for round in config["intra_partiton_drop_rounds"]:
+    for round in config["intra_partition_drop_rounds"]:
         round_arrangements[round].is_intra_partition_drop = True
         round_arrangements[round].intra_partiton_drop_message_type = message_type
         round_arrangements[round].intra_partiton_drop_from = id
@@ -88,9 +97,9 @@ def enumerate_partitions(partiton_views, config):
         random.seed(config["seed"])
         random.shuffle(partiton_views)
     round_arrangements = {}
-    for partition_view, round_no in enumerate(partition_leader_comb, 1):
+    for round_no, partition_view in enumerate(partiton_views, 1):
         round_arrangements[round_no] = partition_view
-        if round_no > config.enumeration_limit.total_round_views:  # Enumeration Limit
+        if round_no >= config["enumeration_limit"]["total_round_views"]:  # Enumeration Limit
             break
     return round_arrangements
 
@@ -110,8 +119,9 @@ def prune_partition_views(partition_views, honest_nodes, faulty_nodes, faulty_tw
                 elif node in faulty_twins:
                     encoding += "T"
             encoding += "|"
-        if not encoding_map[encoding]:
-            partitions.append(partition_set)
+        if encoding not in encoding_map:
+            partitions.extend(partition_set)
+        encoding_map[encoding] = True
     return partitions
 
 
@@ -131,9 +141,16 @@ def generate_partitions(nodes):
 
 
 def fileoutput(honest_nodes, faulty_nodes, faulty_twins, round_arrangements):
-    file.open("test_scenarios.json")
-    file.append(honest_nodes)
-    file.append(faulty_nodes)
-    file.append(faulty_twins)
-    file.append(round_arrangements)
+    file = open("test_scenarios.json", "w")
+    json.dump(round_arrangements, file, default=lambda x: x.__dict__, indent=4)
     file.close()
+
+
+def main():
+    with open(sys.argv[1]) as config_file:
+        configs = json.load(config_file)
+    generate_test_scenarios(configs)
+
+
+if __name__ == '__main__':
+    main()
