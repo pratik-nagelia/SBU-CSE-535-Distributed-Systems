@@ -1,11 +1,19 @@
+import json
+import sys
+from network_playground import NetworkPlayground
+
+
 def setup_network_playground():
-    runtime = consensus_runtime()
-    playground = NetworkPlayground::new(runtime.handle())
+    # runtime = consensus_runtime()
+    playground = new(NetworkPlayground)
     return playground
 
 
-def run_test_executor(scenario_file, playground):
-    honest_nodes, faulty_nodes, twins, round_arrangements = read(scenario_file)
+def run_test_executor(test_scenarios, playground):
+    honest_nodes = test_scenarios["honest_nodes"]
+    faulty_nodes = test_scenarios["faulty_nodes"]
+    twins = test_scenarios["twins"]
+    round_arrangements = test_scenarios["round_arrangements"]
     playground.initialize_network_playground(round_arrangements)
 
     setup_deim(all_nodes, twins, round_arrangements)
@@ -74,3 +82,12 @@ def liveness_test(round_arrangements, nodes):
         print("Liveness violated in last n rounds")
 
 
+def main():
+    with open(sys.argv[1]) as test_scenarios_file:
+        test_scenarios = json.load(test_scenarios_file)
+    network_playground = setup_network_playground()
+    run_test_executor(test_scenarios, network_playground)
+
+
+if __name__ == '__main__':
+    main()

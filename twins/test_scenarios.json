@@ -9,10 +9,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "2": {
         "partition_set": [
@@ -24,11 +24,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": true,
-        "intra_partiton_drop_message_type": "VOTE",
-        "intra_partiton_drop_message_from": null,
-        "intra_partiton_drop_from": 4
+        "intra_partition_drop_message_type": "VOTE",
+        "intra_partition_drop_message_from": 4
     },
     "3": {
         "partition_set": [
@@ -42,8 +41,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "4": {
         "partition_set": [
@@ -57,11 +56,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": true,
-        "intra_partiton_drop_message_type": "VOTE",
-        "intra_partiton_drop_message_from": null,
-        "intra_partiton_drop_from": 4
+        "intra_partition_drop_message_type": "VOTE",
+        "intra_partition_drop_message_from": 4
     },
     "5": {
         "partition_set": [
@@ -75,10 +73,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "6": {
         "partition_set": [
@@ -94,8 +92,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "7": {
         "partition_set": [
@@ -109,10 +107,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "8": {
         "partition_set": [
@@ -126,10 +124,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "9": {
         "partition_set": [
@@ -145,8 +143,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "10": {
         "partition_set": [
@@ -160,10 +158,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "11": {
         "partition_set": [
@@ -177,10 +175,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "12": {
         "partition_set": [
@@ -196,8 +194,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "13": {
         "partition_set": [
@@ -213,10 +211,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "14": {
         "partition_set": [
@@ -232,10 +230,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "15": {
         "partition_set": [
@@ -253,8 +251,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "16": {
         "partition_set": [
@@ -268,10 +266,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "17": {
         "partition_set": [
@@ -285,10 +283,10 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "18": {
         "partition_set": [
@@ -304,8 +302,8 @@
         ],
         "leader": 3,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "19": {
         "partition_set": [
@@ -319,10 +317,10 @@
                 -1
             ]
         ],
-        "leader": 4,
+        "leader": 1,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     },
     "20": {
         "partition_set": [
@@ -336,9 +334,9 @@
                 -1
             ]
         ],
-        "leader": 1,
+        "leader": 4,
         "is_intra_partition_drop": false,
-        "intra_partiton_drop_message_type": null,
-        "intra_partiton_drop_message_from": null
+        "intra_partition_drop_message_type": null,
+        "intra_partition_drop_message_from": null
     }
 }

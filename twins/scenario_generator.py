@@ -49,8 +49,7 @@ def generate_test_scenarios(configs):
     if not configs["only_faulty_leaders"]:
         leaders.extend(honest_nodes)
 
-    # Pruning Partitions to remove redundant test cases.
-    # TODO
+    # Pruning Partitions to remove redundant test cases TODO
     # partitions = prune_partition_views(partitions, honest_nodes, faulty_nodes, faulty_twins)
 
     # Liveness testing: Append a partition of all nodes in one set to ensure quorum is created and a commit happens
@@ -86,8 +85,8 @@ def tag_intra_partition_drop(round_arrangements, config):
 
     for round in config["intra_partition_drop_rounds"]:
         round_arrangements[round].is_intra_partition_drop = True
-        round_arrangements[round].intra_partiton_drop_message_type = message_type
-        round_arrangements[round].intra_partiton_drop_from = id
+        round_arrangements[round].intra_partition_drop_message_type = message_type
+        round_arrangements[round].intra_partition_drop_message_from = id
 
 
 # If enumeration_type is not randomised, it will generate the same deterministic order since the partitioning algo
