@@ -7,7 +7,6 @@ from partition_view import PartitionView
 def generate_liveness_partitions(all_nodes):
     liveness = []
     liveness.append(all_nodes)
-
     return liveness
 
 
@@ -141,7 +140,8 @@ def generate_partitions(nodes):
 
 def fileoutput(honest_nodes, faulty_nodes, faulty_twins, round_arrangements):
     file = open("test_scenarios.json", "w")
-    json.dump(round_arrangements, file, default=lambda x: x.__dict__, indent=4)
+    output = {"honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "round_arrangements": round_arrangements}
+    json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
 
