@@ -61,7 +61,7 @@ def generate_test_scenarios(configs):
 
     tag_intra_partition_drop(round_arrangements, configs)
 
-    fileoutput(honest_nodes, faulty_nodes, faulty_twins, round_arrangements)
+    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements)
 
 
 # Assign leaders to partition. E.g for P1 partition, {A, P1 }, {B,P1}, {C,P1}, {D,P1}
@@ -138,9 +138,9 @@ def generate_partitions(nodes):
         yield [[first]] + smaller
 
 
-def fileoutput(honest_nodes, faulty_nodes, faulty_twins, round_arrangements):
+def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements):
     file = open("test_scenarios.json", "w")
-    output = {"honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "round_arrangements": round_arrangements}
+    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "round_arrangements": round_arrangements}
     json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
