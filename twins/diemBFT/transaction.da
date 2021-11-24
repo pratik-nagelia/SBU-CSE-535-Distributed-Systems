@@ -1,0 +1,12 @@
+
+class Transaction:
+    def __init__(self, transaction_id, client):
+        self.transaction_id = transaction_id
+        self.client_id = client
+
+    def to_string(self):
+        msg = "Transaction :" + str(self.transaction_id) + ", initiated by client: " + str(self.client_id)
+        return msg
+
+    def fetch_client_id(self):
+        return self.client_id

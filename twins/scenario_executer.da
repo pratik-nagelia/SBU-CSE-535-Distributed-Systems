@@ -4,15 +4,6 @@ from network_playground import NetworkPlayground
 
 
 
-def run_test_executor(playground):
-    honest_nodes = test_scenarios["honest_nodes"]
-    faulty_nodes = test_scenarios["faulty_nodes"]
-    round_arrangements = test_scenarios["round_arrangements"]
-    print("Hollaa")
-    setup(playground, ())
-    start(playground, ())
-
-
 def main():
     config(clock='Lamport', channel='fifo')
     with open(sys.argv[1]) as test_scenarios_file:
@@ -23,8 +14,10 @@ def main():
     honest_nodes = test_scenarios["honest_nodes"]
     faulty_nodes = test_scenarios["faulty_nodes"]
     round_arrangements = test_scenarios["round_arrangements"]
-    # nodes = new(Node, num=len(all_nodes))
+
+    # nodes = new(Node, num=len(all_nodes))  # TODO replace this with actually creating nodes
     nodes = [i for i in range(0, len(all_nodes))]
+
     nodes_mapping = {}
     i = 0
     for node in all_nodes:
@@ -34,13 +27,16 @@ def main():
     setup(playground, (round_arrangements, nodes_mapping))
     start(playground, ())
 
+    for node in nodes_mapping.values():
+        setup(node, ())
+        start(node, ())
+
+
     return
 
 
 if __name__ == '__main__':
     main()
-
-
 
 #
 #     setup_deim(all_nodes, twins, round_arrangements)
@@ -107,5 +103,3 @@ if __name__ == '__main__':
 #         print("Liveness is confirmed in the last n round ")
 #     else :
 #         print("Liveness violated in last n rounds")
-
-
