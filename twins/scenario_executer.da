@@ -1,7 +1,7 @@
 import json
 import sys
 from network_playground import NetworkPlayground
-
+from diem.src.validator import Validator
 
 
 def main():
@@ -15,8 +15,8 @@ def main():
     faulty_nodes = test_scenarios["faulty_nodes"]
     round_arrangements = test_scenarios["round_arrangements"]
 
-    # nodes = new(Node, num=len(all_nodes))  # TODO replace this with actually creating nodes
-    nodes = [i for i in range(0, len(all_nodes))]
+    validators = new(Validator, num=len(all_nodes))
+    # nodes = [i for i in range(0, len(all_nodes))]
 
     nodes_mapping = {}
     i = 0
