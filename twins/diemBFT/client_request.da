@@ -1,6 +1,0 @@
-
-class ClientRequest:
-    def __init__(self, transaction, signature):
-        self.transaction = transaction
-        self.signature = signature
-
