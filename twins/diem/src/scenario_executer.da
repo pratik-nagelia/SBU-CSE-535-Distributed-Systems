@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import json
 
 sys.path.append('../config')
 
@@ -8,14 +9,19 @@ from client import Client
 from config import configs
 from cryptography import Cryptography
 from validator import ValidatorFI
+from network_playground import NetworkPlayground
+import itertools
 
 
 class RunDiemBFT(process):
 
-    def setup(config, config_id):
-        self.nvalidators = int(config['nvalidators'])
+    def setup(test_scenarios, config):
+        self.all_nodes = test_scenarios["all_nodes"]
+        self.honest_nodes = test_scenarios["honest_nodes"]
+        self.faulty_nodes = test_scenarios["faulty_nodes"]
+        self.round_arrangements = test_scenarios["round_arrangements"]
         self.nclients = int(config['nclients'])
-        self.nfaulty = int(config['nfaulty'])
+        self.config_id = 1 # TODO Config ID
 
     def run():
 
@@ -27,8 +33,9 @@ class RunDiemBFT(process):
         os.makedirs('../logs/config' + str(config_id))
         os.makedirs('../ledgers/config' + str(config_id))
 
-        validators = new(ValidatorFI, num=nvalidators)
+        validators = new(ValidatorFI, num=len(all_nodes))
         clients = new(Client, num=nclients)
+        playground = new(NetworkPlayground)
 
         for v in validators:
             private_key, public_key = Cryptography.generate_key()
@@ -40,13 +47,20 @@ class RunDiemBFT(process):
             private_keys_clients[c] = private_key
             public_keys_clients[c] = public_key
 
-        for i, v in enumerate(validators):
-            setup({v}, (config, config_id, i, list(validators), list(clients),
+        nodes_mapping = {}
+        i = 0
+        for (node_id, v) in zip(all_nodes, validators):
+            nodes_mapping[node_id] = v
+            setup({v}, (config, config_id, node_id, list(validators), list(clients),
                         private_keys_validators[v], public_keys_validators, public_keys_clients))
+            i += 1
 
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators),
                         private_keys_clients[c], public_keys_validators))
+
+        setup(playground, (round_arrangements, nodes_mapping))
+        start(playground, ())
 
         start(validators)
         start(clients)
@@ -69,48 +83,20 @@ def is_config_valid(config):
 
 
 def main():
-
     if os.path.exists('../logs/') and os.path.isdir('../logs/'):
         shutil.rmtree('../logs/')
 
     if os.path.exists('../ledgers/') and os.path.isdir('../ledgers/'):
         shutil.rmtree('../ledgers/')
 
-    # config_id = 0
-    # for config in configs:
-    #     if not is_config_valid(config):
-    #         output("The provided config", config,
-    #                "is not valid. Skipping this config.")
-    #         continue
-    config(clock='Lamport', channel='fifo')
+    config_id = 1
+    config = configs[0]
+    if not is_config_valid(config):
+        output("The provided config", config, "is not valid. Skipping this config.")
+        return
     with open(sys.argv[1]) as test_scenarios_file:
         test_scenarios = json.load(test_scenarios_file)
-
-    # playground = new(NetworkPlayground)
-    all_nodes = test_scenarios["all_nodes"]
-    honest_nodes = test_scenarios["honest_nodes"]
-    faulty_nodes = test_scenarios["faulty_nodes"]
-    round_arrangements = test_scenarios["round_arrangements"]
-
-    validators = new(Validator, num=len(all_nodes))
-    # nodes = [i for i in range(0, len(all_nodes))]
-
-    nodes_mapping = {}
-    i = 0
-    for node in all_nodes:
-        nodes_mapping[node] = nodes[i]
-        i += 1
-
-    setup(playground, (round_arrangements, nodes_mapping))
-    start(playground, ())
-
-    for node in nodes_mapping.values():
-        setup(node, ())
-        start(node, ())
-
-    return
-
-    p = new(RunDiemBFT)
-    setup(p, (config, config_id))
-    start(p)
+    run = new(RunDiemBFT)
+    setup(run, (test_scenarios, config))
+    start(run)
 

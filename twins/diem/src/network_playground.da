@@ -6,6 +6,7 @@ class NetworkPlayground(process):
         self.nodes_mapping = nodes_mapping
 
     def run():
+        print("Starting Network Playground")
         await False
 
 
