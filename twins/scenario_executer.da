@@ -1,7 +1,7 @@
 import json
 import sys
 from network_playground import NetworkPlayground
-from diem.src.validator import Validator
+from twins.src import Validator
 
 
 def main():
