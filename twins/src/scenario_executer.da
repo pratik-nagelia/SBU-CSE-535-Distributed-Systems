@@ -15,13 +15,12 @@ import itertools
 
 class RunDiemBFT(process):
 
-    def setup(test_scenarios, config):
+    def setup(test_scenarios, config, config_id):
         self.all_nodes = test_scenarios["all_nodes"]
         self.honest_nodes = test_scenarios["honest_nodes"]
         self.faulty_nodes = test_scenarios["faulty_nodes"]
         self.round_arrangements = test_scenarios["round_arrangements"]
         self.nclients = int(config['nclients'])
-        self.config_id = 1 # TODO Config ID
 
     def run():
 
@@ -48,12 +47,15 @@ class RunDiemBFT(process):
             public_keys_clients[c] = public_key
 
         nodes_mapping = {}
-        i = 0
-        for (node_id, v) in zip(all_nodes, validators):
-            nodes_mapping[node_id] = v
-            setup({v}, (config, config_id, node_id, list(validators), list(clients),
+        # i = 0
+        # for (node_id, v) in zip(all_nodes, validators):
+        #     nodes_mapping[node_id] = v
+        #     setup({v}, (config, config_id, node_id, list(validators), list(clients),
+        #                 private_keys_validators[v], public_keys_validators, public_keys_clients))
+        #     i += 1
+        for i, v in enumerate(validators):
+            setup({v}, (config, config_id, i, list(validators), list(clients),
                         private_keys_validators[v], public_keys_validators, public_keys_clients))
-            i += 1
 
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators),
@@ -83,13 +85,14 @@ def is_config_valid(config):
 
 
 def main():
+
     if os.path.exists('../logs/') and os.path.isdir('../logs/'):
         shutil.rmtree('../logs/')
 
     if os.path.exists('../ledgers/') and os.path.isdir('../ledgers/'):
         shutil.rmtree('../ledgers/')
 
-    config_id = 1
+    config_id = 0
     config = configs[0]
     if not is_config_valid(config):
         output("The provided config", config, "is not valid. Skipping this config.")
@@ -97,6 +100,6 @@ def main():
     with open(sys.argv[1]) as test_scenarios_file:
         test_scenarios = json.load(test_scenarios_file)
     run = new(RunDiemBFT)
-    setup(run, (test_scenarios, config))
+    setup(run, (test_scenarios, config, config_id))
     start(run)
 
