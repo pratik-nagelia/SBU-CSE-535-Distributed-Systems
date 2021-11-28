@@ -58,6 +58,14 @@ class Node(process):
              #   return
             self.process_new_round_event(None, payload)
 
+    def receive(msg=("TRANSACTION_COMMITTED_OR_NOT", client_request), from_=client):
+        payload = client_request.transaction
+        if self.valid_client_signature(client_request.signature, payload.client_id):
+            string = "[Node-{}] Received {} message:".format(self.node_id, "TRANSACTION_COMMITTED_OR_NOT")+" | Message: "+payload.to_string()
+            self.output_to_files(string)
+            status = self.mempool.if_committed_or_not(transaction)
+            send(("TRANSACTION_COMMIT_RESPONSE", status), to=client)
+
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
         string = ("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"))+str(sender_id)
         self.output_to_files(string)
@@ -114,9 +122,21 @@ class Node(process):
         # print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
         if qc is not None:
             self.process_certificate_qc(qc)
-            if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
-                return
-            self.process_new_round_event(None, None)
+            #if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
+            if self.mempool.has_pending_transactions():
+                self.process_new_round_event(None, self.mempool.get_transactions())
+            else:
+                self.process_new_round_event(None, None)
+                '''vote_info_t = vote_msg.vote_info.parent_id
+                self.output_to_files(("[Node-{}] VOTE message info [{}]".format(self.node_id, vote_info_t)))
+                pending_block = self.ledger.get_pending_block(vote_info_t)
+                if pending_block.payload is not None or vote_info_t is -1:
+                   
+                #if self.ledger.get_pending_transactions(qc.vote_info.id) is not None:
+                   # self.process_new_round_event(None, None)
+                #if self.ledger.get_pending_transactions(qc.vote_info.id) is not None:'''
+
+
 
     def process_certificate_qc(qc):
         if qc is not None:
@@ -162,8 +182,7 @@ class Node(process):
         return True
 
     def process_timeout_message(tmo_msg):
-
-        if tmo_msg is not None and self.valid_timeout_message(tmo_msg):
+        if tmo_msg is not None:
             self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
             self.process_certificate_qc(tmo_msg.high_commit_qc)
             self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)
@@ -171,12 +190,3 @@ class Node(process):
             if tc is not None:
                 self.pacemaker.advance_round_tc(tc)
                 self.process_new_round_event(tc)
-
-    def valid_timeout_message(tmo_msg):
-        try:
-            self.public_keys[tmo_msg.tmo_info.sender].verify(tmo_msg.tmo_info.signature)
-        except nacl.exceptions.BadSignatureError:
-            print("[Node-{}] Signature Invalidated for Timeout Message from Node- {} ".format(self.node_id, tmo_msg.tmo_info.sender))
-            return False
-        return True
-

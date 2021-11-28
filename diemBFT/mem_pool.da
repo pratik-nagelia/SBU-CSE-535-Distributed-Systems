@@ -44,6 +44,13 @@ class MemPool:
         #self.transaction_status[hash_txn] = 'IN_PROGRESS'
         return pending_txn
 
+    def has_pending_transactions(self):
+        size = len(self.pending_transactions)
+        self.output_to_files("[MEMPOOL-Node-{}] PENDING Transaction Size: {}".format(self.node_id, size))
+        if size > 0:
+            return True
+        return False
+
     def add_transaction(self, transaction):
         hash_txn = hash(transaction.to_string())
         status = self.get_transaction_status(transaction)
@@ -77,6 +84,12 @@ class MemPool:
     def check_txn_status(self, transaction):
         hash_txn = hash(transaction.to_string())
         if self.transaction_status[hash_txn] is 'COMMITTED':
+            return True
+        return False
+
+    def if_committed_or_not(self, transaction):
+        status = self.get_transaction_status(transaction)
+        if status is "COMMITTED":
             return True
         return False
 

@@ -14,6 +14,7 @@ class Ledger:
         self.common_logging = common_logging
         self.mempool = mempool
 
+
     def output_to_files(self, string_msg):
         msg = str(datetime.datetime.now()) + " " + string_msg
         self.common_logging.write("\n")
@@ -31,14 +32,16 @@ class Ledger:
             return self.pending_transactions[block_id]
 
     def speculate(self, prev_block_id, block, txns):
+        block_id = block.block_id
+        self.save_blocks[block_id] = block
         if txns is None:
             return
-        block_id = block.block_id
+
         self.parent_map[block_id] = prev_block_id
         self.output_to_files("[Ledger-Node-{}] Speculate entry for block_id: [{}] with pending transaction: [{}]".format(self.node_id, block_id,txns.to_string()))
         self.pending_transactions[block_id] = txns
         self.mempool.update_transaction_status(txns,"IN_PROGRESS")
-        self.save_blocks[block_id] = block
+
         pass
 
     def pending_state(self, block_id):
@@ -58,19 +61,15 @@ class Ledger:
             self.output_to_files("[Ledger-Node-{}] Already Committed~~~~~~~~~~~~~~~~~~~~~~".format(self.node_id))
             return
         pending_txn = self.pending_transactions[block_id]
-        self.output_to_files("[Ledger-Node-{}] CODE PHAT GYA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".format(self.node_id))
         txn_status = self.mempool.get_transaction_status(pending_txn)
-        self.output_to_files("[Ledger-Node-{}] TRANSACTION STATUS {}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".format(self.node_id, txn_status))
         if block_id in self.pending_transactions and txn_status is not "COMMITTED":
             pending_txn = self.pending_transactions[block_id]
             msg = str(datetime.datetime.now()) + " " + pending_txn.to_string() + '\n'
             file.write(msg)
             file.flush()
             self.output_to_files("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn.to_string()))
-            #self.pending_transactions[block_id] = None
             self.pending_transactions.pop(block_id)
             self.mempool.update_transaction_status(pending_txn,"COMMITTED")
-            #self.mempool.commit_transaction(pending_txn)
             self.committed_transactions[block_id] = pending_txn
             return pending_txn
         else:
@@ -86,3 +85,8 @@ class Ledger:
         else:
             self.output_to_files("[Ledger-Node-{}] Transaction corresponding to [{}] has not been committed yet".format(self.node_id, block_id))
             return None
+
+    def get_pending_block(self, block_id):
+        if block_id is None or block_id not in self.save_blocks:
+            return None
+        return self.save_blocks[block_id]

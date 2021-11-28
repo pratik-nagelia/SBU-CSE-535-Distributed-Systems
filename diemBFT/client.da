@@ -20,7 +20,7 @@ class Client(process):
     def run():
         output('[CLIENT] Starting Client....')
         total_rounds = conf['client_requests']
-
+        sent_client_requests = []
         while total_rounds > 0:
             self.committed_txn = 0
             self.next_transaction = False
@@ -28,14 +28,26 @@ class Client(process):
             total_rounds -= 1
             txn = initiate_new_transaction()
             client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
+            sent_client_requests.append(client_req)
+
             send(("TXN", client_req), to=nodes)
             output('[CLIENT] Initiated transaction sent to all nodes. Waiting for a reply....')
             time.sleep(conf['client_delay'])
         await self.next_transaction
 
+        self.check_committed_transaction(sent_client_requests[0])
         await self.received_flag
 
-    def receive(msg=("TRANSACTION_COMMITTED", payload), from_=node):
+    def check_commited_transaction(txn):
+        client_req = ClientRequest(txn, self.private_key.sign(bytes(str(txn.client_id), encoding='utf-8')))
+        send(("CHECK_COMMITTED", client_req), to=nodes)
+        output('[CLIENT] Initiated Check Commited transaction sent to all nodes. Waiting for a reply....')
+        time.sleep(1)
+
+    def receive(msg=("TRANSACTION_COMMIT_RESPONSE", payload), from_=node):
+        print("[CLIENT- {}] Received whether the submitted transaction was committed or not: {}".format(self.client_id, payload))
+
+    def receive(msg=("TRANSACTION_COMMITTED_OR_NOT", payload), from_=node):
         print("[CLIENT- {}] Received Committed Transaction : {}".format(self.client_id, payload))
         self.count += 1
         self.committed_txn +=1
@@ -44,3 +56,7 @@ class Client(process):
         if self.count >= (conf['nodes'] * conf['client_requests']):
             send(("KILL", self.client_id), to=nodes)
             self.received_flag = True
+
+
+
+
