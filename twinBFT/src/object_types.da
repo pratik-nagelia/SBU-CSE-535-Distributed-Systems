@@ -199,3 +199,6 @@ class ProposalMsg:
         self.high_commit_qc = high_commit_qc  # QC to synchronize on committed blocks
         self.sender = validator
         self.signature = Cryptography.sign_message(self.block.id)
+
+    def __str__(self):
+        return "ProposalMessage( block=" + str(self.block) + ", last_round_tc=" + str(self.last_round_tc) + ", high_commit_qc=" + str(self.high_commit_qc) + ", sender=" + str(self.sender) +  " )"
