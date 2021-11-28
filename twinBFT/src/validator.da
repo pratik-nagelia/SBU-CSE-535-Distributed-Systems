@@ -11,11 +11,12 @@ from mem_pool import MemPool
 from object_types import FailType, MsgType, ProposalMsg
 from pacemaker import Pacemaker
 from safety import Safety
+from message import Message
 
 
 class Validator (process):
 
-    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients):
+    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, replica_nodes):
 
         LOGGER.replicas = replicas
         LOGGER.process_id = "validator_" + str(validator_id)
@@ -62,6 +63,7 @@ class Validator (process):
         else:
             output('error: Validator.setattr: unsupported attribute')
 
+
     # Broadcast the timeout message
     def send_timeout_msg(timeout_msg):
         LOGGER.log('Validator: send_timeout_message', timeout_msg)
@@ -77,7 +79,11 @@ class Validator (process):
         output("Validator", self.validator_id, "is exiting")
 
     def send_message(message_type, message_payload, destination_nodes):
-        pass
+        print("***************************")
+        print("Nodes destination " + str(destination_nodes))
+        msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
+        send(('Message', msg), to=self.playground)
+
 
     '''Procedure process certificate qc(qc)'''
     def process_certificate_qc(qc):
@@ -150,7 +156,7 @@ class Validator (process):
                 validator=validator_id
             )
             send(('Proposal', proposal_msg), to=self.replicas)
-            send_message('Proposal', proposal_msg, self.replicas)
+            send_message('Proposal', proposal_msg, self.replica_nodes)
             LOGGER.log_event("Sent", "Proposal",
                              proposal_msg, self.replicas)
 

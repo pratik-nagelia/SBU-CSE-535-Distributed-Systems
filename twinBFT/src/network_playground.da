@@ -12,16 +12,16 @@ class NetworkPlayground(process):
         await False
 
     # def send_message(round, leader, message):
-    #     partitions_wrt_round = partitions_arrangement.get(round)
+    #     partitions_wrt_round = partition_arrangement.get(round)
     #     partition_of_leader = find_partition(leader)
     #     other_nodes_in_the_same_partition = find_nodes_in_partition(partition_of_leader)
     #     for node in other_nodes_in_the_same_partition:
     #         send(message, node)
 
     def intra_partition_drop(message):
-        partition_view = partitions_arrangement[message.round]
+        partition_view = partition_arrangement[message.round]
         if (partition_view.is_intra_partition_drop == True) \
-                and (partition_view.intra_partition_drop_message_type == message.message_Type) \
+                and (partition_view.intra_partition_drop_message_type == message.message_type) \
                 and partition_view.intra_partition_drop_message_from == message.source:
             return True
         else:
@@ -39,7 +39,8 @@ class NetworkPlayground(process):
                 return partition
         return []
 
-    def receive(msg=("MESSAGE", message), from_=sender):
+    def receive(msg=('Message', message), from_=sender):
+        print("AAAgyaa Message ========================================================================== " + message.message_type)
         destination = message.destination
 
         # Dropping message on filter criteria
