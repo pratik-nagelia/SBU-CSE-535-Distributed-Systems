@@ -76,6 +76,9 @@ class Validator (process):
         self.pacemaker.stop_timer(self.pacemaker.current_round)
         output("Validator", self.validator_id, "is exiting")
 
+    def send_message(message_type, message_payload, destination_nodes):
+        pass
+
     '''Procedure process certificate qc(qc)'''
     def process_certificate_qc(qc):
         LOGGER.log('Validator: process_certificate_qc', qc)
@@ -147,6 +150,7 @@ class Validator (process):
                 validator=validator_id
             )
             send(('Proposal', proposal_msg), to=self.replicas)
+            send_message('Proposal', proposal_msg, self.replicas)
             LOGGER.log_event("Sent", "Proposal",
                              proposal_msg, self.replicas)
 
