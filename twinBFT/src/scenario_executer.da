@@ -1,105 +1,105 @@
-import json
+import os
+import shutil
 import sys
-from network_playground import NetworkPlayground
+import json
 
+sys.path.append('../config')
+
+from client import Client
+from config import configs
+from cryptography import Cryptography
+from validator import ValidatorFI
+from network_playground import NetworkPlayground
+import itertools
+
+
+class RunDiemBFT(process):
+
+    def setup(test_scenarios, config, config_id):
+        self.all_nodes = test_scenarios["all_nodes"]
+        self.honest_nodes = test_scenarios["honest_nodes"]
+        self.faulty_nodes = test_scenarios["faulty_nodes"]
+        self.round_arrangements = test_scenarios["round_arrangements"]
+        self.nclients = int(config['nclients'])
+
+    def run():
+
+        private_keys_validators = {}
+        public_keys_validators = {}
+        private_keys_clients = {}
+        public_keys_clients = {}
+
+        os.makedirs('../logs/config' + str(config_id))
+        os.makedirs('../ledgers/config' + str(config_id))
+
+        validators = new(ValidatorFI, num=len(all_nodes))
+        clients = new(Client, num=nclients)
+        playground = new(NetworkPlayground)
+
+        for v in validators:
+            private_key, public_key = Cryptography.generate_key()
+            private_keys_validators[v] = private_key
+            public_keys_validators[v] = public_key
+
+        for c in clients:
+            private_key, public_key = Cryptography.generate_key()
+            private_keys_clients[c] = private_key
+            public_keys_clients[c] = public_key
+
+        nodes_mapping = {}
+        # i = 0
+        # for (node_id, v) in zip(all_nodes, validators):
+        #     nodes_mapping[node_id] = v
+        #     setup({v}, (config, config_id, node_id, list(validators), list(clients),
+        #                 private_keys_validators[v], public_keys_validators, public_keys_clients))
+        #     i += 1
+        for i, v in enumerate(validators):
+            setup({v}, (config, config_id, i, list(validators), list(clients),
+                        private_keys_validators[v], public_keys_validators, public_keys_clients))
+
+        for i, c in enumerate(clients):
+            setup({c}, (config, config_id, i, list(validators),
+                        private_keys_clients[c], public_keys_validators))
+
+        setup(playground, (round_arrangements, nodes_mapping))
+        start(playground, ())
+
+        start(validators)
+        start(clients)
+
+        await(each(c in clients, has=received(('Done',), from_=c)))
+        output("All clients done, informing all validators.", config_id)
+        send(('Done',), to=validators)
+
+
+def is_config_valid(config):
+    if int(config['nvalidators']) < (3 * int(config['nfaulty']) + 1):
+        print(
+            "Number of validators should be more than thrice of number of faulty validators.")
+        return False
+    if (int(config['nfaulty']) > int(config['exclude_size'])) or (int(config['exclude_size']) > 2 * int(config['nfaulty'])):
+        print(
+            "Exlude size should be between nfaulty and 2*nfaulty")
+        return False
+    return True
 
 
 def main():
-    config(clock='Lamport', channel='fifo')
+
+    if os.path.exists('../logs/') and os.path.isdir('../logs/'):
+        shutil.rmtree('../logs/')
+
+    if os.path.exists('../ledgers/') and os.path.isdir('../ledgers/'):
+        shutil.rmtree('../ledgers/')
+
+    config_id = 0
+    config = configs[0]
+    if not is_config_valid(config):
+        output("The provided config", config, "is not valid. Skipping this config.")
+        return
     with open(sys.argv[1]) as test_scenarios_file:
         test_scenarios = json.load(test_scenarios_file)
+    run = new(RunDiemBFT)
+    setup(run, (test_scenarios, config, config_id))
+    start(run)
 
-    playground = new(NetworkPlayground)
-    all_nodes = test_scenarios["all_nodes"]
-    honest_nodes = test_scenarios["honest_nodes"]
-    faulty_nodes = test_scenarios["faulty_nodes"]
-    round_arrangements = test_scenarios["round_arrangements"]
-
-    # nodes = new(Node, num=len(all_nodes))  # TODO replace this with actually creating nodes
-    nodes = [i for i in range(0, len(all_nodes))]
-
-    nodes_mapping = {}
-    i = 0
-    for node in all_nodes:
-        nodes_mapping[node] = nodes[i]
-        i += 1
-
-    setup(playground, (round_arrangements, nodes_mapping))
-    start(playground, ())
-
-    for node in nodes_mapping.values():
-        setup(node, ())
-        start(node, ())
-
-
-    return
-
-
-if __name__ == '__main__':
-    main()
-
-#
-#     setup_deim(all_nodes, twins, round_arrangements)
-#     execute_test_scenarios()
-#
-#     check_safety(round_arrangements.values)
-#     check_liveness(round_arrangements, nodesDict.values())
-#
-#
-# def setup_deim(honest_nodes, faulty_nodes, twins, round_arrangements, playground):
-#     round_leader_mapping = get_round_leader_mapping(round_arrangements)
-#     # Generate round leader mapping from round_arrangements
-#
-#     honest_nodes_map = generate_nodes(honest_nodes, round_leader_mapping, playground)
-#     faulty_nodes_map = generate_nodes(compromised_nodes, round_leader_mapping, playground)
-#     twins_map = generate_twins(faulty_nodes, round_leader_mapping, playground)
-#     clients_list = generate_clients(honest_nodes_map, faulty_nodes_map)
-#
-# def generate_nodes(num_of_nodes: int, round_leader_mapping, playground):
-#     nodes = new(Node, num_of_nodes)
-#     for node in nodes:
-#         nodesDict[id] = []
-#         nodeDict[id].append(node)
-#         setup(node, (id, round_leader_mapping, playground))
-#         id+=1
-#
-#
-# def generate_twins(faulty_nodes, round_leader_mapping, playground):
-#     for node in faulty_nodes:
-#         id = node.id
-#         twin_node = new(Node, 1)
-#         nodesDict[id].append(twin_node)
-#         setup(twin_node, (id, round_leader_mapping, playground))
-#         twinMapping[id] = twin_node
-#
-#
-# def execute_test_scenario():
-#     for node in nodesDict.values():
-#         start(node)
-#
-#     for client in clients.values():
-#         start(client)
-#
-# def check_safety(rounds):
-#     for i in range(rounds, 1):
-#         commit_state_id = []
-#         for j in nodesDict.values():
-#             commit_state_id[j] = nodes.Ledger.committed_block (round)
-#         flag = compare(commit_state_id)
-#         if flag:
-#             print("Safety Ensured in this round " + str(i))
-#         else :
-#             print("Safety violated in this round " + str(i))
-#
-#
-# def liveness_test(round_arrangements, nodes):
-#     n = len(nodes)
-#     last_n_rounds = round_arrangements.values [0 : -1 * n]
-#     commit = []
-#     for round_number in last_n_round:
-#         for j in nodes:
-#             commit[j] = nodes.Ledger.committed_trasaction(round_number)
-#     if any_transaction_committed(commit) :
-#         print("Liveness is confirmed in the last n round ")
-#     else :
-#         print("Liveness violated in last n rounds")
