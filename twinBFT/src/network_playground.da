@@ -40,6 +40,12 @@ class NetworkPlayground(process):
                 return partition
         return []
 
+    def receive(msg=('Unicast', message), from_=sender):
+        print("Unicast received =============================")
+        leader = message.destination
+        # replace leader with test scenario plans
+        send((message.message_type, message.payload, sender), to=leader)
+
     def receive(msg=('Message', message), from_=sender):
         print("Network Playground received : " + str(message))
         destination = message.destination
@@ -57,7 +63,7 @@ class NetworkPlayground(process):
         #     print("Message Dropped due to partition")
 
         # destination_nodes = [nodes_mapping[id] for id in destination]
-        send((message.message_type, message.payload, sender), to=message.destination)
+        send((message.message_type, message.payload, sender), to=nodes_mapping.values())
 
         # Sending the message to its twin node as well
         # if (destination * -1) in other_nodes_in_the_same_partition:
