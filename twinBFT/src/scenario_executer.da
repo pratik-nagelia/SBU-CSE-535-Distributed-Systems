@@ -59,7 +59,7 @@ class RunDiemBFT(process):
             setup({v}, (config, config_id, i, list(validators), list(clients),
                         private_keys_validators[v], public_keys_validators, public_keys_clients, playground, honest_nodes + faulty_nodes))
             nodes_mapping[node_id] = v
-            nodes_obj_to_id_mapping[v] = node_id
+            nodes_obj_to_id_mapping[str(v)] = node_id
 
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators),

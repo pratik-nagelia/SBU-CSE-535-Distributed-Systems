@@ -11,6 +11,7 @@ class NetworkPlayground(process):
     def run():
         print("Starting Network Playground")
         print(str(nodes_mapping))
+        print(str(nodes_obj_to_id_mapping))
         await False
 
     # def send_message(round, leader, message):
@@ -42,15 +43,17 @@ class NetworkPlayground(process):
         return []
 
     def get_node_id(validator):
-        if validator not in  self.nodes_obj_to_id_mapping:
+        #print("Get Node ID: {}. Keys: {}".format(validator, self.nodes_obj_to_id_mapping.keys()))
+        if str(validator) not in  self.nodes_obj_to_id_mapping.keys():
             print("[Network-Playground] Something is wrong!!")
-        return self.nodes_obj_to_id_mapping[validator];
+        id =  self.nodes_obj_to_id_mapping.get(str(validator))
+        return id
 
-    def determine_partition_of_validator(round, validator_id):
-        partition_view = partition_arrangement[str(message.round)]
+    def determine_partition_of_validator(message, round, validator_id):
+        partition_view = partition_arrangement[str(message.round)]['partition_set']
         for partition_set in partition_view:
             if validator_id in partition_set:
-                print("[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(str(validator_id, partition_set, partition_view)))
+                print("[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(str(validator_id), str(partition_set), str(partition_view)))
                 return partition_set
 
     def receive(msg=('Unicast', message), from_=sender):
@@ -58,27 +61,30 @@ class NetworkPlayground(process):
         leader = message.destination
         round = message.round
         sender_id = get_node_id(sender)
-        leader_id = get_node_id(leader_id)
-        print("[Network-Playground] Sender_id: {} Leader_id: {}".format(sender_id, leader_id))
+        leader_id = self.get_node_id(leader)
+        print("[Network-Playground] Sender_id: {} Leader_id: {}".format(str(sender_id), str(leader_id)))
 
-        partition_set = determine_partition_of_validator(round, sender_id)
+        partition_set = determine_partition_of_validator(message, round, sender_id)
 
         if leader_id in partition_set:
             print("[Network-Playground] Both the Leader and Sender belong to the same partition. Forward the message to the leader...")
             send((message.message_type, message.payload, sender), to=leader)
+        else:
+            print("[Network-Playground] Leader isn't present in the same parition. Dropping current message....")
         # replace leader with test scenario plans
 
 
     def receive(msg=('Message', message), from_=sender):
-        print("[Network-Playground] BROADCAST message received : " + str(message))
+        print("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
         destination = message.destination
         round = message.round
         sender_id = get_node_id(sender)
+        print("Humara sender id is  " + str((sender_id)))
+        partition_set = determine_partition_of_validator(message, round, sender_id)
 
-        partition_set = determine_partition_of_validator(round, sender_id)
-        # Dropping message on filter criteria
-        if filter(message):
-            return
+        # Dropping message on filter criteria -> To Be Implemented
+        # if filter(message):
+        #     return
 
         filtered_next_nodes = []
         dropped_next_nodes = []
