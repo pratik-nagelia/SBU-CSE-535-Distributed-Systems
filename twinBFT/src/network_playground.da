@@ -9,20 +9,21 @@ class NetworkPlayground(process):
 
     def run():
         print("Starting Network Playground")
+        print(str(nodes_mapping))
         await False
 
     # def send_message(round, leader, message):
-    #     partitions_wrt_round = partitions_arrangement.get(round)
+    #     partitions_wrt_round = partition_arrangement.get(round)
     #     partition_of_leader = find_partition(leader)
     #     other_nodes_in_the_same_partition = find_nodes_in_partition(partition_of_leader)
     #     for node in other_nodes_in_the_same_partition:
     #         send(message, node)
 
     def intra_partition_drop(message):
-        partition_view = partitions_arrangement[message.round]
-        if (partition_view.is_intra_partition_drop == True) \
-                and (partition_view.intra_partition_drop_message_type == message.message_Type) \
-                and partition_view.intra_partition_drop_message_from == message.source:
+        partition_view = partition_arrangement[str(message.round)]
+        if (partition_view["is_intra_partition_drop"] == True) \
+                and (partition_view["intra_partition_drop_message_type"] == message.message_type) \
+                and partition_view["intra_partition_drop_message_from"] == message.source:
             return True
         else:
             return False
@@ -39,19 +40,25 @@ class NetworkPlayground(process):
                 return partition
         return []
 
-    def receive(msg=("MESSAGE", message), from_=sender):
+    def receive(msg=('Message', message), from_=sender):
+        print("Network Playground received : " + str(message))
         destination = message.destination
 
         # Dropping message on filter criteria
         if filter(message):
             return
-        partition_sets = partition_arrangement[message.round]
-        other_nodes_in_the_same_partition = find_nodes_in_partition(partition_sets, message.source)
-        if destination in other_nodes_in_the_same_partition:
-            send((message.message_type, message.payload), to=nodes_mapping[destination])
-        else:
-            print("Message Dropped due to partition")
+
+        # partition_sets = partition_arrangement[message.round]
+        # other_nodes_in_the_same_partition = find_nodes_in_partition(partition_sets, message.source)
+        # other_nodes_in_the_same_partition = nodes_mapping.values
+        # if destination in other_nodes_in_the_same_partition:
+        #     send((message.message_type, message.payload), to=nodes_mapping[destination])
+        # else:
+        #     print("Message Dropped due to partition")
+
+        # destination_nodes = [nodes_mapping[id] for id in destination]
+        send((message.message_type, message.payload, sender), to=message.destination)
 
         # Sending the message to its twin node as well
-        if (destination * -1) in other_nodes_in_the_same_partition:
-            send((message.message_type, message.payload), to=nodes_mapping[(destination * -1)])
+        # if (destination * -1) in other_nodes_in_the_same_partition:
+        #     send((message.message_type, message.payload), to=nodes_mapping[(destination * -1)])

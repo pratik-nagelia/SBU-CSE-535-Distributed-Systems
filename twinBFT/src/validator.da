@@ -11,11 +11,12 @@ from mem_pool import MemPool
 from object_types import FailType, MsgType, ProposalMsg
 from pacemaker import Pacemaker
 from safety import Safety
+from message import Message
 
 
 class Validator (process):
 
-    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients):
+    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, replica_nodes):
 
         LOGGER.replicas = replicas
         LOGGER.process_id = "validator_" + str(validator_id)
@@ -62,10 +63,12 @@ class Validator (process):
         else:
             output('error: Validator.setattr: unsupported attribute')
 
+
     # Broadcast the timeout message
     def send_timeout_msg(timeout_msg):
         LOGGER.log('Validator: send_timeout_message', timeout_msg)
-        send(('Timeout', timeout_msg), to=self.replicas)
+        # send(('Timeout', timeout_msg), to=self.replicas)
+        send_message('Timeout', timeout_msg, self.replicas)
         LOGGER.log_event('Sent', 'Timeout', timeout_msg, self.replicas)
 
     '''Procedure start event processing(M)'''
@@ -77,7 +80,10 @@ class Validator (process):
         output("Validator", self.validator_id, "is exiting")
 
     def send_message(message_type, message_payload, destination_nodes):
-        pass
+        msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
+        print("Sending Message " + str(msg))
+        send(('Message', msg), to=self.playground)
+
 
     '''Procedure process certificate qc(qc)'''
     def process_certificate_qc(qc):
@@ -149,23 +155,19 @@ class Validator (process):
                 high_commit_qc=self.blocktree.high_commit_qc,
                 validator=validator_id
             )
-            send(('Proposal', proposal_msg), to=self.replicas)
+            # send(('Proposal', proposal_msg), to=self.replicas)
             send_message('Proposal', proposal_msg, self.replicas)
-            LOGGER.log_event("Sent", "Proposal",
-                             proposal_msg, self.replicas)
+            LOGGER.log_event("Sent", "Proposal", proposal_msg, self.replicas)
 
         LOGGER.log("Validator: process_new_round_event ends", None)
 
     '''Procedure process proposal msg(P)'''
-    def receive(msg=('Proposal', proposal_msg), from_=p):
+    def receive(msg=('Proposal', proposal_msg, p), from_=sender):
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
-
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
-
         if signature_verified is not None:
             LOGGER.log_action("Verified ProposalMsg signature", True)
-
             self.should_start_new_round = False
 
             if proposal_msg.block.qc is not None and p != replicas[validator_id]:
@@ -210,17 +212,16 @@ class Validator (process):
                     send vote msg to LeaderElection.get leader(current round + 1)'''
             if vote_msg is not None:
                 next_leader = self.leader_election.get_leader(round + 1)
-                send(('Vote', vote_msg),
-                     to=next_leader)
+                # send(('Vote', vote_msg), to=next_leader)
+                send_message('Vote', vote_msg, next_leader)
                 LOGGER.log_event("Sent", "Vote", vote_msg, next_leader)
 
         else:
             LOGGER.log_action("Verified ProposalMsg signature", False)
 
     '''Procedure process vote msg(M)'''
-    def receive(msg=('Vote', vote_msg), from_=p):
+    def receive(msg=('Vote', vote_msg, p), from_=sender):
         LOGGER.log_event("Received", "Vote", vote_msg, p)
-
         signature_verified = Cryptography.get_verified_message(
             vote_msg.signature, public_keys_validators[p])
 
@@ -242,7 +243,7 @@ class Validator (process):
         LOGGER.log("Received VoteMsg ends g", None)
 
     '''Procedure process timeout msg(M)'''
-    def receive(msg=('Timeout', timeout_msg), from_=p):
+    def receive(msg=('Timeout', timeout_msg, p), from_=sender):
         LOGGER.log_event("Received", "Timeout", timeout_msg, p)
 
         signature_verified = Cryptography.get_verified_message(
