@@ -82,8 +82,10 @@ class Validator (process):
     def send_message(message_type, message_payload, destination_nodes):
         msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
         print("Sending Message " + str(msg))
-        send(('Message', msg), to=self.playground)
-
+        if isinstance(destination_nodes, list):
+            send(('Message', msg), to=self.playground)
+        else :
+            send(('Unicast', msg), to=self.playground)
 
     '''Procedure process certificate qc(qc)'''
     def process_certificate_qc(qc):
