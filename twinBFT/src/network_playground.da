@@ -41,7 +41,6 @@ class NetworkPlayground(process):
         return []
 
     def receive(msg=('Unicast', message), from_=sender):
-        print("Unicast received =============================")
         leader = message.destination
         # replace leader with test scenario plans
         send((message.message_type, message.payload, sender), to=leader)
