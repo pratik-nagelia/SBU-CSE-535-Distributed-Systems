@@ -3,9 +3,9 @@ from object_types import FailType, Failure, FailureConfig, MsgType
 configs = [
     {
         'nvalidators': 5,
-        'nfaulty': 0,
-        'nclients': 3,
-        'nclientops': 2,
+        'nfaulty': 1,
+        'nclients': 1,
+        'nclientops': 3,
         'sleeptime': 1,
         'clienttimeout': 10,
         'delta': 2,
