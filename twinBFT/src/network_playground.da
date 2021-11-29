@@ -9,6 +9,7 @@ class NetworkPlayground(process):
 
     def run():
         print("Starting Network Playground")
+        print(str(nodes_mapping))
         await False
 
     # def send_message(round, leader, message):
@@ -55,8 +56,8 @@ class NetworkPlayground(process):
         # else:
         #     print("Message Dropped due to partition")
 
-        destination_nodes = [nodes_mapping[id] for id in destination]
-        send((message.message_type, message.payload, sender), to=destination_nodes)
+        # destination_nodes = [nodes_mapping[id] for id in destination]
+        send((message.message_type, message.payload, sender), to=message.destination)
 
         # Sending the message to its twin node as well
         # if (destination * -1) in other_nodes_in_the_same_partition:
