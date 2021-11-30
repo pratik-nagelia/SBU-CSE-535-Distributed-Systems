@@ -25,7 +25,7 @@ class Validator (process):
             + LOGGER.process_id + ".log"
 
         LOGGER.log_action("Initial configuration", config)
-
+        print("INSIDE Node ____" + str(validator_id) + " - " + str(self))
         self.id_block = dict()
         self.request_cache = dict()
         self.recently_committed_block_ids = list()

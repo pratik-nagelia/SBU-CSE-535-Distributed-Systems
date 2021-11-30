@@ -57,7 +57,10 @@ class RunDiemBFT(process):
             private_keys_clients[c] = private_key
             public_keys_clients[c] = public_key
 
-
+        print("Nodes Mapping : " + str(nodes_mapping))
+        print("Reverse Node Mapping : " + str(nodes_reverse))
+        print("Private Keys : " + str(private_keys_validators))
+        print("Public Keys : " + str(public_keys_validators))
         # i = 0
         # for (node_id, v) in zip(all_nodes, validators):
         #     nodes_mapping[node_id] = v
@@ -70,6 +73,7 @@ class RunDiemBFT(process):
                 node_id = node_id * -1
             setup({v}, (config, config_id, node_id, list(validators), list(clients),
                         private_keys_validators[v], public_keys_validators, public_keys_clients, playground, honest_nodes + faulty_nodes))
+            print("Node ____" + str(node_id) + " - " + str(v))
 
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
