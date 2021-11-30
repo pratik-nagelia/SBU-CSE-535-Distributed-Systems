@@ -1,5 +1,6 @@
 {
     "all_nodes": [
+<<<<<<< HEAD
         1,
         2,
         3,
@@ -13,16 +14,36 @@
     ],
     "faulty_nodes": [
         4
+=======
+        0,
+        1,
+        2,
+        3
     ],
+    "honest_nodes": [
+        0,
+        1,
+        2,
+        3
+>>>>>>> pannu_twins_sq
+    ],
+    "faulty_nodes": [],
     "round_arrangements": {
         "0": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2,
                     3,
                     4,
                     -4
+=======
+                    0,
+                    1,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 2,
@@ -33,6 +54,7 @@
         "1": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2,
                     3,
@@ -53,6 +75,12 @@
                     3,
                     4,
                     -4
+=======
+                    0,
+                    1,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -63,6 +91,7 @@
         "3": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1
                 ],
                 [
@@ -73,6 +102,15 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0,
+                    1,
+                    2,
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -80,6 +118,7 @@
         "4": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1
                 ],
                 [
@@ -87,6 +126,14 @@
                     3,
                     4,
                     -4
+=======
+                    0
+                ],
+                [
+                    1,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -97,6 +144,7 @@
         "5": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1
                 ],
                 [
@@ -104,6 +152,14 @@
                     3,
                     4,
                     -4
+=======
+                    0
+                ],
+                [
+                    1,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -114,6 +170,7 @@
         "6": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2
                 ],
@@ -124,6 +181,17 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0
+                ],
+                [
+                    1,
+                    2,
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -131,6 +199,7 @@
         "7": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2
                 ],
@@ -138,6 +207,14 @@
                     3,
                     4,
                     -4
+=======
+                    0,
+                    1
+                ],
+                [
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -148,6 +225,7 @@
         "8": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2
                 ],
@@ -155,6 +233,14 @@
                     3,
                     4,
                     -4
+=======
+                    0,
+                    1
+                ],
+                [
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -165,6 +251,7 @@
         "9": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2
                 ],
                 [
@@ -175,6 +262,17 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0,
+                    1
+                ],
+                [
+                    2,
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -182,6 +280,7 @@
         "10": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2
                 ],
                 [
@@ -189,6 +288,14 @@
                     3,
                     4,
                     -4
+=======
+                    1
+                ],
+                [
+                    0,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -199,6 +306,7 @@
         "11": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2
                 ],
                 [
@@ -206,6 +314,14 @@
                     3,
                     4,
                     -4
+=======
+                    1
+                ],
+                [
+                    0,
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -219,6 +335,7 @@
                     1
                 ],
                 [
+<<<<<<< HEAD
                     2
                 ],
                 [
@@ -228,6 +345,14 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0,
+                    2,
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -235,6 +360,7 @@
         "13": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1
                 ],
                 [
@@ -244,6 +370,16 @@
                     3,
                     4,
                     -4
+=======
+                    0
+                ],
+                [
+                    1
+                ],
+                [
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -254,6 +390,7 @@
         "14": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1
                 ],
                 [
@@ -263,6 +400,16 @@
                     3,
                     4,
                     -4
+=======
+                    0
+                ],
+                [
+                    1
+                ],
+                [
+                    2,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -273,6 +420,7 @@
         "15": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2,
                     3
@@ -283,6 +431,19 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0
+                ],
+                [
+                    1
+                ],
+                [
+                    2,
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -290,6 +451,7 @@
         "16": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2,
                     3
@@ -297,6 +459,14 @@
                 [
                     4,
                     -4
+=======
+                    0,
+                    1,
+                    2
+                ],
+                [
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -307,6 +477,7 @@
         "17": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     1,
                     2,
                     3
@@ -314,6 +485,14 @@
                 [
                     4,
                     -4
+=======
+                    0,
+                    1,
+                    2
+                ],
+                [
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,
@@ -324,6 +503,7 @@
         "18": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2,
                     3
                 ],
@@ -334,6 +514,17 @@
                 ]
             ],
             "leader": 2,
+=======
+                    0,
+                    1,
+                    2
+                ],
+                [
+                    3
+                ]
+            ],
+            "leader": 0,
+>>>>>>> pannu_twins_sq
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -341,6 +532,7 @@
         "19": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2,
                     3
                 ],
@@ -348,6 +540,14 @@
                     1,
                     4,
                     -4
+=======
+                    1,
+                    2
+                ],
+                [
+                    0,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 4,
@@ -358,6 +558,7 @@
         "20": {
             "partition_set": [
                 [
+<<<<<<< HEAD
                     2,
                     3
                 ],
@@ -365,6 +566,14 @@
                     1,
                     4,
                     -4
+=======
+                    1,
+                    2
+                ],
+                [
+                    0,
+                    3
+>>>>>>> pannu_twins_sq
                 ]
             ],
             "leader": 3,

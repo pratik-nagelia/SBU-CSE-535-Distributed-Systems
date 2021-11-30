@@ -3,13 +3,15 @@ from partition_view import PartitionView
 
 
 class NetworkPlayground(process):
-    def setup(partition_arrangement, nodes_mapping):
+    def setup(partition_arrangement, nodes_mapping, nodes_reverse):
         self.partition_arrangement = partition_arrangement
         self.nodes_mapping = nodes_mapping
+        self.nodes_reverse = nodes_reverse
 
     def run():
         print("Starting Network Playground")
         print(str(nodes_mapping))
+        print(str(nodes_reverse))
         await False
 
     # def send_message(round, leader, message):
@@ -40,22 +42,46 @@ class NetworkPlayground(process):
                 return partition
         return []
 
+    def get_node_id(validator):
+        #print("Get Node ID: {}. Keys: {}".format(validator, self.nodes_obj_to_id_mapping.keys()))
+        return self.nodes_reverse[validator]
+
+    def determine_partition_of_validator(round, validator_id):
+        partition_view = partition_arrangement[str(round)]['partition_set']
+        for partition_set in partition_view:
+            if validator_id in partition_set:
+                print("[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(str(validator_id), str(partition_set), str(partition_view)))
+                return partition_set
+
     def receive(msg=('Unicast', message), from_=sender):
+        print("[Network-Playground] UNICAST message received : " + str(message))
         leader = message.destination
+        round = message.round
+        sender_id = get_node_id(sender)
+
+        print("[Network-Playground] Sender_id: {} Leader_id: {}".format(str(sender_id), str(leader)))
+        partition_set = determine_partition_of_validator(round, sender_id)
+
         target = []
-        target.append(nodes_mapping[leader])
-        if (leader * -1) in nodes_mapping:
+        if leader in partition_set:
+            print("[Network-Playground] Both the Leader and Sender belong to the same partition. Forward the message to the leader...")
+            target.append(nodes_mapping[leader])
+        if (leader * -1) in partition_set:
             target.append(nodes_mapping[(leader * -1)])
-        # replace leader with test scenario plans
+            print("[Network-Playground] Twin is also in the same partition")
+        print("[Network-Playground] Unicast Sending message to : ", target)
         send((message.message_type, message.payload, sender), to=target)
 
-    def receive(msg=('Message', message), from_=sender):
-        print("Network Playground received : " + str(message))
-        destination = message.destination
 
-        # Dropping message on filter criteria
-        if filter(message):
-            return
+    def receive(msg=('Broadcast', message), from_=sender):
+        print("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
+        partition_set = determine_partition_of_validator(message.round, message.source)
+        # Dropping message on filter criteria -> To Be Implemented
+        # if filter(message):
+        #     return
+        target = [nodes_mapping[i] for i in partition_set]
+        dropped_nodes = nodes_mapping.keys() - partition_set
+        print("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
 
         # partition_sets = partition_arrangement[message.round]
         # other_nodes_in_the_same_partition = find_nodes_in_partition(partition_sets, message.source)
@@ -66,7 +92,8 @@ class NetworkPlayground(process):
         #     print("Message Dropped due to partition")
 
         # destination_nodes = [nodes_mapping[id] for id in destination]
-        send((message.message_type, message.payload, sender), to=nodes_mapping.values())
+        # send((message.message_type, message.payload, sender), to=nodes_mapping.values())
+        send((message.message_type, message.payload, sender), to=target)
 
         # Sending the message to its twin node as well
         # if (destination * -1) in other_nodes_in_the_same_partition:

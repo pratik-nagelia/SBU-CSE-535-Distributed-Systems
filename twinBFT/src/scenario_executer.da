@@ -77,7 +77,7 @@ class RunDiemBFT(process):
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
 
-        setup(playground, (round_arrangements, nodes_mapping))
+        setup(playground, (round_arrangements, nodes_mapping, nodes_reverse))
         start(playground, ())
 
         start(validators)
@@ -94,8 +94,7 @@ def is_config_valid(config):
             "Number of validators should be more than thrice of number of faulty validators.")
         return False
     if (int(config['nfaulty']) > int(config['exclude_size'])) or (int(config['exclude_size']) > 2 * int(config['nfaulty'])):
-        print(
-            "Exlude size should be between nfaulty and 2*nfaulty")
+        print("Exlude size should be between nfaulty and 2 * nfaulty")
         return False
     return True
 
