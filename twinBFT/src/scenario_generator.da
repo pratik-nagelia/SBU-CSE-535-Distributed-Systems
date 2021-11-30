@@ -13,7 +13,7 @@ def generate_liveness_partitions(all_nodes):
 def generate_ids(honest_nodes_count, faulty_nodes_count):
     total = honest_nodes_count + faulty_nodes_count
     all_nodes = list(range(0, total))
-    faulty_nodes = [3]
+    faulty_nodes = [1]
     honest_nodes = list(set(all_nodes) - set(faulty_nodes))
     return honest_nodes, faulty_nodes
 
@@ -95,7 +95,7 @@ def enumerate_partitions(partiton_views, config):
         random.seed(config["seed"])
         random.shuffle(partiton_views)
     round_arrangements = {}
-    for round_no, partition_view in enumerate(partiton_views, 1):
+    for round_no, partition_view in enumerate(partiton_views, 0):
         round_arrangements[round_no] = partition_view
         if round_no >= config["enumeration_limit"]["total_round_views"]:  # Enumeration Limit
             break
