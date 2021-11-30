@@ -4,8 +4,8 @@ configs = [
     {
         'nvalidators': 4,
         'nfaulty': 1,
-        'nclients': 2,
-        'nclientops': 2,
+        'nclients': 1,
+        'nclientops': 1,
         'sleeptime': 1,
         'clienttimeout': 10,
         'delta': 2,
