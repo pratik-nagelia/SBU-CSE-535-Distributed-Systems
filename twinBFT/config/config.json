@@ -1,6 +1,6 @@
 {
   "total_nodes": 4,
-  "faulty_nodes": 1,
+  "faulty_nodes": 0,
   "only_faulty_leaders": false,
   "intra_partition_drop_rounds": [2,4],
   "intra_partition_drop_message_type": "VOTE",

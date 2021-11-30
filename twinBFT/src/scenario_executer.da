@@ -56,8 +56,9 @@ class RunDiemBFT(process):
         #     i += 1
         for i, v in enumerate(validators):
             node_id = all_nodes[i]
-            setup({v}, (config, config_id, i, list(validators), list(clients),
+            setup({v}, (config, config_id, node_id, list(validators), list(clients),
                         private_keys_validators[v], public_keys_validators, public_keys_clients, playground, honest_nodes + faulty_nodes))
+            print("Node Ids generated :" + str(node_id))
             nodes_mapping[node_id] = v
             nodes_obj_to_id_mapping[str(v)] = node_id
 
