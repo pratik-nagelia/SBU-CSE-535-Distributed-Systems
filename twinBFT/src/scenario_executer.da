@@ -48,9 +48,9 @@ class RunDiemBFT(process):
             public_keys_validators[nodes_mapping[id]] = public_key
 
         for id in (faulty_nodes):
-            private_key, public_key = Cryptography.generate_key()
-            private_keys_validators[nodes_mapping[-1 * id]] = private_key
-            public_keys_validators[nodes_mapping[-1 * id]] = public_key
+            # private_key, public_key = Cryptography.generate_key()
+            private_keys_validators[nodes_mapping[-1 * id]] = private_keys_validators[nodes_mapping[id]]
+            public_keys_validators[nodes_mapping[-1 * id]] = public_keys_validators[nodes_mapping[id]]
 
         for c in clients:
             private_key, public_key = Cryptography.generate_key()
