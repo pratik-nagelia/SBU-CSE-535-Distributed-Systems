@@ -5,3 +5,9 @@ class Block:
         self.payload = payload
         self.qc = qc
         self.block_id = block_id
+
+    def __str__(self):
+        payload_string = ""
+        if self.payload is not None:
+            payload_string = self.payload.to_string()
+        return "(author=" + str(self.author)+",round=" + str(self.round)+",payload=" + payload_string +",qc=" + str(self.qc)+",block_id=" + str(self.block_id)+")"

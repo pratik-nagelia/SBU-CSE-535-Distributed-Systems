@@ -1,31 +1,12 @@
-from constants import MessageType
+
 class Transaction:
-    def __init__(self, transaction_id, client_id, message_type):
+    def __init__(self, transaction_id, client):
         self.transaction_id = transaction_id
-        self.client_id = client_id
-        self.message_type = message_type
+        self.client_id = client
 
     def to_string(self):
         msg = "Transaction :" + str(self.transaction_id) + ", initiated by client: " + str(self.client_id)
         return msg
 
-
-    def is_local_timeout_m(self):
-        if(self.message_type == MessageType.LOCAL_TIMEOUT):
-            return True
-        return False
-
-    def is_vote_m(self):
-        if(self.message_type == MessageType.VOTE_MESSAGE):
-            return True
-        return False
-
-    def is_proposal_m(self):
-        if(self.message_type == MessageType.PROPOSAL_MESSAGE):
-            return True
-        return False
-
-    def is_timeout_m(self):
-        if(self.message_type == MessageType.TIMEOUT_MESSAGE):
-            return True
-        return False
+    def fetch_client_id(self):
+        return self.client_id

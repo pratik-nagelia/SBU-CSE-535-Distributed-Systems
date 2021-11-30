@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 class LeaderElection:
     F = 1
 
@@ -56,3 +57,90 @@ class LeaderElection:
     # def merge_authors(self, active_validators, author):
     #     #TODO
     #     return null
+=======
+from pacemaker import Pacemaker
+import datetime
+
+class LeaderElection:
+
+
+    def __init__(self,nodesDict, window_size, exclude_size, reputation_leaders, pacemaker, ledger, node_id, node_specific_file, common_logging):
+        self.nodesDict = nodesDict
+        self.window_size = window_size
+        self.exclude_size = exclude_size
+        self.reputation_leaders = {}  # => Dict
+        self.pacemaker = pacemaker
+        self.ledger = ledger
+        self.node_id = node_id
+        self.node_specific_file = node_specific_file
+        self.common_logging = common_logging
+
+    def output_to_files(self, string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.write(msg)
+        self.common_logging.write(msg)
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.flush()
+        self.common_logging.flush()
+        print(msg)
+
+    def elect_reputation_leader(self, quorum_certificate):
+        active_validators = []
+        last_authors = []
+        current_qc = quorum_certificate
+        self.output_to_files("[Leader-Election-{}] Elect reputation leaders using the latest qc. Window size: [{}]".format(self.node_id,self.window_size))
+        for i in range(self.window_size):
+            if len(last_authors) >= self.exclude_size:
+                break
+            current_block = self.ledger.committed_block(current_qc.vote_info.parent_id)
+            block_author = None
+            if current_block is not None:
+                block_author = current_block.author
+            if i < self.window_size:
+                # TODO
+                active_validators = self.merge_authors(active_validators, current_qc.signatures) #.signers missing here.
+            if len(last_authors) < self.exclude_size:
+                last_authors = self.merge_authors(last_authors, block_author)
+
+            current_qc = None
+            if current_block is not None:
+                current_qc = current_block.qc
+            # TODO
+            active_validators.append(last_authors)
+            return active_validators[0]
+
+    def update_leaders(self, qc):
+        # TODO Remove this None Condition, cannot be None
+        self.output_to_files("[Leader-Election-{}] Update leaders using qc formed for voting done in round [{}] ".format(self.node_id,qc.vote_info.round))
+        if qc is not None:
+            extended_round = qc.vote_info.parent_round
+            qc_round = qc.vote_info.round
+            current_round = self.pacemaker.current_round
+            self.output_to_files("[Leader-Election-{}] Extended_round:[{}], QC_round:[{}], Current_round:[{}]".format(self.node_id, extended_round, qc_round, current_round))
+            if extended_round + 1 == qc_round and qc_round + 1 == current_round:
+                key = current_round + 1
+                self.reputation_leaders[key] = self.elect_reputation_leader(qc)
+
+    def get_leader(self, current_round):
+        # if current_round in self.reputation_leaders:
+        #     return self.reputation_leaders[current_round]
+        next_leader = self.round_robin_leader(current_round)
+        self.output_to_files("[Leader-Election-{}] Get_Leader for round [{}], New Leader: [{}]".format(self.node_id, current_round, next_leader))
+        # Returning index instead of the leader directly to handle getLeader
+        # return current_round % len(self.nodesDict)
+        return next_leader
+
+    def round_robin_leader(self, current_round):
+        x = (current_round // 2)
+        leader = x % (len(self.nodesDict))
+        self.output_to_files("[Leader-Election-{}] Round-Robin Leader: [{}]".format(self.node_id, leader))
+        return leader
+
+
+    def merge_authors(self, active_validators, author):
+        #TODO
+        return []
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3

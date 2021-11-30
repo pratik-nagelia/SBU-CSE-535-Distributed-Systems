@@ -1,17 +1,68 @@
+import datetime
+from mem_pool import MemPool
 
 class Ledger:
-    def __init__(self):
-        self.a = 0
+    def __init__(self, node_id, clients_dict, node_specific_file, common_logging, mempool):
+        self.node_id = node_id
+        self.committed_transactions = {}
+        self.pending_transactions = {}
+        self.clients_dict = clients_dict
+        self.save_blocks = {}
+        self.parent_map = {}
+        self.filename = 'ledger-' + str(self.node_id) + '.txt'
+        self.node_specific_file = node_specific_file
+        self.common_logging = common_logging
+        self.mempool = mempool
+
+    def output_to_files(self, string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.write(msg)
+        self.common_logging.write(msg)
+        self.common_logging.write("\n")
+        self.node_specific_file.write("\n")
+        self.node_specific_file.flush()
+        self.common_logging.flush()
+        print(msg)
+
+    def get_pending_transactions(self, block_id):
+        if block_id in self.pending_transactions:
+            return self.pending_transactions[block_id]
 
     def speculate(self, prev_block_id, block_id, txns):
+        if txns is None:
+            return
+        self.output_to_files("[Ledger-Node-{}] Speculate entry for block_id: [{}] with pending transaction: [{}]".format(self.node_id, block_id,txns.to_string()))
+        self.pending_transactions[block_id] = txns
         pass
-        # ledger_state_id = str(block_id)
 
-    # def pending_state(self, block_id):
-    #     pass
-    #
-    # def commit(self, block_id):
-    #     pass
-    #
-    # def committed_block(self, block_id):
-    #     pass
+    def pending_state(self, block_id):
+        if block_id in self.pending_transactions:
+            pending_txn = self.pending_transactions[block_id]
+            self.output_to_files(
+                "[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction: [{}]".format(
+                    self.node_id, block_id, pending_txn.to_string()))
+            return pending_txn.to_string()
+        else:
+            self.output_to_files("[Ledger-Node-{}] Fetch pending transaction for block_id: [{}]. Corresponding transaction doesn't exist".format(self.node_id, block_id))
+
+    def commit(self, block_id):
+        file = open(self.filename, 'a')
+        if block_id in self.pending_transactions:
+            pending_txn = self.pending_transactions[block_id]
+            msg = str(datetime.datetime.now()) + " " + pending_txn.to_string() + '\n'
+            file.write(msg)
+            file.flush()
+            self.output_to_files("[Ledger-Node-{}] Committing pending transaction for block_id: [{}]. Corresponding transaction: [{}] ********************************************************************************".format(self.node_id, block_id, pending_txn))
+            self.pending_transactions.pop(block_id)
+            self.committed_transactions[block_id] = pending_txn
+            return pending_txn
+
+        else:
+            self.output_to_files("[Ledger-Node-{}] Nothing to commit at this time".format(self.node_id))
+            return None
+        file.close()
+
+    def committed_block(self, block_id):
+        pass

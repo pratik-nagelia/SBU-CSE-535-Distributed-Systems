@@ -1,0 +1,59 @@
+import json
+import sys
+from node import Node
+from client import Client
+# Node = import_da('node')
+# Client = import_da('client')
+from nacl.signing import SigningKey, VerifyKey
+
+def main():
+    config(clock='Lamport', channel = 'fifo')
+
+    with open(sys.argv[1]) as config_file:
+        conf = json.load(config_file)
+
+    nodes = new(Node, num = conf['nodes'])
+    print("[Runner] Number of Nodes Intiated: ", len(nodes))
+    clients = new(Client, num = conf['clients'])
+    print("[Runner] Number of Clients Intiated: ", len(clients))
+
+    clientsDict = {}
+    clientPrivateKeyDict = {}
+    clientPublicKeyDict = {}
+    id = 0
+    for c in clients:
+        clientsDict[id] = c
+        private_key = SigningKey.generate()
+        verify_key = private_key.verify_key
+        clientPrivateKeyDict[id] = private_key
+        clientPublicKeyDict[id] = verify_key
+        setup(c, (nodes, id, conf, private_key))
+        start(c)
+        id += 1
+
+
+    # Creating a Dictionary of Nodes Vs ID
+    id = 0
+    nodeDict = {}
+    privateKeyDict = {}
+    publicKeyDict = {}
+
+    for n in nodes:
+        nodeDict[id] = n
+        private_key = SigningKey.generate()
+        verify_key = private_key.verify_key
+        privateKeyDict[id] = private_key
+        publicKeyDict[id] = verify_key
+        id += 1
+    print("[Runner] fetch 0 node: ", nodeDict[0])
+    for i in range(0, id):
+        node_obj = nodeDict[i]
+        setup(node_obj, (i, nodeDict, conf, clientsDict, privateKeyDict[i], publicKeyDict, clientPublicKeyDict))
+        start(node_obj)
+    print("[Runner] Setup Complete for Nodes")
+
+
+
+if __name__ == '__main__':
+    main()
+

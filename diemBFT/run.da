@@ -1,0 +1,58 @@
+import json
+import sys
+import time
+from node import Node
+from client import Client
+from nacl.signing import SigningKey, VerifyKey
+
+
+class Run(process):
+    def setup(conf):
+        output("\n \n \n **** STARTING TEST **** : ", conf['test_name'])
+        self.nodes = new(Node, num=conf['nodes'])
+        output("[Runner] Number of Nodes Created: ", len(nodes))
+        self.clients = new(Client, num=conf['clients'])
+        output("[Runner] Number of Clients clients: ", len(clients))
+        self.clientsDict = {}
+        self.nodesDict = {}
+        self.client_public_key_dict = {}
+        self.client_private_key_dict = {}
+
+        setup_clients()
+        setup_nodes()
+
+    def setup_nodes():
+        id = 0
+        private_key_dict = {}
+        public_key_dict = {}
+        for n in nodes:
+            nodesDict[id] = n
+            private_key = SigningKey.generate()
+            verify_key = private_key.verify_key
+            private_key_dict[id] = private_key
+            public_key_dict[id] = verify_key
+            id += 1
+        for i in range(0, id):
+            node_obj = nodesDict[i]
+            filename = "node_"+str(i)+".log"
+            common_logging = "diemBFT_run.log"
+            setup(node_obj, (i, nodesDict, conf, clientsDict, private_key_dict[i], public_key_dict, client_public_key_dict, filename, common_logging))
+
+    def setup_clients():
+        id = 0
+        for c in clients:
+            clientsDict[id] = c
+            private_key = SigningKey.generate()
+            verify_key = private_key.verify_key
+            client_private_key_dict[id] = private_key
+            client_public_key_dict[id] = verify_key
+            setup(c, (nodes, id, conf, private_key))
+            id += 1
+
+    def run():
+        for node in nodesDict.values():
+            start(node)
+
+        for client in clientsDict.values():
+            start(client)
+            time.sleep(4)

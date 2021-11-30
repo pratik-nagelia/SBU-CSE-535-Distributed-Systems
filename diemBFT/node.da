@@ -1,18 +1,21 @@
-from main import Main
+import nacl.exceptions
 from block_tree import BlockTree
-from proposal_message import ProposalMessage
-from constants import *
-from pacemaker import Pacemaker
-from mem_pool import MemPool
 from leader_election import LeaderElection
-from safety import Safety
 from ledger import Ledger
+import datetime
+from mem_pool import MemPool
+from pacemaker import Pacemaker
+from proposal_message import ProposalMessage
+from safety import Safety
+
 
 
 class Node(process):
-    def setup(node_id: int, nodes: set, nodesDict):
-        self.main = Main(self.node_id)
+    def setup(node_id: int, nodesDict, conf, clientsDict, private_key, public_keys, clientPublicKeyDict, filename, common_logging):
+        self.node_file = open(filename, 'a')
+        self.common_file = open(common_logging,'a')
         self.nodesDict = nodesDict
+<<<<<<< HEAD
         self.ledger = Ledger()
         self.block_tree = BlockTree([], [], None, None)
         self.safety = Safety(None, None, -1, -1)
@@ -27,54 +30,192 @@ class Node(process):
         self.block_tree.set_ledger(self.ledger)
         # self.block_tree.set_node_id(self.node_id)
         await(False)
+=======
+        self.F = conf['F']
+        self.private_key = private_key
+        self.public_keys = public_keys
+        self.mempool = MemPool([], self.node_id, self.node_file, self.common_file)
+        self.ledger = Ledger(self.node_id, clientsDict, self.node_file, self.common_file, self.mempool)
+        self.block_tree = BlockTree([], {}, None, None, public_keys, self.node_id, self.ledger, self.F, self.node_file, self.common_file)
+        self.safety = Safety(private_key, public_keys, -1, -1, self.node_id, self.ledger, self.block_tree, self.node_file, self.common_file)
+        self.pacemaker = Pacemaker(0, None, [], self.block_tree, self.node_id, conf, self.safety, nodesDict, self.node_file, self.common_file)
+        self.leader_election = LeaderElection(nodesDict, 2 * self.F + 1, self.F, {}, self.pacemaker, self.ledger, self.node_id, self.node_file, self.common_file)
+        self.clientPublicKeyDict = clientPublicKeyDict
+        self.kill_flag = False
+        self.received_msg = False
+        print("[Node-{}] Setup completed ".format(self.node_id))
 
-    def receive(msg=("TXN", payload), from_=client):
-        output("[Node] [{}] Received {} message:".format(self.node_id, TXN), " | Message: ", payload.to_string())
-        self.process_new_round_event(None)
+    def output_to_files(string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.common_file.write("\n")
+        self.node_file.write("\n")
+        self.node_file.write(msg)
+        self.common_file.write(msg)
+        self.common_file.write("\n")
+        self.node_file.write("\n")
+        self.node_file.flush()
+        self.common_file.flush()
+        print(msg)
+
+    def run():
+        string = "[Node-{}] Running Node".format(self.node_id)
+        self.output_to_files(string)
+        while True:
+            if self.kill_flag == True:
+                break
+            timer_duration = self.pacemaker.get_round_timer(self.pacemaker.current_round)
+            if await self.received_msg:
+                self.received_msg = False
+            elif timeout(timer_duration):
+                tmo_msg = self.pacemaker.local_timeout_round()
+                self.output_to_files('[Node-{}] Timed out for Round {}'.format(self.node_id, self.pacemaker.current_round))
+                send(("TIMEOUT", tmo_msg, self.node_id), to=self.nodesDict.values())
+
+        self.node_file.close()
+        self.common_file.close()
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3
+
+    def receive(msg=("TXN", client_request), from_=client):
+        payload = client_request.transaction
+        if self.valid_client_signature(client_request.signature, payload.client_id):
+            string = "[Node-{}] Received {} message:".format(self.node_id, "TXN") + " | Message: " + payload.to_string()
+            self.output_to_files(string)
+            self.mempool.add_transaction(payload)
+            pending_txn = self.mempool.get_transactions()
+            if pending_txn is None:
+                return
+
+            self.process_new_round_event(None, pending_txn)
 
     def receive(msg=("PROPOSAL", proposal, sender_id), from_=sender):
-        output("[Node] [{}] Received {} message from Node :".format(self.node_id, PROPOSAL), sender_id)
+        string = ("[Node-{}] Received {} message from Node :".format(self.node_id, "PROPOSAL"))+str(sender_id)
+        self.received_msg = True
+        self.output_to_files(string)
         self.process_proposal_msg(proposal, sender_id)
 
     def receive(msg=("VOTE", vote_msg, sender_id), from_=sender):
+<<<<<<< HEAD
         output("[Node] [{}] Received {}  message".format(self.node_id, VOTE), "  from Node: [{}]".format(sender_id))
+=======
+        string  = ("[Node-{}] Received {} message".format(self.node_id, "VOTE"))+(" from Node: [{}] for the proposal sent in block[{}]".format(sender_id, vote_msg.vote_info.id))
+        self.output_to_files(string)
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3
         self.process_vote_msg(vote_msg, sender_id)
 
+    def receive(msg=("TIMEOUT", tmo_msg, sender_id), from_=sender):
+        self.received_msg = True
+        self.output_to_files("[Node-{}] Received {} message".format(self.node_id, "TIMEOUT") + " from Node: [{}] ".format(sender_id))
+        self.process_timeout_message(tmo_msg)
+
+    def receive(msg=("LOCAL_TIMEOUT", local_tmo, sender_id), from_=sender):
+        print("[Node-{}] Received {} message".format(self.node_id, "LOCAL_TIMEOUT"),
+              " from Node: [{}] ".format(sender_id))
+        self.pacemaker.local_timeout_round(local_tmo)
+
+    def receive(msg=("KILL", client_id), from_=sender):
+        string = "[Node-{}] Received {} Notification".format(self.node_id, "KILL") + " from Client ID: [{}] ".format(client_id)
+        self.output_to_files(string)
+        send(("KILL", None), to=self.clientsDict[client_id])
+        self.kill_flag = True
+
     def process_proposal_msg(proposal, sender_id):
-        print("[Node] [{}] Start processing the PROPOSAL proposal message".format(self.node_id))
-        process_certificate_qc(proposal.block.qc)
-        process_certificate_qc(proposal.high_commit_qc)
+        output_to_files("[Node-{}] Start processing the PROPOSAL proposal message".format(self.node_id))
+        if sender_id != self.node_id:
+            process_certificate_qc(proposal.block.qc)
+            process_certificate_qc(proposal.high_commit_qc)
         self.pacemaker.advance_round_tc(proposal.last_round_tc)
         current_round = self.pacemaker.current_round
         leader = leader_election.get_leader(current_round)
+<<<<<<< HEAD
         output("[Node] [{}]".format(self.node_id), " Current Round: [{}]".format(current_round), " Leader: [{}]".format(leader))
         output("[Node] [{}]".format(self.node_id), " proposal.block.round: [{}]".format(proposal.block.round), " sender_id: [{}]".format(sender_id), " proposal.block.author [{}]".format(proposal.block.author))
         if proposal.block.round != current_round or sender_id != leader or proposal.block.author != leader:
             output("[Node] [{}]".format(self.node_id),
                    " Reject current proposal sent by sender: [{}]".format(sender_id))
+=======
+        self.output_to_files(("[Node-{}]".format(self.node_id))+(" Current Round: [{}]".format(current_round))+ (" Leader: [{}]".format(leader)))
+        self.output_to_files(("[Node-{}] proposal.block.round: [{}] sender_id: [{}] proposal.block.author [{}]").format(self.node_id, proposal.block.round, sender_id, proposal.block.author))
+        if proposal.block.round != current_round or sender_id != leader or proposal.block.author != leader:
+            temp_str = "[Node] [{}] Reject current proposal sent by sender: [{}]".format(self.node_id, sender_id)
+            self.output_to_files(temp_str)
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3
             return
-        print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
+        # print("[Node] [{}] Add a new speculative state to the Ledger".format(self.node_id))
         self.block_tree.execute_and_insert(proposal.block)
+<<<<<<< HEAD
         vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc)
         if vote_msg is not None:
             next_leader_id = leader_election.get_leader(current_round + 1)
             output("Next leader : ", next_leader_id)
+=======
+        vote_msg = self.safety.make_vote(proposal.block, proposal.last_round_tc, proposal.signature)
+        if vote_msg is not None:
+            next_leader_id = leader_election.get_leader(current_round + 1)
+            self.output_to_files("[Node-{}] Send the prepared VOTE to the next leader [{}] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ".format(self.node_id, next_leader_id))
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3
             next_leader = self.nodesDict[next_leader_id]
             send(("VOTE", vote_msg, self.node_id), to=next_leader)
 
     def process_vote_msg(vote_msg, sender_id):
+<<<<<<< HEAD
         print("[Node] [{}] Start processing the VOTE message".format(self.node_id))
         qc = self.block_tree.process_vote(vote_msg)
         if (qc != null):
+=======
+        self.output_to_files(("[Node-{}] Start processing the VOTE message".format(self.node_id)))
+        qc = self.block_tree.process_vote(vote_msg, sender_id)
+        # print("[Node-{}] Check if a quorum has been formed".format(self.node_id))
+        if qc is not None:
+>>>>>>> 884df79ad8481475be86f88ae40631d3189dcca3
             self.process_certificate_qc(qc)
-            self.process_new_round_event(null)
+            if self.ledger.get_pending_transactions(qc.vote_info.id) is None:
+                return
+            self.process_new_round_event(None, None)
 
     def process_certificate_qc(qc):
-        pass
+        if qc is not None:
+            committed_txn = self.block_tree.process_qc(qc)
+            if committed_txn is not None:  # and self.node_id == qc.author:
+                client_id = committed_txn.fetch_client_id()
+                output_to_files(("[Node-{}] Notify client of committed transaction [{}] to client [{}]".format(self.node_id, committed_txn.to_string(), client_id)))
+                send(("TRANSACTION_COMMITTED", committed_txn.to_string()), to=self.clientsDict[client_id])
+            self.leader_election.update_leaders(qc)
+            self.pacemaker.advance_round_qc(qc)
 
-    def process_new_round_event(last_tc):
-        # TODO Get current Round
-        if self.node_id == 0 and self.pacemaker.current_round == 0:
-            block = self.block_tree.generate_block(self.mempool.get_transactions(), self.pacemaker.current_round)
-            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc)
-            send(("PROPOSAL", proposal, self.node_id), to=nodes)
+    def process_new_round_event(last_tc, transaction):
+        if self.node_id == self.leader_election.get_leader(self.pacemaker.current_round):
+            output_to_files("[Node-{}] Processing New Round Event as the leader".format(self.node_id))
+            block = self.block_tree.generate_block(transaction, self.pacemaker.current_round)
+            proposal = ProposalMessage(block, last_tc, self.block_tree.high_commit_qc,
+                                       self.private_key.sign(bytes(str(block.block_id), encoding='utf-8')), self.node_id)
+            self.output_to_files("[Node-{}] Generated PROPOSAL message ({})".format(self.node_id, proposal))
+            self.output_to_files("[Node-{}] Sending PROPOSAL message to the remaining node ****************************************************************************************************************************************************".format(self.node_id))
+            send(("PROPOSAL", proposal, self.node_id), to=nodesDict.values())
+
+    def valid_client_signature(signature, client_id):
+        try:
+            self.clientPublicKeyDict[client_id].verify(signature)
+        except nacl.exceptions.BadSignatureError:
+            self.output_to_files("[Node-{}] Signature Invalidated for client Id {} ".format(self.node_id, client_id))
+            return False
+        return True
+
+    def process_timeout_message(tmo_msg):
+
+        if tmo_msg is not None and self.valid_timeout_message(tmo_msg):
+            self.process_certificate_qc(tmo_msg.tmo_info.high_qc)
+            self.process_certificate_qc(tmo_msg.high_commit_qc)
+            self.pacemaker.advance_round_tc(tmo_msg.last_round_tc)
+            tc = self.pacemaker.process_remote_timeout(tmo_msg)
+            if tc is not None:
+                self.pacemaker.advance_round_tc(tc)
+                self.process_new_round_event(tc, None)
+
+    def valid_timeout_message(tmo_msg):
+        try:
+            self.public_keys[tmo_msg.tmo_info.sender].verify(tmo_msg.tmo_info.signature)
+        except nacl.exceptions.BadSignatureError:
+            print("[Node-{}] Signature Invalidated for Timeout Message from Node- {} ".format(self.node_id, tmo_msg.tmo_info.sender))
+            return False
+        return True
+
