@@ -127,7 +127,6 @@ class Safety:
             qc_block_id = block.qc.vote_info.id
         '''if valid signatures(b, last tc) ∧ safe to vote(b.round, qc round, last tc) then'''
         if Cryptography.valid_signatures(last_tc) and Cryptography.valid_signatures(block) and self.__safe_to_vote(block.round, qc_round, last_tc):
-            LOGGER.log('Safety: make_vote: signatures validated', True)
             '''update highest qc round(qc round) // Protect qc round'''
             self.__update_highest_qc_round(qc_round)
             '''increase highest vote round(b.round) // Don’t vote again in this (or lower) round'''

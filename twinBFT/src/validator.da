@@ -185,8 +185,6 @@ class Validator (process):
             round = self.pacemaker.current_round
             '''leader ← LeaderElection.get leader(current round)'''
             leader = self.leader_election.get_leader(round)
-            LOGGER.log("Current Round ", round, " Leader ", leader)
-
             '''if P.block.round 6= round ∨ P.sender 6= leader ∨ P.block.author 6= leader then
                     return'''
             if proposal_msg.block.round != round or proposal_msg.sender != leader or proposal_msg.block.author != leader:
