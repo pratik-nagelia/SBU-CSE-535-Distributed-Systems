@@ -23,7 +23,7 @@ class LOGGER:
             other_proc = "parent_process"
 
         if msg != None and hasattr(msg, '__dict__'):
-            msg = todict(msg)
+            msg = str(msg)
         to_from = "To:"
         if event.lower() == 'sent':
             to_from = "To:"
@@ -44,27 +44,27 @@ class LOGGER:
 
     def log_action(action, obj):
         if obj != None and hasattr(obj, '__dict__'):
-            obj = todict(obj)
+            obj = str(obj)
 
         f = open(LOGGER.filename, 'a+')
         print(
             "Timestamp:", datetime.datetime.now(), "|",
             "ProcessId:", LOGGER.process_id, "|",
             "Action:", action, "|",
-            "Object:", obj, "|",
+            "Object:", str(obj), "|",
             file=f
         )
         f.close()
 
-    def log(funcname, *params): pass
-        # timestamp = datetime.datetime.now()
-        # f = open(LOGGER.filename, 'a+')
-        # p_list = []
-        # for p in params:
-        #     if p != None and hasattr(p, '__dict__'):
-        #         p = p.__dict__
-        #     p_list.append(p)
+    def log(funcname, *params):
+        timestamp = datetime.datetime.now()
+        f = open(LOGGER.filename, 'a+')
+        p_list = []
+        for p in params:
+            if p != None and hasattr(p, '__dict__'):
+                p = str(p)
+            p_list.append(p)
 
-        # print(timestamp, LOGGER.process_id,
-        #       funcname, p_list, file=f)
-        # f.close()
+        print(timestamp, LOGGER.process_id,
+              funcname, p_list, file=f)
+        f.close()

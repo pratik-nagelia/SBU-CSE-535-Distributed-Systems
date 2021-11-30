@@ -1,7 +1,14 @@
 from collections import namedtuple
 from enum import Enum
-
+import json
 from cryptography import Cryptography
+
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return str(obj, encoding='utf-8');
+        return json.JSONEncoder.default(self, obj)
 
 
 class MsgType(Enum):
@@ -12,7 +19,7 @@ class MsgType(Enum):
     Response = 5
     Request = 6
     Done = 7
-    Wildcard = 8   # matches all message types
+    Wildcard = 8  # matches all message types
 
 
 class FailType(Enum):
@@ -26,7 +33,6 @@ Failure = namedtuple('Failure', ['src', 'dest', 'msg_type', 'round',
 
 FailureConfig = namedtuple(
     'FailureConfig', ['failures', 'seed'])
-
 
 '''
 VoteInfo
@@ -44,6 +50,11 @@ class VoteInfo:
         self.parent_round = parent_round  # Id and round of parent
         self.exec_state_id = exec_state_id  # Speculated execution state
 
+    def __str__(self):
+        return " VoteInfo ( id =" + str(self.id.decode("utf-8")) + ", round =" + str(
+            self.round) + ", parent_id =" + str(self.parent_id) + ", parent_round =" + str(
+            self.parent_round) + ", exec_state_id =" + str(self.exec_state_id) + ")"
+
 
 '''
 // speculated new committed state to vote directly on
@@ -58,6 +69,9 @@ class LedgerCommitInfo:
         # ⊥ if no commit happens when this vote is aggregated to QC
         self.commit_state_id = commit_state_id
         self.vote_info_hash = vote_info_hash  # Hash of VoteMsg.vote info
+
+    def __str__(self):
+        return "LedgerCommitInfo= ( " + json.dumps(self.__dict__, cls=MyEncoder)
 
 
 '''
@@ -80,7 +94,9 @@ class VoteMsg:
         self.signature = Cryptography.sign_message(self.ledger_commit_info)
 
     def __str__(self):
-        return "VoteMessage(vote_info=" + str(self.vote_info) + ",ledger_commit_info=" + str(self.ledger_commit_info) + ",high_commit_qc=" + str(self.high_commit_qc) + ",sender=" + str(self.sender) + " )"
+        return "VoteMessage(vote_info=" + str(self.vote_info) + ",ledger_commit_info=" + str(
+            self.ledger_commit_info) + ",high_commit_qc=" + str(self.high_commit_qc) + ",sender=" + str(
+            self.sender) + " )"
 
 
 '''
@@ -103,6 +119,10 @@ class QC:
         self.signers = signers
         self.author_signature = Cryptography.sign_message(self.signatures)
 
+    def __str__(self):
+        return " QuorumCertificate ( vote_info= " + str(self.vote_info) + ", ledger_commit_info= " + str(
+            self.ledger_commit_info) + ", author= " + str(self.author) + ", signers= " + str(self.signers) + ") "
+
 
 '''
 Block
@@ -123,6 +143,10 @@ class Block:
         self.qc = qc  # QC for parent block
         self.id = id  # A unique digest of author, round, payload, qc.vote info.id and qc.signatures
         self.author_signature = Cryptography.sign_message(self.payload)
+
+    def __str__(self):
+        return "Block (author = " + str(self.author) + ", round = " + str(self.round) + ", payload = " + str(
+            self.payload) + ", qc = " + str(self.qc) + ", id = " + str(self.id) + ") "
 
 
 '''
@@ -146,7 +170,11 @@ class TimeoutInfo:
         else:
             high_qc_round = high_qc.vote_info.round
         self.author_signature = Cryptography.sign_message(
-            str(round)+","+str(high_qc_round))
+            str(round) + "," + str(high_qc_round))
+
+    def __str__(self):
+        return "TimeoutInfo( round = " + str(self.round) + ", high_qc = " + str(self.high_qc) + ", author = " + str(
+            self.author) + " )"
 
 
 '''
@@ -184,6 +212,10 @@ class TimeoutMsg:
         self.last_round_tc = last_round_tc
         self.high_commit_qc = high_commit_qc  # QC to synchronize on committed blocks
 
+    def __str__(self):
+        return " TimeoutMessage (tmo_info = (" + str(self.tmo_info) + ", last_round_tc = (" + str(
+            self.last_round_tc) + ", high_commit_qc = (" + str(self.high_commit_qc) + ")"
+
 
 '''
 ProposalMsg
@@ -204,4 +236,5 @@ class ProposalMsg:
         self.signature = Cryptography.sign_message(self.block.id)
 
     def __str__(self):
-        return "ProposalMessage( block=" + str(self.block) + ", last_round_tc=" + str(self.last_round_tc) + ", high_commit_qc=" + str(self.high_commit_qc) + ", sender=" + str(self.sender) +  " )"
+        return "ProposalMessage( block=" + str(self.block) + ", last_round_tc=" + str(
+            self.last_round_tc) + ", high_commit_qc=" + str(self.high_commit_qc) + ", sender=" + str(self.sender) + " )"

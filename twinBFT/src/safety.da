@@ -160,7 +160,7 @@ class Safety:
             )
             LOGGER.log('Safety: make_vote: returns', vote_msg)
             return vote_msg
-        LOGGER.log('Safety: make_vote: returns', None)
+        LOGGER.log('Safety: make_vote: Does not return anything ', None)
         '''return ⊥'''
         return None
 

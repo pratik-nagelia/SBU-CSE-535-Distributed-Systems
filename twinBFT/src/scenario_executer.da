@@ -36,34 +36,48 @@ class RunDiemBFT(process):
         clients = new(Client, num=nclients)
         playground = new(NetworkPlayground)
 
-        for v in validators:
+        nodes_mapping = {}
+        nodes_reverse = {}
+        for (node_id, v) in zip(all_nodes, validators):
+            nodes_mapping[node_id] = v
+            nodes_reverse[v] = node_id
+
+        for id in (honest_nodes + faulty_nodes):
             private_key, public_key = Cryptography.generate_key()
-            private_keys_validators[v] = private_key
-            public_keys_validators[v] = public_key
+            private_keys_validators[nodes_mapping[id]] = private_key
+            public_keys_validators[nodes_mapping[id]] = public_key
+
+        for id in (faulty_nodes):
+            # private_key, public_key = Cryptography.generate_key()
+            private_keys_validators[nodes_mapping[-1 * id]] = private_keys_validators[nodes_mapping[id]]
+            public_keys_validators[nodes_mapping[-1 * id]] = public_keys_validators[nodes_mapping[id]]
 
         for c in clients:
             private_key, public_key = Cryptography.generate_key()
             private_keys_clients[c] = private_key
             public_keys_clients[c] = public_key
 
-        nodes_mapping = {}
-        # i = 0
-        # for (node_id, v) in zip(all_nodes, validators):
-        #     nodes_mapping[node_id] = v
-        #     setup({v}, (config, config_id, node_id, list(validators), list(clients),
-        #                 private_keys_validators[v], public_keys_validators, public_keys_clients))
-        #     i += 1
-        for i, v in enumerate(validators):
-            node_id = all_nodes[i]
-            setup({v}, (config, config_id, i, list(validators), list(clients),
-                        private_keys_validators[v], public_keys_validators, public_keys_clients, playground, honest_nodes + faulty_nodes))
-            nodes_mapping[node_id] = v
+        print("Nodes Mapping : " + str(nodes_mapping))
+        print("Reverse Node Mapping : " + str(nodes_reverse))
+        print("Private Keys : " + str(private_keys_validators))
+        print("Public Keys : " + str(public_keys_validators))
+
+        leader_map = {}
+        for key in self.round_arrangements:
+            leader_map[int(key)] = round_arrangements[key]["leader"]
+        print("Leader Map  =>" + str(leader_map))
+
+        for v in validators:
+            node_id = nodes_reverse[v]
+            if node_id < 0:
+                node_id = node_id * -1
+            setup({v}, (config, config_id, node_id, list(validators), list(clients),
+                        private_keys_validators[v], public_keys_validators, public_keys_clients, playground, leader_map, nodes_mapping, nodes_reverse[v]))
 
         for i, c in enumerate(clients):
-            setup({c}, (config, config_id, i, list(validators),
-                        private_keys_clients[c], public_keys_validators))
+            setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
 
-        setup(playground, (round_arrangements, nodes_mapping))
+        setup(playground, (round_arrangements, nodes_mapping, nodes_reverse))
         start(playground, ())
 
         start(validators)
@@ -80,8 +94,7 @@ def is_config_valid(config):
             "Number of validators should be more than thrice of number of faulty validators.")
         return False
     if (int(config['nfaulty']) > int(config['exclude_size'])) or (int(config['exclude_size']) > 2 * int(config['nfaulty'])):
-        print(
-            "Exlude size should be between nfaulty and 2*nfaulty")
+        print("Exlude size should be between nfaulty and 2 * nfaulty")
         return False
     return True
 

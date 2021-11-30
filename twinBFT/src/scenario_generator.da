@@ -95,7 +95,7 @@ def enumerate_partitions(partiton_views, config):
         random.seed(config["seed"])
         random.shuffle(partiton_views)
     round_arrangements = {}
-    for round_no, partition_view in enumerate(partiton_views, 1):
+    for round_no, partition_view in enumerate(partiton_views, 0):
         round_arrangements[round_no] = partition_view
         if round_no >= config["enumeration_limit"]["total_round_views"]:  # Enumeration Limit
             break

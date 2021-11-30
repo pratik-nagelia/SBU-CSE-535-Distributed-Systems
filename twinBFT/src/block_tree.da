@@ -115,7 +115,7 @@ class BlockTree:
             LOGGER.log('BlockTree: process_vote: returns', qc)
             return qc
 
-        LOGGER.log('BlockTree: process_vote: returns', None)
+        LOGGER.log('BlockTree: process_vote: QC Not Formed', None)
         '''return ⊥'''
         return None
 
