@@ -80,7 +80,7 @@ class NetworkPlayground(process):
         # if filter(message):
         #     return
         target = [nodes_mapping[i] for i in partition_set]
-        dropped_nodes = nodes_mapping.keys() - partition_set
+        dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
         print("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
 
         # partition_sets = partition_arrangement[message.round]

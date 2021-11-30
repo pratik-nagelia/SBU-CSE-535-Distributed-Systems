@@ -12,7 +12,7 @@ def generate_liveness_partitions(all_nodes):
 
 def generate_ids(honest_nodes_count, faulty_nodes_count):
     total = honest_nodes_count + faulty_nodes_count
-    all_nodes = list(range(0, total))
+    all_nodes = list(range(1, total + 1))
     faulty_nodes = random.sample(all_nodes, faulty_nodes_count)
     honest_nodes = list(set(all_nodes) - set(faulty_nodes))
     return honest_nodes, faulty_nodes
