@@ -67,12 +67,16 @@ class RunDiemBFT(process):
             # setup({v}, (config, config_id, node_id, list(validators), list(clients),
         #                 private_keys_validators[v], public_keys_validators, public_keys_clients))
         #     i += 1
+        leader_map = {}
+        for key in self.round_arrangements:
+            leader_map[key] = round_arrangements[key]["leader"]
+
         for v in validators:
             node_id = nodes_reverse[v]
             if node_id < 0:
                 node_id = node_id * -1
             setup({v}, (config, config_id, node_id, list(validators), list(clients),
-                        private_keys_validators[v], public_keys_validators, public_keys_clients, playground, honest_nodes + faulty_nodes))
+                        private_keys_validators[v], public_keys_validators, public_keys_clients, playground, leader_map))
             print("Node ____" + str(node_id) + " - " + str(v))
 
         for i, c in enumerate(clients):

@@ -16,7 +16,7 @@ from message import Message
 
 class Validator (process):
 
-    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, nodes_mapping):
+    def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, leader_map):
 
         LOGGER.replicas = replicas
         LOGGER.process_id = "validator_" + str(validator_id)
@@ -122,7 +122,7 @@ class Validator (process):
     def process_new_round_event(last_tc):
         LOGGER.log('Validator: process_new_round_event', last_tc)
         '''if u = LeaderElection.get leader(Pacemaker.current round) then'''
-        if self.nodes_mapping[validator_id] == self.leader_election.get_leader(self.pacemaker.current_round):
+        if self.validator_id == self.leader_election.get_leader(self.pacemaker.current_round):
             # Check if there are any transactions in the MemPool
             if self.mempool.peek_pool() == 0:
                 self.should_start_new_round = True

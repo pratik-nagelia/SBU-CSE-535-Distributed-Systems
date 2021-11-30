@@ -42,8 +42,12 @@ class NetworkPlayground(process):
 
     def receive(msg=('Unicast', message), from_=sender):
         leader = message.destination
+        target = []
+        target.append(nodes_mapping[leader])
+        if (leader * -1) in nodes_mapping:
+            target.append(nodes_mapping[(leader * -1)])
         # replace leader with test scenario plans
-        send((message.message_type, message.payload, sender), to=leader)
+        send((message.message_type, message.payload, sender), to=target)
 
     def receive(msg=('Message', message), from_=sender):
         print("Network Playground received : " + str(message))
