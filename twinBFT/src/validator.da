@@ -83,7 +83,7 @@ class Validator (process):
         msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
         print("Sending Message " + str(msg))
         if isinstance(destination_nodes, list):
-            send(('Message', msg), to=self.playground)
+            send(('Broadcast', msg), to=self.playground)
         else :
             send(('Unicast', msg), to=self.playground)
 
