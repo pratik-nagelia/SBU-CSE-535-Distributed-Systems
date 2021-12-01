@@ -12,11 +12,15 @@ class NetworkPlayground(process):
         self.message_id = 0
         self.pending_message_acks = {}
         self.playground_exited = False
+        self.timeout_duration = 2
+        self.timer_set = []
 
     def run():
         print("Starting Network Playground")
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
         self.playground_exited = True
+        for timer in timer_set:
+            timer.cancel()
         print("Network Playground Exiting !!")
 
     def receive(msg=('Done',), from_=sender):
@@ -117,18 +121,20 @@ class NetworkPlayground(process):
                 self.pending_message_acks[p_message.id]=False
                 log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
                 send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
-                # Wait for ACK timeout, i.e. 3 seconds
-                timer = threading.Timer(3, retransmit_request, args=(
+                # Wait for ACK timeout, i.e. 2 seconds
+                timer = threading.Timer(timeout_duration, retransmit_request, args=(
                     p_message, self.pending_message_acks))
+                timer_set.append(timer)
                 timer.start()
         else:
             p_message = create_playground_message(message, sender, destination)
             self.pending_message_acks[p_message.id] = False
             log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination)))
             send((message.message_type, message.payload, p_message.id, sender), to=destination)
-            # Wait for ACK timeout, i.e. 3 seconds
-            timer = threading.Timer(3, retransmit_request, args=(
+            # Wait for ACK timeout, i.e. 2 seconds
+            timer = threading.Timer(timeout_duration, retransmit_request, args=(
                 p_message, self.pending_message_acks))
+            timer_set.append(timer)
             timer.start()
 
     def retransmit_request(p_message, pending_acks):

@@ -21,7 +21,7 @@ class Client(process):
         self.sleep_time = config['sleeptime']
         self.nops = config['nclientops']
         self.f = config['nfaulty']
-
+        self.timer_set = []
         Cryptography.private_key = self.private_key
 
     def send_request(request):
@@ -33,6 +33,7 @@ class Client(process):
         # Wait until clienttimeout
         timer = threading.Timer(config['clienttimeout'], retransmit_request, args=(
             request, self.pending_success_results, self.f))
+        timer_set.append(timer)
         timer.start()
 
     def run():
@@ -48,7 +49,8 @@ class Client(process):
 
         # Wait until we have received valid (f+1) responses for all its requests
         await(len(received_sufficient_responses) == nops)
-
+        for timer in timer_set:
+            timer.cancel()
         send(('Done',), to=parent())
         output("Client ", self.client_id, "is exiting")
         LOGGER.log_event("Sent", "Done", None, parent())
