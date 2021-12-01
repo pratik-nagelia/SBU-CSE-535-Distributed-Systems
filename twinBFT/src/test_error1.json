@@ -14,7 +14,6 @@
     "faulty_nodes": [
         2
     ],
-    "enable_partitions": false,
     "round_arrangements": {
         "0": {
             "partition_set": [
@@ -26,7 +25,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -41,7 +40,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -73,7 +72,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -90,7 +89,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -124,7 +123,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -141,7 +140,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -175,7 +174,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -192,7 +191,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -228,7 +227,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -247,7 +246,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -283,7 +282,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -300,7 +299,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -334,7 +333,7 @@
                     -2
                 ]
             ],
-            "leader": 2,
+            "leader": 1,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -351,7 +350,7 @@
                     -2
                 ]
             ],
-            "leader": 3,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null

@@ -50,6 +50,7 @@ class Client(process):
         await(len(received_sufficient_responses) == nops)
 
         send(('Done',), to=parent())
+        output("Client ", self.client_id, "is exiting")
         LOGGER.log_event("Sent", "Done", None, parent())
 
     def receive(msg=('Response', resp), from_=validator):
