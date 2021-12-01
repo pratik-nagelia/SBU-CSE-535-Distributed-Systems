@@ -67,7 +67,7 @@ class NetworkPlayground(process):
         return p_message
 
     def receive(msg=('ACK', message_id), from_=sender):
-        self.pending_message_acks[message_id]=True
+        self.pending_message_acks[message_id] = True
         print("[Network-Playground]Received an ACK for message with id: {} {}".format(str(message_id), self.pending_message_acks[message_id]))
 
     # noinspection Pylint
@@ -75,7 +75,6 @@ class NetworkPlayground(process):
         log_to_file("[Network-Playground] UNICAST message received : " + str(message))
         if filter(message): 
             return
-
         
         leader = message.destination
         round = message.round
@@ -97,7 +96,7 @@ class NetworkPlayground(process):
 
         log_to_file(
             "[Network-Playground] Unicast Sending message to : " + str([nodes_reverse[node] for node in target]))
-        send_message(message, sender, target, False)
+        send_message(message, sender, target)
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
@@ -109,28 +108,17 @@ class NetworkPlayground(process):
             target = [nodes_mapping[i] for i in partition_set]
             dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
             log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
-            send_message(message, sender, target, True)
+            send_message(message, sender, target)
         else:
             log_to_file("Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
-            send_message(message, sender, nodes_mapping.values(), True)
+            send_message(message, sender, nodes_mapping.values())
 
-    def send_message(message, sender, destination, list_b):
-        if list_b is True:
-            for destination_node in destination:
-                p_message = create_playground_message(message, sender, destination_node)
-                self.pending_message_acks[p_message.id]=False
-                log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
-                send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
-                # Wait for ACK timeout, i.e. 2 seconds
-                timer = threading.Timer(timeout_duration, retransmit_request, args=(
-                    p_message, self.pending_message_acks))
-                timer_set.append(timer)
-                timer.start()
-        else:
-            p_message = create_playground_message(message, sender, destination)
-            self.pending_message_acks[p_message.id] = False
-            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination)))
-            send((message.message_type, message.payload, p_message.id, sender), to=destination)
+    def send_message(message, sender, destination):
+        for destination_node in destination:
+            p_message = create_playground_message(message, sender, destination_node)
+            self.pending_message_acks[p_message.id]=False
+            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
+            send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
             # Wait for ACK timeout, i.e. 2 seconds
             timer = threading.Timer(timeout_duration, retransmit_request, args=(
                 p_message, self.pending_message_acks))
@@ -145,4 +133,4 @@ class NetworkPlayground(process):
         if pending_acks[p_message.id]==False:
             # Retransmit request if playground does not receive an ack within 3 seconds
             log_to_file("[Network-Playground] Retransmit Message with id: {} to destination".format(p_message._str_()))
-            send_message(p_message.message, p_message.sender, p_message.destination, False)
+            send_message(p_message.message, p_message.sender, list(p_message.destination))
