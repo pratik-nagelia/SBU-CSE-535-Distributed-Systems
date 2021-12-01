@@ -4,10 +4,15 @@ import sys
 from partition_view import PartitionView
 
 
-def generate_liveness_partitions(all_nodes):
+def generate_liveness_partitions(round_arrangements, all_nodes, leaders):
+    max_round = max(round_arrangements.keys()) + 1
     liveness = []
     liveness.append(all_nodes)
-    return liveness
+    for id in leaders:
+        view = PartitionView(liveness, id, False, None, None)
+        round_arrangements[id] = view
+        max_round += 1
+    return
 
 
 def generate_ids(honest_nodes_count, faulty_nodes_count):
@@ -51,13 +56,13 @@ def generate_test_scenarios(configs):
     # Pruning Partitions to remove redundant test cases TODO
     # partitions = prune_partition_views(partitions, honest_nodes, faulty_nodes, faulty_twins)
 
-    # Liveness testing: Append a partition of all nodes in one set to ensure quorum is created and a commit happens
-    partitions.append(generate_liveness_partitions(all_nodes))
-
     partition_views = assignLeadersToPartitions(leaders, partitions, configs)
 
     # Step3 Arrange leader-partition pairs over rounds
     round_arrangements = enumerate_partitions(partition_views, configs)
+
+    # Liveness testing: Append a partition of all nodes in one set to ensure quorum is created and a commit happens
+    generate_liveness_partitions(round_arrangements, all_nodes, leaders)
 
     tag_intra_partition_drop(round_arrangements, configs)
 
@@ -97,7 +102,7 @@ def enumerate_partitions(partiton_views, config):
     round_arrangements = {}
     for round_no, partition_view in enumerate(partiton_views, 0):
         round_arrangements[round_no] = partition_view
-        if round_no >= config["enumeration_limit"]["total_round_views"]:  # Enumeration Limit
+        if round_no >= (config["enumeration_limit"]["total_round_views"] - config["total_nodes"]):  # Enumeration Limit
             break
     return round_arrangements
 
@@ -140,7 +145,7 @@ def generate_partitions(nodes):
 
 def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements):
     file = open("test_scenarios.json", "w")
-    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": False, "round_arrangements": round_arrangements}
+    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": True, "round_arrangements": round_arrangements}
     json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
