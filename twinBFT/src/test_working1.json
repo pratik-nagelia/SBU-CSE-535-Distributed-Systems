@@ -1,28 +1,28 @@
 {
     "all_nodes": [
-        1,
+        2,
         3,
         4,
-        2,
-        -2
+        1,
+        -1
     ],
     "honest_nodes": [
-        1,
+        2,
         3,
         4
     ],
     "faulty_nodes": [
-        2
+        1
     ],
     "round_arrangements": {
         "0": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -33,11 +33,11 @@
         "1": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -48,14 +48,14 @@
         "2": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -63,13 +63,13 @@
         "3": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -80,13 +80,13 @@
         "4": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -97,16 +97,16 @@
         "5": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3,
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -114,13 +114,13 @@
         "6": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -131,13 +131,13 @@
         "7": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -148,16 +148,16 @@
         "8": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -168,10 +168,10 @@
                     3
                 ],
                 [
-                    1,
-                    4,
                     2,
-                    -2
+                    4,
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -185,10 +185,10 @@
                     3
                 ],
                 [
-                    1,
-                    4,
                     2,
-                    -2
+                    4,
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -202,13 +202,13 @@
                     3
                 ],
                 [
-                    1,
-                    4,
                     2,
-                    -2
+                    4,
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -216,15 +216,15 @@
         "12": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -235,15 +235,15 @@
         "13": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -254,18 +254,18 @@
         "14": {
             "partition_set": [
                 [
-                    1
+                    2
                 ],
                 [
                     3
                 ],
                 [
                     4,
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -273,13 +273,13 @@
         "15": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4
                 ],
                 [
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -290,13 +290,13 @@
         "16": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4
                 ],
                 [
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -307,16 +307,16 @@
         "17": {
             "partition_set": [
                 [
-                    1,
+                    2,
                     3,
                     4
                 ],
                 [
-                    2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -328,9 +328,9 @@
                     4
                 ],
                 [
-                    1,
                     2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 3,
@@ -345,9 +345,9 @@
                     4
                 ],
                 [
-                    1,
                     2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
             "leader": 4,
@@ -362,12 +362,12 @@
                     4
                 ],
                 [
-                    1,
                     2,
-                    -2
+                    1,
+                    -1
                 ]
             ],
-            "leader": 1,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null

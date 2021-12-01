@@ -1,18 +1,28 @@
 from message import Message
 from partition_view import PartitionView
-
+import datetime
 
 class NetworkPlayground(process):
-    def setup(partition_arrangement, nodes_mapping, nodes_reverse):
+    def setup(config_id, partition_arrangement, nodes_mapping, nodes_reverse):
         self.partition_arrangement = partition_arrangement
         self.nodes_mapping = nodes_mapping
         self.nodes_reverse = nodes_reverse
+        filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
+        self.log_file = open(filename, 'a+')
 
     def run():
         print("Starting Network Playground")
         print(str(nodes_mapping))
         print(str(nodes_reverse))
         await False
+
+    def output_to_files(string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.log_file.write("\n")
+        self.log_file.write(msg)
+        self.log_file.write("\n")
+        self.log_file.flush()
+        print(msg)
 
     # def send_message(round, leader, message):
     #     partitions_wrt_round = partition_arrangement.get(round)
@@ -50,11 +60,11 @@ class NetworkPlayground(process):
         partition_view = partition_arrangement[str(round)]['partition_set']
         for partition_set in partition_view:
             if validator_id in partition_set:
-                print("[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(str(validator_id), str(partition_set), str(partition_view)))
+                output_to_files("[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(str(validator_id), str(partition_set), str(partition_view)))
                 return partition_set
 
     def receive(msg=('Unicast', message), from_=sender):
-        print("[Network-Playground] UNICAST message received : " + str(message))
+        output_to_files("[Network-Playground] UNICAST message received : " + str(message))
         leader = message.destination
         round = message.round
         sender_id = get_node_id(sender)
@@ -74,14 +84,14 @@ class NetworkPlayground(process):
 
 
     def receive(msg=('Broadcast', message), from_=sender):
-        print("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
+        output_to_files("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
         partition_set = determine_partition_of_validator(message.round, message.source)
         # Dropping message on filter criteria -> To Be Implemented
         # if filter(message):
         #     return
         target = [nodes_mapping[i] for i in partition_set]
         dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
-        print("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
+        output_to_files("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
 
         # partition_sets = partition_arrangement[message.round]
         # other_nodes_in_the_same_partition = find_nodes_in_partition(partition_sets, message.source)
