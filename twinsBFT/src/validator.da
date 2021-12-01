@@ -80,8 +80,11 @@ class Validator (process):
         output("Validator", self.actual_id, "is exiting")
         send(('Done',), to=playground)
 
-    def qc_hash_validation(self, qc):
-        vote_info_hash = self.safety.calculate_hash(self, qc.vote_info)
+    def qc_hash_validation(qc):
+        if qc is None:
+            return True
+        # vote_info_hash = self.safety.calculate_hash(self, qc.vote_info)
+        vote_info_hash = Cryptography.hash(qc.ledger_commit_info)
         if vote_info_hash == qc.ledger_commit_info.vote_info_hash:
             return True
         return False
@@ -175,10 +178,10 @@ class Validator (process):
 
         LOGGER.log("Validator: process_new_round_event ends", None)
 
-    def proposal_msg_hash_validation(self, proposal_msg):
-        proposal_msg_hash = self.blocktree.hash_fun(self, proposal_msg.block.author, proposal_msg.block.round,
-                                                    proposal_msg.block.payload, proposal_msg.high_qc.vote_info.id,
-                                                    proposal_msg.high_qc.signatures)
+    def proposal_msg_hash_validation(proposal_msg):
+        proposal_msg_hash = Cryptography.hash(proposal_msg.block.author, proposal_msg.block.round,
+                                                    proposal_msg.block.payload, proposal_msg.high_commit_qc.vote_info.id,
+                                                    proposal_msg.high_commit_qc.signatures)
         if proposal_msg_hash == proposal_msg.block.author_signature:
             return True
         return False
@@ -193,11 +196,11 @@ class Validator (process):
             send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
 
-        if proposal_msg_hash_validation(proposal_msg) is False:
-            LOGGER.log_action("Verified Proposal Msg Hash", False)
-            return
-        else:
-            LOGGER.log_action("Verified Proposal Msg Hash", True)
+        # if proposal_msg_hash_validation(proposal_msg) is False:
+        #     LOGGER.log_action("Verified Proposal Msg Hash", False)
+        #     return
+        # else:
+        #     LOGGER.log_action("Verified Proposal Msg Hash", True)
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
 
@@ -255,7 +258,7 @@ class Validator (process):
         else:
             LOGGER.log_action("Verified ProposalMsg signature", False)
 
-    def vote_info_hash_validation(self, vote_msg):
+    def vote_info_hash_validation(vote_msg):
         vote_info_hash = self.safety.calculate_hash(self, vote_msg.vote_info)
         if vote_info_hash == vote_msg.ledger_commit_info.vote_info_hash:
             return True
@@ -271,11 +274,11 @@ class Validator (process):
             send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Vote", vote_msg, p)
 
-        if vote_info_hash_validation(vote_msg) is False:
-            LOGGER.log_action("Verified VoteMsg Hash", False)
-            return
-        else:
-            LOGGER.log_action("Verified VoteMsg Hash", True)
+        # if vote_info_hash_validation(vote_msg) is False:
+        #     LOGGER.log_action("Verified VoteMsg Hash", False)
+        #     return
+        # else:
+        #     LOGGER.log_action("Verified VoteMsg Hash", True)
 
         signature_verified = Cryptography.get_verified_message(
             vote_msg.signature, public_keys_validators[p])
@@ -298,7 +301,7 @@ class Validator (process):
         LOGGER.log("Received VoteMsg ends g", None)
 
 
-    def timeout_msg_hash_validation(self, timeout_msg):
+    def timeout_msg_hash_validation(timeout_msg):
         timeout_msg_hash = self.safety.calculate_hash(self, timeout_msg.vote_info)
         if timeout_msg_hash == timeout_msg.ledger_commit_info.vote_info_hash:
             return True
