@@ -78,6 +78,7 @@ class Validator (process):
         await(received(('Done',), from_=parent()))
         self.pacemaker.stop_timer(self.pacemaker.current_round)
         output("Validator", self.actual_id, "is exiting")
+        send(('Done',), to=playground)
 
     def send_message(message_type, message_payload, destination_nodes):
         msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
@@ -162,7 +163,13 @@ class Validator (process):
         LOGGER.log("Validator: process_new_round_event ends", None)
 
     '''Procedure process proposal msg(P)'''
-    def receive(msg=('Proposal', proposal_msg, p), from_=sender):
+    def receive(msg=('Proposal', proposal_msg, id, p), from_=sender):
+        LOGGER.log_action("Send ACK to Network Playground for message with id: ",id)
+        # TODO Make the ack mechanism configurable
+        if self.validator_id == -100:
+            print("Do not send ACK! ", self.validator_id)
+        else:
+            send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
@@ -220,7 +227,13 @@ class Validator (process):
             LOGGER.log_action("Verified ProposalMsg signature", False)
 
     '''Procedure process vote msg(M)'''
-    def receive(msg=('Vote', vote_msg, p), from_=sender):
+    def receive(msg=('Vote', vote_msg, id, p), from_=sender):
+        LOGGER.log_action("Send ACK to Network Playground for message with id: ", id)
+        # TODO Make the ack mechanism configurable
+        if self.validator_id == -100:
+            print("Do not send ACK!")
+        else:
+            send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Vote", vote_msg, p)
         signature_verified = Cryptography.get_verified_message(
             vote_msg.signature, public_keys_validators[p])
@@ -243,7 +256,10 @@ class Validator (process):
         LOGGER.log("Received VoteMsg ends g", None)
 
     '''Procedure process timeout msg(M)'''
-    def receive(msg=('Timeout', timeout_msg, p), from_=sender):
+    def receive(msg=('Timeout', timeout_msg, id, p), from_=sender):
+        LOGGER.log_action("Send ACK to Network Playground for message with id: ", id)
+        # TODO Make the ack mechanism configurable
+        send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Timeout", timeout_msg, p)
 
         signature_verified = Cryptography.get_verified_message(
