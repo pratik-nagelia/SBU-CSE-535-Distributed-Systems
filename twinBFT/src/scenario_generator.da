@@ -8,10 +8,8 @@ def generate_liveness_partitions(round_arrangements, all_nodes, leaders):
     max_round = max(round_arrangements.keys()) + 1
     liveness = []
     liveness.append(all_nodes)
-    print(str(liveness))
     for id in leaders:
         view = PartitionView(liveness, id, False, None, None)
-        print(view)
         round_arrangements[max_round] = view
         max_round += 1
     return
