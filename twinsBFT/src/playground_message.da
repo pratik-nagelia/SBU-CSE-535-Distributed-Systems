@@ -1,0 +1,10 @@
+class Playground_Message:
+    def __init__(self, id, message, sender, destination):
+        self.id = id
+        self.message = message
+        self.sender = sender
+        self.destination = destination
+
+    def _str_(self):
+        return "Message( id= " + str(self.id) + ", sender= " + str(
+            self.sender) + ", destination= " + str(self.destination) + ")"
