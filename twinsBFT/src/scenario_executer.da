@@ -88,6 +88,8 @@ class RunDiemBFT(process):
         output("All clients done, informing all validators.", config_id)
         send(('Done',), to=validators)
 
+        check_safety(all_nodes)
+
 
 def is_config_valid(config):
     if int(config['nvalidators']) < (3 * int(config['nfaulty']) + 1):
