@@ -76,9 +76,22 @@ class Validator (process):
         self.pacemaker.stop_timer(self.pacemaker.current_round)
         output("Validator", self.validator_id, "is exiting")
 
+    def qc_hash_validation(self, qc):
+        vote_info_hash = self.safety.calculate_hash(self, qc.vote_info)
+        if vote_info_hash == qc.ledger_commit_info.vote_info_hash:
+            return True
+        return False
+
     '''Procedure process certificate qc(qc)'''
     def process_certificate_qc(qc):
         LOGGER.log('Validator: process_certificate_qc', qc)
+
+        if qc_hash_validation(qc) is False:
+            LOGGER.log_action("Verified QC Hash", False)
+            return
+        else:
+            LOGGER.log_action("Verified QC Hash", True)
+
 
         '''Block-Tree.process qc(qc)'''
         self.blocktree.process_qc(qc)
@@ -152,6 +165,14 @@ class Validator (process):
 
         LOGGER.log("Validator: process_new_round_event ends", None)
 
+    def proposal_msg_hash_validation(self, proposal_msg):
+        proposal_msg_hash = self.blocktree.hash_fun(self, proposal_msg.block.author, proposal_msg.block.round,
+                                                    proposal_msg.block.payload, proposal_msg.high_qc.vote_info.id,
+                                                    proposal_msg.high_qc.signatures)
+        if proposal_msg_hash == proposal_msg.block.author_signature:
+            return True
+        return False
+
     '''Procedure process proposal msg(P)'''
     def receive(msg=('Proposal', proposal_msg), from_=p):
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
@@ -219,11 +240,9 @@ class Validator (process):
         else:
             LOGGER.log_action("Verified ProposalMsg signature", False)
 
-    def proposal_msg_hash_validation(self, proposal_msg):
-        proposal_msg_hash = self.blocktree.hash_fun(self, proposal_msg.block.author, proposal_msg.block.round,
-                                                    proposal_msg.block.payload, proposal_msg.high_qc.vote_info.id,
-                                                    proposal_msg.high_qc.signatures)
-        if proposal_msg_hash == proposal_msg.block.author_signature:
+    def vote_info_hash_validation(self, vote_msg):
+        vote_info_hash = self.safety.calculate_hash(self, vote_msg.vote_info)
+        if vote_info_hash == vote_msg.ledger_commit_info.vote_info_hash:
             return True
         return False
 
@@ -257,15 +276,18 @@ class Validator (process):
 
         LOGGER.log("Received VoteMsg ends g", None)
 
-    def vote_info_hash_validation(self, vote_msg):
-        vote_info_hash = self.safety.calculate_hash(self, vote_msg.vote_info)
-        if vote_info_hash == vote_msg.ledger_commit_info.vote_info_hash:
+
+    def timeout_msg_hash_validation(self, timeout_msg):
+        timeout_msg_hash = self.safety.calculate_hash(self, timeout_msg.vote_info)
+        if timeout_msg_hash == timeout_msg.ledger_commit_info.vote_info_hash:
             return True
         return False
 
     '''Procedure process timeout msg(M)'''
     def receive(msg=('Timeout', timeout_msg), from_=p):
         LOGGER.log_event("Received", "Timeout", timeout_msg, p)
+
+        #LOGGER.log_action("Verified TimeoutMsg Hash", True)
 
         signature_verified = Cryptography.get_verified_message(
             timeout_msg.tmo_info.author_signature, public_keys_validators[p])
