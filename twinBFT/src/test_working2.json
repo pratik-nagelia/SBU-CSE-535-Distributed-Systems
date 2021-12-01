@@ -1,0 +1,376 @@
+{
+    "all_nodes": [
+        1,
+        3,
+        4,
+        2,
+        -2
+    ],
+    "honest_nodes": [
+        1,
+        3,
+        4
+    ],
+    "faulty_nodes": [
+        2
+    ],
+    "round_arrangements": {
+        "0": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "1": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "2": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "3": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "4": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "5": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "6": {
+            "partition_set": [
+                [
+                    1,
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "7": {
+            "partition_set": [
+                [
+                    1,
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "8": {
+            "partition_set": [
+                [
+                    1,
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "9": {
+            "partition_set": [
+                [
+                    3
+                ],
+                [
+                    1,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "10": {
+            "partition_set": [
+                [
+                    3
+                ],
+                [
+                    1,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "11": {
+            "partition_set": [
+                [
+                    3
+                ],
+                [
+                    1,
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "12": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "13": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "14": {
+            "partition_set": [
+                [
+                    1
+                ],
+                [
+                    3
+                ],
+                [
+                    4,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "15": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "16": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "17": {
+            "partition_set": [
+                [
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "18": {
+            "partition_set": [
+                [
+                    3,
+                    4
+                ],
+                [
+                    1,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 3,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "19": {
+            "partition_set": [
+                [
+                    3,
+                    4
+                ],
+                [
+                    1,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 4,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        },
+        "20": {
+            "partition_set": [
+                [
+                    3,
+                    4
+                ],
+                [
+                    1,
+                    2,
+                    -2
+                ]
+            ],
+            "leader": 1,
+            "is_intra_partition_drop": false,
+            "intra_partition_drop_message_type": null,
+            "intra_partition_drop_message_from": null
+        }
+    }
+}

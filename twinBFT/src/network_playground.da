@@ -1,0 +1,95 @@
+from message import Message
+from partition_view import PartitionView
+import datetime
+
+
+class NetworkPlayground(process):
+    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse):
+        filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
+        self.log_file = open(filename, 'a+')
+        self.received_sufficient_responses = set()
+
+    def run():
+        print("Starting Network Playground")
+        await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
+        print("Network Playground Exiting !!")
+
+    def receive(msg=('Done',), from_=sender):
+        received_sufficient_responses.add(nodes_reverse[sender])
+
+    def log_to_file(string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.log_file.write("\n")
+        self.log_file.write(msg)
+        self.log_file.write("\n")
+        self.log_file.flush()
+        print(msg)
+
+    def intra_partition_drop(message):
+        partition_view = partition_arrangement[str(message.round)]
+        if (partition_view["is_intra_partition_drop"] == True) \
+                and (partition_view["intra_partition_drop_message_type"] == message.message_type) \
+                and partition_view["intra_partition_drop_message_from"] == message.source:
+            return True
+        else:
+            return False
+
+    def filter(message):
+        return intra_partition_drop(message)
+
+    def find_nodes_in_partition(partition_sets, source):
+        for partition in partition_sets:
+            if source in partition:
+                return partition
+        return []
+
+    def get_partition_of_sender(round, validator_id):
+        partition_view = partition_arrangement[str(round)]['partition_set']
+        for partition_set in partition_view:
+            if validator_id in partition_set:
+                log_to_file(
+                    "[Network-Playground] Partition Set of validator {}: {}. Current partition view: {}".format(
+                        str(validator_id), str(partition_set), str(partition_view)))
+                return partition_set
+
+    # noinspection Pylint
+    def receive(msg=('Unicast', message), from_=sender):
+        log_to_file("[Network-Playground] UNICAST message received : " + str(message))
+        if filter(message): 
+            return
+        
+        leader = message.destination
+        round = message.round
+        sender_id = nodes_reverse[sender]
+        target = []
+        
+        if enable_partitions:
+            partition_set = get_partition_of_sender(round, sender_id)
+            if leader in partition_set:
+                log_to_file(
+                    "[Network-Playground] Both the Leader and Sender belong to the same partition. Forward the message to the leader...")
+                target.append(nodes_mapping[leader])
+            if (leader * -1) in partition_set:
+                target.append(nodes_mapping[(leader * -1)])
+        else:
+            target.append(nodes_mapping[leader])
+            if (leader * -1) in nodes_mapping:
+                target.append(nodes_mapping[(leader * -1)])
+
+        log_to_file(
+            "[Network-Playground] Unicast Sending message to : " + str([nodes_reverse[node] for node in target]))
+        send((message.message_type, message.payload, sender), to=target)
+
+    def receive(msg=('Broadcast', message), from_=sender):
+        log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
+        if filter(message): 
+            return
+
+        if enable_partitions:
+            partition_set = get_partition_of_sender(message.round, message.source)
+            target = [nodes_mapping[i] for i in partition_set]
+            dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
+            log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
+            send((message.message_type, message.payload, sender), to=target)
+        else:
+            send((message.message_type, message.payload, sender), to=nodes_mapping.values())
