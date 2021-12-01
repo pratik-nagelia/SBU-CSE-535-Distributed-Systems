@@ -156,6 +156,12 @@ class Validator (process):
     def receive(msg=('Proposal', proposal_msg), from_=p):
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
 
+        if proposal_msg_hash_validation(proposal_msg) is False:
+            LOGGER.log_action("Verified Proposal Msg Hash", False)
+            return
+        else:
+            LOGGER.log_action("Verified Proposal Msg Hash", True)
+
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
 
@@ -213,6 +219,14 @@ class Validator (process):
         else:
             LOGGER.log_action("Verified ProposalMsg signature", False)
 
+    def proposal_msg_hash_validation(self, proposal_msg):
+        proposal_msg_hash = self.blocktree.hash_fun(self, proposal_msg.block.author, proposal_msg.block.round,
+                                                    proposal_msg.block.payload, proposal_msg.high_qc.vote_info.id,
+                                                    proposal_msg.high_qc.signatures)
+        if proposal_msg_hash == proposal_msg.block.author_signature:
+            return True
+        return False
+
     '''Procedure process vote msg(M)'''
     def receive(msg=('Vote', vote_msg), from_=p):
         LOGGER.log_event("Received", "Vote", vote_msg, p)
@@ -220,6 +234,8 @@ class Validator (process):
         if vote_info_hash_validation(vote_msg) is False:
             LOGGER.log_action("Verified VoteMsg Hash", False)
             return
+        else:
+            LOGGER.log_action("Verified VoteMsg Hash", True)
 
         signature_verified = Cryptography.get_verified_message(
             vote_msg.signature, public_keys_validators[p])
