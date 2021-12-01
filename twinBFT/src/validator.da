@@ -78,6 +78,7 @@ class Validator (process):
         await(received(('Done',), from_=parent()))
         self.pacemaker.stop_timer(self.pacemaker.current_round)
         output("Validator", self.actual_id, "is exiting")
+        send(('Done',), to=playground)
 
     def send_message(message_type, message_payload, destination_nodes):
         msg = Message(self.pacemaker.current_round, self.validator_id, destination_nodes, message_type, message_payload)
