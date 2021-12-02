@@ -42,7 +42,6 @@ class RunDiemBFT(process):
 
         validators = new(ValidatorFI, num=len(all_nodes))
         clients = new(Client, num=nclients)
-        #playground =
 
         nodes_mapping = {}
         nodes_reverse = {}

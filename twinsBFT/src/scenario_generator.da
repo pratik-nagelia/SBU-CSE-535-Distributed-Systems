@@ -65,8 +65,7 @@ def generate_test_scenarios(configs):
     generate_liveness_partitions(round_arrangements, all_nodes, leaders)
 
     tag_intra_partition_drop(round_arrangements, configs)
-    liveness_bound = configs["liveness_bound"]
-    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, liveness_bound)
+    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, configs)
 
 
 # Assign leaders to partition. E.g for P1 partition, {A, P1 }, {B,P1}, {C,P1}, {D,P1}
@@ -143,9 +142,9 @@ def generate_partitions(nodes):
         yield [[first]] + smaller
 
 
-def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, liveness_bound):
+def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, configs):
     file = open("test_scenarios.json", "w")
-    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": True, "liveness_bound": liveness_bound, "round_arrangements": round_arrangements}
+    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": True, "liveness_bound": configs["liveness_bound"], "round_arrangements": round_arrangements}
     json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
