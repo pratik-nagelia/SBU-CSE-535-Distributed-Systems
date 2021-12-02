@@ -1,3 +1,5 @@
+import os
+import shutil
 import random
 import json
 import sys
@@ -28,7 +30,7 @@ def generate_twins_ids(faulty_nodes):
     return faulty_twins
 
 
-def generate_test_scenarios(configs):
+def generate_test_scenarios(config_id, configs):
     total_nodes = configs["total_nodes"]  # read # of non-faulty nodes from config_file
     faulty_nodes_count = configs["faulty_nodes"]  # read # of compromised nodes
     honest_nodes_count = total_nodes - faulty_nodes_count
@@ -66,7 +68,7 @@ def generate_test_scenarios(configs):
 
     tag_intra_partition_drop(round_arrangements, configs)
 
-    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements)
+    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config_id, configs)
 
 
 # Assign leaders to partition. E.g for P1 partition, {A, P1 }, {B,P1}, {C,P1}, {D,P1}
@@ -143,9 +145,15 @@ def generate_partitions(nodes):
         yield [[first]] + smaller
 
 
-def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements):
-    file = open("test_scenarios.json", "w")
-    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": True, "round_arrangements": round_arrangements}
+def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config_id, configs):
+    file = open("../config/test_scenarios/test_scenarios{}.json".format(config_id), "w")
+    output = {"all_nodes": all_nodes,
+              "honest_nodes": honest_nodes,
+              "faulty_nodes": faulty_nodes,
+              "enable_partitions": True,
+              "diem_config" : configs["diem_config"],
+              "round_arrangements": round_arrangements
+              }
     json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
@@ -153,7 +161,11 @@ def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements):
 def main():
     with open(sys.argv[1]) as config_file:
         configs = json.load(config_file)
-    generate_test_scenarios(configs)
+    if os.path.exists('../config/test_scenarios') and os.path.isdir('../config/test_scenarios'):
+        shutil.rmtree('../config/test_scenarios')
+    os.makedirs('../config/test_scenarios')
+    for config_id, config in enumerate(configs):
+        generate_test_scenarios(config_id, config)
 
 
 if __name__ == '__main__':
