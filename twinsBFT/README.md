@@ -57,11 +57,10 @@ cd twinsBFT/src
 python3.7 -m da --message-buffer-size 65535 scenario_executer.da test_scenarios.json
 ```
 
-
-
 ### Bugs and Limitations
 
-1. The system
+1. Sync-up of replicas not working
+2. Sometimes random test cases cause the diem to run on infinite loop 
 
 
 ### Main Files
@@ -78,20 +77,20 @@ Non Blank Non-comment lines of code
 ```
 > brew install cloc
 > cloc diemBFT
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-DAL                             22            142              1            889
-JSON                             2              0              0             90
-Markdown                         1             30              0             79
-Python                           1              3              1             36
--------------------------------------------------------------------------------
-SUM:                            26            175              2           1094
--------------------------------------------------------------------------------
+github.com/AlDanial/cloc v 1.90  T=0.01 s (1682.5 files/s, 250183.5 lines/s)
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+DAL                              19            367              0           1915
+JSON                              3              0              0           1130
+Bourne Again Shell                1              0              0              8
+--------------------------------------------------------------------------------
+SUM:                             23            367              0           3053
+--------------------------------------------------------------------------------
 ```
-Algorithm: 889  
-Other:  205
-Total:   1094
+Algorithm: 1915  
+Other:  1130
+Total:   3053
 (Numbers generated using CLOC https://github.com/AlDanial/cloc) 
 
 Approximately 622 Lines (Algo) are the main algorithm. Remaining 266 (0.30%) functionalities interleaved with the algorithm.

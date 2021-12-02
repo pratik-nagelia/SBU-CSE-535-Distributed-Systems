@@ -7,6 +7,8 @@
   "intra_partition_drop_message_from": 4,
   "enumeration_type": "DETERMINISTIC",
   "seed": 4,
+  "liveness_bound": 6,
+  "enable_partitions" : true,
   "diem_config": {
         "nvalidators": 4,
         "nfaulty": 1,
@@ -36,6 +38,8 @@
   "intra_partition_drop_message_from": 4,
   "enumeration_type": "DETERMINISTIC",
   "seed": 4,
+  "liveness_bound": 6,
+  "enable_partitions" : true,
   "diem_config": {
         "nvalidators": 4,
         "nfaulty": 1,

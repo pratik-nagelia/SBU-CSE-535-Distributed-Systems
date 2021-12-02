@@ -150,7 +150,8 @@ def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config
     output = {"all_nodes": all_nodes,
               "honest_nodes": honest_nodes,
               "faulty_nodes": faulty_nodes,
-              "enable_partitions": True,
+              "enable_partitions": configs["enable_partitions"],
+              "liveness_bound": configs["liveness_bound"]
               "diem_config" : configs["diem_config"],
               "round_arrangements": round_arrangements
               }

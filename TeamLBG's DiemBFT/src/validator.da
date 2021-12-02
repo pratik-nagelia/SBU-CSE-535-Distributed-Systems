@@ -156,6 +156,7 @@ class Validator (process):
     def receive(msg=('Proposal', proposal_msg), from_=p):
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
 
+
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
 
