@@ -294,7 +294,6 @@ class Validator (process):
         req = Cryptography.get_verified_message(
             signed_req, public_keys_clients[client])
         LOGGER.log_event("Received", "Request", req, client)
-        print("Reached here!")
         if req is not None:
             if req['req_id'] in self.request_cache:
                 # Directly reply with the cached response
@@ -303,7 +302,6 @@ class Validator (process):
                 LOGGER.log_event("Sent", "Cached Response", response, client)
                 return
 
-            print("Check check!")
             req['client'] = client
             self.mempool.add_transaction(req)
 
