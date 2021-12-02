@@ -29,7 +29,16 @@ class RunDiemBFT(process):
         os.makedirs('../reports/config' + str(config_id))
         filename = '../reports/config' + str(config_id) + '/' + "scenario_executer.log"
         self.log_file = open(filename, 'a+')
+        self.await_liveness_prop_check = False
+        self.liveness_check = False
+        self.playground = new(NetworkPlayground)
 
+    def liveness_check_fun():
+        print("@#@ Check liveness 1")
+        send(('CHECK_LIVENESS',), to=self.playground)
+        await(self.await_liveness_prop_check)
+        return self.liveness_check
+    
     def run():
 
         private_keys_validators = {}
@@ -39,7 +48,7 @@ class RunDiemBFT(process):
 
         validators = new(ValidatorFI, num=len(all_nodes))
         clients = new(Client, num=nclients)
-        playground = new(NetworkPlayground)
+        #playground =
 
         nodes_mapping = {}
         nodes_reverse = {}
@@ -77,13 +86,13 @@ class RunDiemBFT(process):
             if node_id < 0:
                 node_id = node_id * -1
             setup({v}, (config, config_id, node_id, list(validators), list(clients),
-                        private_keys_validators[v], public_keys_validators, public_keys_clients, playground, leader_map, nodes_mapping, nodes_reverse[v]))
+                        private_keys_validators[v], public_keys_validators, public_keys_clients, self.playground, leader_map, nodes_mapping, nodes_reverse[v]))
 
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
 
-        setup(playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound))
-        start(playground, ())
+        setup(self.playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound))
+        start(self.playground, ())
 
         start(validators)
         start(clients)
@@ -98,13 +107,19 @@ class RunDiemBFT(process):
         else:
             log_to_file("Safety Check Failed")
 
-        liveness_check = check_liveness(all_nodes)
-        if (liveness_check):
+        liveness = liveness_check_fun()
+        if (liveness):
             log_to_file("Liveness Check Passed")
         else:
             log_to_file("Liveness Check Failed")
 
 
+    
+    def receive(msg=('CHECK_LIVENESS', prop_ans), from_=sender):
+        print("@#@ Check liveness 3")
+        self.liveness_check = prop_ans
+        self.await_liveness_prop_check = True
+        
     def log_to_file(string_msg):
         msg = str(datetime.datetime.now()) + " " + string_msg
         self.log_file.write("\n")
