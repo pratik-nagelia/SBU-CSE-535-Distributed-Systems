@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import json
+import datetime
 
 sys.path.append('../config')
 
@@ -23,6 +24,11 @@ class RunDiemBFT(process):
         self.enable_partitions = test_scenarios["enable_partitions"]
         self.nclients = int(config['nclients'])
         self.liveness_bound = test_scenarios["liveness_bound"]
+        os.makedirs('../logs/config' + str(config_id))
+        os.makedirs('../ledgers/config' + str(config_id))
+        os.makedirs('../reports/config' + str(config_id))
+        filename = '../reports/config' + str(config_id) + '/' + "scenario_executer.log"
+        self.log_file = open(filename, 'a+')
 
     def run():
 
@@ -30,9 +36,6 @@ class RunDiemBFT(process):
         public_keys_validators = {}
         private_keys_clients = {}
         public_keys_clients = {}
-
-        os.makedirs('../logs/config' + str(config_id))
-        os.makedirs('../ledgers/config' + str(config_id))
 
         validators = new(ValidatorFI, num=len(all_nodes))
         clients = new(Client, num=nclients)
@@ -89,6 +92,52 @@ class RunDiemBFT(process):
         output("All clients done, informing all validators.", config_id)
         send(('Done',), to=validators)
 
+        safety_ensured = check_safety(all_nodes)
+        if (safety_ensured):
+            log_to_file("Safety Check Passed")
+        else:
+            log_to_file("Safety Check Failed")
+
+        liveness_check = check_liveness(all_nodes)
+        if (liveness_check):
+            log_to_file("Liveness Check Passed")
+        else:
+            log_to_file("Liveness Check Failed")
+
+
+    def log_to_file(string_msg):
+        msg = str(datetime.datetime.now()) + " " + string_msg
+        self.log_file.write("\n")
+        self.log_file.write(msg)
+        self.log_file.write("\n")
+        self.log_file.flush()
+        print(msg)
+
+    def check_safety(all_nodes):
+        file_map = []
+        safety = True
+        # Open all ledger files
+        for id in all_nodes:
+            filename = "validator_" + str(id) + ".ledger"
+            fp = open('../ledgers/config' + str(config_id) + "/" + filename, 'r')
+            file_map.append(fp)
+        count = 0
+        txn = ""
+        while count < len(file_map):
+            first = True
+            for file in file_map:
+                line_read = file.readline()
+                if not line_read:
+                    count += 1
+                    continue
+                line_read = line_read.strip()
+                if first:
+                    txn = line_read
+                    first = False
+                if line_read != txn:
+                    safety = False
+                    break
+        return safety
 
 def is_config_valid(config):
     if int(config['nvalidators']) < (3 * int(config['nfaulty']) + 1):
@@ -108,6 +157,9 @@ def main():
 
     if os.path.exists('../ledgers/') and os.path.isdir('../ledgers/'):
         shutil.rmtree('../ledgers/')
+
+    if os.path.exists('../reports/') and os.path.isdir('../reports/'):
+        shutil.rmtree('../reports/')
 
     config_id = 0
     config = configs[0]

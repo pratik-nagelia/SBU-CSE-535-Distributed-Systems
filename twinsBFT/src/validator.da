@@ -166,7 +166,9 @@ class Validator (process):
     '''Procedure process proposal msg(P)'''
     def receive(msg=('Proposal', proposal_msg, id, p), from_=sender):
         LOGGER.log_action("Send ACK to Network Playground for message with id: ",id)
-        if self.validator_id==-100:
+
+        # TODO Make the ack mechanism configurable
+        if self.validator_id == -100:
             print("Do not send ACK! ", self.validator_id)
         else:
             send(('ACK', id), to=self.playground)
@@ -256,7 +258,9 @@ class Validator (process):
 
     '''Procedure process timeout msg(M)'''
     def receive(msg=('Timeout', timeout_msg, id, p), from_=sender):
-        LOGGER.log_action("Send ACK to Network Playground for message with id: ",id)
+
+        LOGGER.log_action("Send ACK to Network Playground for message with id: ", id)
+        # TODO Make the ack mechanism configurable
         send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Timeout", timeout_msg, p)
 

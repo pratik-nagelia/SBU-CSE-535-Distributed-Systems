@@ -14,11 +14,16 @@ class NetworkPlayground(process):
         self.playground_exited = False
         self.liveness_bound = liveness_bound
         self.last_commit_round = 0
+        self.timeout_duration = 2
+        self.timer_set = []
 
     def run():
         print("Starting Network Playground")
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
         self.playground_exited = True
+
+        for timer in timer_set:
+            timer.cancel()
         print("Network Playground Exiting !!")
 
     def receive(msg=('COMMIT_INFO', commit_round), from_=sender):
@@ -105,7 +110,7 @@ class NetworkPlayground(process):
 
         log_to_file(
             "[Network-Playground] Unicast Sending message to : " + str([nodes_reverse[node] for node in target]))
-        send_message(message, sender, target, False)
+        send_message(message, sender, target)
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
@@ -123,30 +128,21 @@ class NetworkPlayground(process):
             target = [nodes_mapping[i] for i in partition_set]
             dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
             log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
-            send_message(message, sender, target, True)
+            send_message(message, sender, target)
         else:
             log_to_file("Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
-            send_message(message, sender, nodes_mapping.values(), True)
+            send_message(message, sender, nodes_mapping.values())
 
-    def send_message(message, sender, destination, list_b):
-        if list_b is True:
-            for destination_node in destination:
-                p_message = create_playground_message(message, sender, destination_node)
-                self.pending_message_acks[p_message.id]=False
-                log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
-                send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
-                # Wait for ACK timeout, i.e. 3 seconds
-                timer = threading.Timer(3, retransmit_request, args=(
-                    p_message, self.pending_message_acks))
-                timer.start()
-        else:
-            p_message = create_playground_message(message, sender, destination)
-            self.pending_message_acks[p_message.id] = False
-            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination)))
-            send((message.message_type, message.payload, p_message.id, sender), to=destination)
-            # Wait for ACK timeout, i.e. 3 seconds
-            timer = threading.Timer(3, retransmit_request, args=(
+    def send_message(message, sender, destination):
+        for destination_node in destination:
+            p_message = create_playground_message(message, sender, destination_node)
+            self.pending_message_acks[p_message.id]=False
+            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
+            send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
+            # Wait for ACK timeout, i.e. 2 seconds
+            timer = threading.Timer(timeout_duration, retransmit_request, args=(
                 p_message, self.pending_message_acks))
+            timer_set.append(timer)
             timer.start()
 
     def retransmit_request(p_message, pending_acks):
@@ -157,4 +153,4 @@ class NetworkPlayground(process):
         if pending_acks[p_message.id]==False:
             # Retransmit request if playground does not receive an ack within 3 seconds
             log_to_file("[Network-Playground] Retransmit Message with id: {} to destination".format(p_message._str_()))
-            send_message(p_message.message, p_message.sender, p_message.destination, False)
+            send_message(p_message.message, p_message.sender, list(p_message.destination))
