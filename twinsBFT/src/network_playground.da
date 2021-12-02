@@ -5,13 +5,15 @@ from playground_message import Playground_Message
 import threading
 
 class NetworkPlayground(process):
-    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse):
+    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse, liveness_bound):
         filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
         self.log_file = open(filename, 'a+')
         self.received_sufficient_responses = set()
         self.message_id = 0
         self.pending_message_acks = {}
         self.playground_exited = False
+        self.liveness_bound = liveness_bound
+        self.last_commit_round = 0
         self.timeout_duration = 2
         self.timer_set = []
 
@@ -20,8 +22,13 @@ class NetworkPlayground(process):
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
         self.playground_exited = True
         for timer in timer_set:
-            timer.cancel()
+            pass
+            # timer.cancel()
         print("Network Playground Exiting !!")
+
+    def receive(msg=('COMMIT_INFO', commit_round), from_=sender):
+        self.last_commit_round = max(self.last_commit_round, commit_round)
+        log_to_file("[Network-Playground] Update last commit round to {}".format(self.last_commit_round))
 
     def receive(msg=('Done',), from_=sender):
         received_sufficient_responses.add(nodes_reverse[sender])
@@ -73,11 +80,17 @@ class NetworkPlayground(process):
     # noinspection Pylint
     def receive(msg=('Unicast', message), from_=sender):
         log_to_file("[Network-Playground] UNICAST message received : " + str(message))
+        round = message.round
+
+        #Check liveness property
+        if self.last_commit_round+self.liveness_bound<round:
+            log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
+    
         if filter(message): 
             return
         
         leader = message.destination
-        round = message.round
+
         sender_id = nodes_reverse[sender]
         target = []
         
@@ -100,6 +113,12 @@ class NetworkPlayground(process):
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
+
+        round = message.round
+        # Check liveness property
+        if self.last_commit_round + self.liveness_bound < round:
+            log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
+
         if filter(message): 
             return
 

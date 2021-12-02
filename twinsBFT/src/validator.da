@@ -106,6 +106,7 @@ class Validator (process):
                         'req_id': request_id,
                         'resp_status': "success"
                     }
+                    send(('COMMIT_INFO', self.pacemaker.current_round), to=self.playground)
                     send(('Response', resp), to=txn['client'])
                     LOGGER.log_event("Sent", "Response", resp, txn['client'])
                     self.request_cache[request_id] = resp
@@ -165,8 +166,9 @@ class Validator (process):
     '''Procedure process proposal msg(P)'''
     def receive(msg=('Proposal', proposal_msg, id, p), from_=sender):
         LOGGER.log_action("Send ACK to Network Playground for message with id: ",id)
+
         # TODO Make the ack mechanism configurable
-        if self.validator_id == -100:
+        if self.validator_id == 3:
             print("Do not send ACK! ", self.validator_id)
         else:
             send(('ACK', id), to=self.playground)
@@ -230,7 +232,7 @@ class Validator (process):
     def receive(msg=('Vote', vote_msg, id, p), from_=sender):
         LOGGER.log_action("Send ACK to Network Playground for message with id: ", id)
         # TODO Make the ack mechanism configurable
-        if self.validator_id == -100:
+        if self.validator_id == 3:
             print("Do not send ACK!")
         else:
             send(('ACK', id), to=self.playground)
@@ -257,6 +259,7 @@ class Validator (process):
 
     '''Procedure process timeout msg(M)'''
     def receive(msg=('Timeout', timeout_msg, id, p), from_=sender):
+
         LOGGER.log_action("Send ACK to Network Playground for message with id: ", id)
         # TODO Make the ack mechanism configurable
         send(('ACK', id), to=self.playground)
@@ -292,7 +295,6 @@ class Validator (process):
         req = Cryptography.get_verified_message(
             signed_req, public_keys_clients[client])
         LOGGER.log_event("Received", "Request", req, client)
-
         if req is not None:
             if req['req_id'] in self.request_cache:
                 # Directly reply with the cached response
