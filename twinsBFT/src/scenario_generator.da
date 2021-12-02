@@ -31,8 +31,8 @@ def generate_twins_ids(faulty_nodes):
 
 
 def generate_test_scenarios(config_id, configs):
-    total_nodes = configs["total_nodes"]  # read # of non-faulty nodes from config_file
-    faulty_nodes_count = configs["faulty_nodes"]  # read # of compromised nodes
+    total_nodes = configs["diem_config"]["nvalidators"]  # read # of non-faulty nodes from config_file
+    faulty_nodes_count = configs["diem_config"]["nfaulty"]  # read # of compromised nodes
     honest_nodes_count = total_nodes - faulty_nodes_count
 
     # Generate IDs of honest_nodes, faulty nodes and twins.
@@ -151,7 +151,7 @@ def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config
               "honest_nodes": honest_nodes,
               "faulty_nodes": faulty_nodes,
               "enable_partitions": configs["enable_partitions"],
-              "liveness_bound": configs["liveness_bound"]
+              "liveness_bound": configs["liveness_bound"],
               "diem_config" : configs["diem_config"],
               "round_arrangements": round_arrangements
               }
