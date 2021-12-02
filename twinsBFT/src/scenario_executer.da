@@ -159,7 +159,6 @@ def is_config_valid(config):
         return False
     return True
 
-
 def main():
 
     if os.path.exists('../logs/') and os.path.isdir('../logs/'):
@@ -170,6 +169,14 @@ def main():
 
     if os.path.exists('../reports/') and os.path.isdir('../reports/'):
         shutil.rmtree('../reports/')
+
+    if sys.argv[1] is not None:
+        with open(sys.argv[1]) as test_scenarios_file:
+            test_scenarios = json.load(test_scenarios_file)
+        run = new(RunDiemBFT)
+        setup(run, (test_scenarios, test_scenarios["diem_config"], 0))
+        start(run)
+        return
 
     config_id = 0
     filename = "../config/test_scenarios/test_scenarios{}.json".format(config_id)

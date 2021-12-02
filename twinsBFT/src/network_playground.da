@@ -79,7 +79,7 @@ class NetworkPlayground(process):
 
     def receive(msg=('ACK', message_id), from_=sender):
         self.pending_message_acks[message_id] = True
-        print("[Network-Playground]Received an ACK for message with id: {} {}".format(str(message_id), self.pending_message_acks[message_id]))
+        # print("[Network-Playground]Received an ACK for message with id: {} {}".format(str(message_id), self.pending_message_acks[message_id]))
 
     # noinspection Pylint
     def receive(msg=('Unicast', message), from_=sender):
@@ -132,11 +132,11 @@ class NetworkPlayground(process):
             partition_set = get_partition_of_sender(message.round, message.source)
             target = [nodes_mapping[i] for i in partition_set]
             dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
-            log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
+            log_to_file("[Network-Playground] Broadcast Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
             send_message(message, sender, target, True)
         else:
             #send((message.message_type, message.payload, sender), to=nodes_mapping.values())
-            log_to_file("Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
+            log_to_file("[Network-Playground] Broadcast Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
             send_message(message, sender, nodes_mapping.values(), True)
 
     def send_message(message, sender, destination, list_b):
@@ -144,20 +144,18 @@ class NetworkPlayground(process):
             for destination_node in destination:
                 p_message = create_playground_message(message, sender, destination_node)
                 self.pending_message_acks[p_message.id] = False
-                log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
                 send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
                 # Wait for ACK timeout, i.e. 3 seconds
-                timer = threading.Timer(3, retransmit_request, args=(
+                timer = threading.Timer(2, retransmit_request, args=(
                     p_message, self.pending_message_acks))
                 timer_set.append(timer)
                 timer.start()
         else:
             p_message = create_playground_message(message, sender, destination)
             self.pending_message_acks[p_message.id] = False
-            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination)))
             send((message.message_type, message.payload, p_message.id, sender), to=destination)
             # Wait for ACK timeout, i.e. 3 seconds
-            timer = threading.Timer(3, retransmit_request, args=(
+            timer = threading.Timer(2, retransmit_request, args=(
                 p_message, self.pending_message_acks))
             timer_set.append(timer)
             timer.start()
