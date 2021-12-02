@@ -16,6 +16,7 @@
     ],
     "liveness_bound": 3,
     "enable_partitions": true,
+    "liveness_bound": 3,
     "round_arrangements": {
         "0": {
             "partition_set": [

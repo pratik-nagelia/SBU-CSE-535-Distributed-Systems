@@ -22,9 +22,9 @@ class NetworkPlayground(process):
         print("Starting Network Playground")
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
         self.playground_exited = True
-
         for timer in timer_set:
-            timer.cancel()
+            pass
+            # timer.cancel()
         print("Network Playground Exiting !!")
 
     def receive(msg=('COMMIT_INFO', commit_round), from_=sender):
@@ -80,7 +80,7 @@ class NetworkPlayground(process):
         return p_message
 
     def receive(msg=('ACK', message_id), from_=sender):
-        self.pending_message_acks[message_id]=True
+        self.pending_message_acks[message_id] = True
         print("[Network-Playground]Received an ACK for message with id: {} {}".format(str(message_id), self.pending_message_acks[message_id]))
 
     # noinspection Pylint
@@ -95,7 +95,6 @@ class NetworkPlayground(process):
     
         if filter(message): 
             return
-
         
         leader = message.destination
 
