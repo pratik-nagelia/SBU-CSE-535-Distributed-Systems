@@ -158,5 +158,6 @@ hs_err_pid*
 *.idea
 *.txt
 
-*test_scenarios.json
+**test_scenarios*.json
+**test_scenarios.json
 *.ledger
