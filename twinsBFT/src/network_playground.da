@@ -23,8 +23,7 @@ class NetworkPlayground(process):
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
         self.playground_exited = True
         for timer in timer_set:
-            pass
-            # timer.cancel()
+            timer.cancel()
         print("Network Playground Exiting !!")
 
     def receive(msg=('COMMIT_INFO', commit_round), from_=sender):

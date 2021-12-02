@@ -32,12 +32,6 @@ class RunDiemBFT(process):
         self.await_liveness_prop_check = False
         self.liveness_check = False
         self.playground = new(NetworkPlayground)
-
-    def liveness_check_fun():
-        print("@#@ Check liveness 1")
-        send(('CHECK_LIVENESS',), to=self.playground)
-        await(self.await_liveness_prop_check)
-        return self.liveness_check
     
     def run():
 
@@ -61,7 +55,7 @@ class RunDiemBFT(process):
             private_keys_validators[nodes_mapping[id]] = private_key
             public_keys_validators[nodes_mapping[id]] = public_key
 
-        for id in (faulty_nodes):
+        for id in faulty_nodes:
             # private_key, public_key = Cryptography.generate_key()
             private_keys_validators[nodes_mapping[-1 * id]] = private_keys_validators[nodes_mapping[id]]
             public_keys_validators[nodes_mapping[-1 * id]] = public_keys_validators[nodes_mapping[id]]
@@ -113,10 +107,12 @@ class RunDiemBFT(process):
         else:
             log_to_file("Liveness Check Failed")
 
-
+    def liveness_check_fun():
+        send(('CHECK_LIVENESS',), to=self.playground)
+        await(self.await_liveness_prop_check)
+        return self.liveness_check
     
     def receive(msg=('CHECK_LIVENESS', prop_ans), from_=sender):
-        print("@#@ Check liveness 3")
         self.liveness_check = prop_ans
         self.await_liveness_prop_check = True
         
