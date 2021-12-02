@@ -101,12 +101,6 @@ class Validator (process):
     def process_certificate_qc(qc):
         LOGGER.log('Validator: process_certificate_qc', qc)
 
-        if qc_hash_validation(qc) is False:
-            LOGGER.log_action("Verified QC Hash", None)
-        else:
-            LOGGER.log_action("Verified QC Hash", None)
-
-
         '''Block-Tree.process qc(qc)'''
         self.blocktree.process_qc(qc)
 
@@ -201,10 +195,6 @@ class Validator (process):
             send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Proposal", proposal_msg, p)
 
-        if proposal_msg_hash_validation(proposal_msg) is False:
-            LOGGER.log_action("Verified Proposal Msg Hash", None)
-        else:
-            LOGGER.log_action("Verified Proposal Msg Hash", None)
         signature_verified = Cryptography.get_verified_message(
             proposal_msg.signature, public_keys_validators[p])
 
@@ -277,11 +267,6 @@ class Validator (process):
         else:
             send(('ACK', id), to=self.playground)
         LOGGER.log_event("Received", "Vote", vote_msg, p)
-
-        if vote_info_hash_validation(vote_msg) is False:
-            LOGGER.log_action("Verified VoteMsg Hash", None)
-        else:
-            LOGGER.log_action("Verified VoteMsg Hash", None)
 
         signature_verified = Cryptography.get_verified_message(
             vote_msg.signature, public_keys_validators[p])
