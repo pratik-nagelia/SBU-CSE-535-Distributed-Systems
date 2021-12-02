@@ -170,7 +170,7 @@ def main():
     if os.path.exists('../reports/') and os.path.isdir('../reports/'):
         shutil.rmtree('../reports/')
 
-    if sys.argv[1] is not None:
+    if len(sys.argv) > 1:
         with open(sys.argv[1]) as test_scenarios_file:
             test_scenarios = json.load(test_scenarios_file)
         run = new(RunDiemBFT)
