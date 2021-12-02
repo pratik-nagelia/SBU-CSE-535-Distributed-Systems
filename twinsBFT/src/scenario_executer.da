@@ -102,9 +102,9 @@ class RunDiemBFT(process):
 
         liveness = liveness_check_fun()
         if (liveness):
-            log_to_file("Liveness Check Passed")
-        else:
             log_to_file("Liveness Check Failed")
+        else:
+            log_to_file("Liveness Check Passed")
 
     def liveness_check_fun():
         send(('CHECK_LIVENESS',), to=self.playground)
