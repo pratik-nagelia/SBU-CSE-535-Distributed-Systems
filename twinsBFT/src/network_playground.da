@@ -1,17 +1,26 @@
 from message import Message
 from partition_view import PartitionView
 import datetime
-
+from playground_message import Playground_Message
+import threading
 
 class NetworkPlayground(process):
     def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse):
         filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
         self.log_file = open(filename, 'a+')
         self.received_sufficient_responses = set()
+        self.message_id = 0
+        self.pending_message_acks = {}
+        self.playground_exited = False
+        self.timeout_duration = 2
+        self.timer_set = []
 
     def run():
         print("Starting Network Playground")
         await (len(received_sufficient_responses) == len(nodes_mapping.keys()))
+        self.playground_exited = True
+        for timer in timer_set:
+            timer.cancel()
         print("Network Playground Exiting !!")
 
     def receive(msg=('Done',), from_=sender):
@@ -52,6 +61,15 @@ class NetworkPlayground(process):
                         str(validator_id), str(partition_set), str(partition_view)))
                 return partition_set
 
+    def create_playground_message(messsage, sender, destination):
+        self.message_id += 1
+        p_message = Playground_Message(self.message_id, messsage, sender, destination)
+        return p_message
+
+    def receive(msg=('ACK', message_id), from_=sender):
+        self.pending_message_acks[message_id] = True
+        print("[Network-Playground]Received an ACK for message with id: {} {}".format(str(message_id), self.pending_message_acks[message_id]))
+
     # noinspection Pylint
     def receive(msg=('Unicast', message), from_=sender):
         log_to_file("[Network-Playground] UNICAST message received : " + str(message))
@@ -78,7 +96,7 @@ class NetworkPlayground(process):
 
         log_to_file(
             "[Network-Playground] Unicast Sending message to : " + str([nodes_reverse[node] for node in target]))
-        send((message.message_type, message.payload, sender), to=target)
+        send_message(message, sender, target)
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
@@ -90,6 +108,29 @@ class NetworkPlayground(process):
             target = [nodes_mapping[i] for i in partition_set]
             dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
             log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
-            send((message.message_type, message.payload, sender), to=target)
+            send_message(message, sender, target)
         else:
-            send((message.message_type, message.payload, sender), to=nodes_mapping.values())
+            log_to_file("Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
+            send_message(message, sender, nodes_mapping.values())
+
+    def send_message(message, sender, destination):
+        for destination_node in destination:
+            p_message = create_playground_message(message, sender, destination_node)
+            self.pending_message_acks[p_message.id]=False
+            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
+            send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
+            # Wait for ACK timeout, i.e. 2 seconds
+            timer = threading.Timer(timeout_duration, retransmit_request, args=(
+                p_message, self.pending_message_acks))
+            timer_set.append(timer)
+            timer.start()
+
+    def retransmit_request(p_message, pending_acks):
+        if self.playground_exited==True:
+            print("Check retransmission of message  ", p_message.id, " required or not. However, Network Playground has Exited!! ")
+            return
+        log_to_file("[Network-Playground] Retransmit_request  {}.".format(str(p_message.id)))
+        if pending_acks[p_message.id]==False:
+            # Retransmit request if playground does not receive an ack within 3 seconds
+            log_to_file("[Network-Playground] Retransmit Message with id: {} to destination".format(p_message._str_()))
+            send_message(p_message.message, p_message.sender, list(p_message.destination))

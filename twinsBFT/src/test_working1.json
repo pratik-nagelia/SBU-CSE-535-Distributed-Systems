@@ -14,6 +14,7 @@
     "faulty_nodes": [
         1
     ],
+    "enable_partitions": true,
     "round_arrangements": {
         "0": {
             "partition_set": [
