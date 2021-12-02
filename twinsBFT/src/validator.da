@@ -115,6 +115,7 @@ class Validator (process):
                         'req_id': request_id,
                         'resp_status': "success"
                     }
+                    send(('COMMIT_INFO', self.pacemaker.current_round), to=self.playground)
                     send(('Response', resp), to=txn['client'])
                     LOGGER.log_event("Sent", "Response", resp, txn['client'])
                     self.request_cache[request_id] = resp
@@ -188,6 +189,7 @@ class Validator (process):
     '''Procedure process proposal msg(P)'''
     def receive(msg=('Proposal', proposal_msg, id, p), from_=sender):
         LOGGER.log_action("Send ACK to Network Playground for message with id: ",id)
+
         # TODO Make the ack mechanism configurable
         if self.validator_id == -100:
             print("Do not send ACK! ", self.validator_id)

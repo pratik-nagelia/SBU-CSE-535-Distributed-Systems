@@ -5,15 +5,18 @@ from playground_message import Playground_Message
 import threading
 
 class NetworkPlayground(process):
-    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse):
+    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse, liveness_bound):
         filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
         self.log_file = open(filename, 'a+')
         self.received_sufficient_responses = set()
         self.message_id = 0
         self.pending_message_acks = {}
         self.playground_exited = False
+        self.liveness_bound = liveness_bound
+        self.last_commit_round = 0
         self.timeout_duration = 2
         self.timer_set = []
+        self.liveness_violation = False
 
     def run():
         print("Starting Network Playground")
@@ -22,6 +25,14 @@ class NetworkPlayground(process):
         for timer in timer_set:
             timer.cancel()
         print("Network Playground Exiting !!")
+
+    def receive(msg=('COMMIT_INFO', commit_round), from_=sender):
+        self.last_commit_round = max(self.last_commit_round, commit_round)
+        log_to_file("[Network-Playground] Update last commit round to {}".format(self.last_commit_round))
+        self.liveness_violation = False
+
+    def receive(msg=('CHECK_LIVENESS',), from_=sender):
+        send(('CHECK_LIVENESS', self.liveness_violation), to=sender)
 
     def receive(msg=('Done',), from_=sender):
         received_sufficient_responses.add(nodes_reverse[sender])
@@ -73,11 +84,18 @@ class NetworkPlayground(process):
     # noinspection Pylint
     def receive(msg=('Unicast', message), from_=sender):
         log_to_file("[Network-Playground] UNICAST message received : " + str(message))
+        round = message.round
+
+        #Check liveness property
+        if self.last_commit_round+self.liveness_bound<round:
+            log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
+            self.liveness_violation = True
+    
         if filter(message): 
             return
         
         leader = message.destination
-        round = message.round
+
         sender_id = nodes_reverse[sender]
         target = []
         
@@ -96,10 +114,17 @@ class NetworkPlayground(process):
 
         log_to_file(
             "[Network-Playground] Unicast Sending message to : " + str([nodes_reverse[node] for node in target]))
-        send_message(message, sender, target)
+        send_message(message, sender, target, True)
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
+
+        round = message.round
+        # Check liveness property
+        if self.last_commit_round + self.liveness_bound < round:
+            log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
+            self.liveness_violation = True
+
         if filter(message): 
             return
 
@@ -108,29 +133,42 @@ class NetworkPlayground(process):
             target = [nodes_mapping[i] for i in partition_set]
             dropped_nodes = set(nodes_mapping.keys()) - set(partition_set)
             log_to_file("Message would be delivered to nodes: {}. Leaving nodes: {}".format(str(partition_set), str(dropped_nodes)))
-            send_message(message, sender, target)
+            send_message(message, sender, target, True)
         else:
+            #send((message.message_type, message.payload, sender), to=nodes_mapping.values())
             log_to_file("Message would be delivered to all nodes: {}.".format(str(nodes_mapping.values())))
-            send_message(message, sender, nodes_mapping.values())
+            send_message(message, sender, nodes_mapping.values(), True)
 
-    def send_message(message, sender, destination):
-        for destination_node in destination:
-            p_message = create_playground_message(message, sender, destination_node)
-            self.pending_message_acks[p_message.id]=False
-            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
-            send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
-            # Wait for ACK timeout, i.e. 2 seconds
-            timer = threading.Timer(timeout_duration, retransmit_request, args=(
+    def send_message(message, sender, destination, list_b):
+        if list_b is True:
+            for destination_node in destination:
+                p_message = create_playground_message(message, sender, destination_node)
+                self.pending_message_acks[p_message.id] = False
+                log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination_node)))
+                send((message.message_type, message.payload, p_message.id, sender), to=destination_node)
+                # Wait for ACK timeout, i.e. 3 seconds
+                timer = threading.Timer(3, retransmit_request, args=(
+                    p_message, self.pending_message_acks))
+                timer_set.append(timer)
+                timer.start()
+        else:
+            p_message = create_playground_message(message, sender, destination)
+            self.pending_message_acks[p_message.id] = False
+            log_to_file("[Network-Playground] Send_Message  {}.".format(str(destination)))
+            send((message.message_type, message.payload, p_message.id, sender), to=destination)
+            # Wait for ACK timeout, i.e. 3 seconds
+            timer = threading.Timer(3, retransmit_request, args=(
                 p_message, self.pending_message_acks))
             timer_set.append(timer)
             timer.start()
 
     def retransmit_request(p_message, pending_acks):
-        if self.playground_exited==True:
-            print("Check retransmission of message  ", p_message.id, " required or not. However, Network Playground has Exited!! ")
+        if self.playground_exited == True:
+            print("Check retransmission of message  ", p_message.id,
+                  " required or not. However, Network Playground has Exited!! ")
             return
         log_to_file("[Network-Playground] Retransmit_request  {}.".format(str(p_message.id)))
-        if pending_acks[p_message.id]==False:
+        if pending_acks[p_message.id] == False:
             # Retransmit request if playground does not receive an ack within 3 seconds
             log_to_file("[Network-Playground] Retransmit Message with id: {} to destination".format(p_message._str_()))
-            send_message(p_message.message, p_message.sender, list(p_message.destination))
+            send_message(p_message.message, p_message.sender, p_message.destination, False)
