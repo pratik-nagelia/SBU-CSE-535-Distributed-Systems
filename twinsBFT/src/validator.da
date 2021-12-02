@@ -47,7 +47,6 @@ class Validator (process):
         Cryptography.public_keys_validators = self.public_keys_validators
         print("Actual Id : ", actual_id, " Twin Id ", validator_id, " ", self)
         if config['failure_config']["seed"] is None:
-            print("00000000000000000000000000000000")
             config['failure_config']["seed"] = random.randint(10000, 100000)
             LOGGER.log_action("Generated a seed for failure config",
                               config['failure_config']["seed"])
