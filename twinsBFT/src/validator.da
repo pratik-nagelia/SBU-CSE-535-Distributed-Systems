@@ -19,6 +19,7 @@ class Validator (process):
     def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, leader_map, nodes_mapping, actual_id):
 
         LOGGER.replicas = replicas
+        LOGGER.nodes_mapping = nodes_mapping
         LOGGER.process_id = "validator_" + str(actual_id)
         LOGGER.clients = clients
         LOGGER.filename = '../logs/config' + str(config_id) + '/' \

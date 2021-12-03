@@ -84,7 +84,7 @@ class RunDiemBFT(process):
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
 
-        setup(self.playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound))
+        setup(self.playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound, clients))
         start(self.playground, ())
 
         start(validators)

@@ -5,4 +5,4 @@ if [[ $1 -eq 0 ]];
 then 
 	python3.7 -m da scenario_generator.da  ../config/config.json
 fi
-python3.7 -m da --message-buffer-size 65535 scenario_executer.da test_working1.json ;
+python3.7 -m da --message-buffer-size 65535 scenario_executer.da ;

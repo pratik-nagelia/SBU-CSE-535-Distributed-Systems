@@ -5,7 +5,7 @@ from playground_message import Playground_Message
 import threading
 
 class NetworkPlayground(process):
-    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse, liveness_bound):
+    def setup(config_id, enable_partitions, partition_arrangement, nodes_mapping, nodes_reverse, liveness_bound, clients):
         filename = '../logs/config' + str(config_id) + '/' + "network_playground.log"
         self.log_file = open(filename, 'a+')
         self.received_sufficient_responses = set()
@@ -17,6 +17,7 @@ class NetworkPlayground(process):
         self.timeout_duration = 2
         self.timer_set = []
         self.liveness_violation = False
+        self.message_count = {}
 
     def run():
         print("Starting Network Playground")
@@ -84,12 +85,16 @@ class NetworkPlayground(process):
     # noinspection Pylint
     def receive(msg=('Unicast', message), from_=sender):
         log_to_file("[Network-Playground] UNICAST message received : " + str(message))
+        # send(('Stuck', self.liveness_violation), to=clients)
         round = message.round
-
+        if round not in self.message_count:
+            self.message_count[round] = 0
+        self.message_count[round] += 1
         #Check liveness property
-        if self.last_commit_round+self.liveness_bound<round:
+        if self.last_commit_round+self.liveness_bound < round or self.message_count[round] > (self.liveness_bound * len(nodes_mapping.keys())):
             log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
             self.liveness_violation = True
+            send(('Stuck', self.liveness_violation), to=clients)
     
         if filter(message): 
             return
@@ -118,12 +123,16 @@ class NetworkPlayground(process):
 
     def receive(msg=('Broadcast', message), from_=sender):
         log_to_file("[Network-Playground] BROADCAST message received : {}. Sender: {} ".format(str(message), sender))
-
+        # send(('Stuck', self.liveness_violation), to=clients)
         round = message.round
-        # Check liveness property
-        if self.last_commit_round + self.liveness_bound < round:
+        if round not in self.message_count:
+            self.message_count[round] = 0
+        self.message_count[round] += 1
+        #Check liveness property
+        if self.last_commit_round+self.liveness_bound < round or self.message_count[round] > (self.liveness_bound * len(nodes_mapping.keys())):
             log_to_file("[Network-Playground] Liveness Property Violated!!~~~~~~~~~~~~~~~~~~~~~")
             self.liveness_violation = True
+            send(('Stuck', self.liveness_violation), to=clients)
 
         if filter(message): 
             return
@@ -165,8 +174,8 @@ class NetworkPlayground(process):
             print("Check retransmission of message  ", p_message.id,
                   " required or not. However, Network Playground has Exited!! ")
             return
-        log_to_file("[Network-Playground] Retransmit_request  {}.".format(str(p_message.id)))
-        if pending_acks[p_message.id] == False:
+        # log_to_file("[Network-Playground] Inside Retransmit Function {}.".format(str(p_message.id)))
+        if pending_acks[p_message.id] == False and p_message.id < 200:
             # Retransmit request if playground does not receive an ack within 3 seconds
             log_to_file("[Network-Playground] Retransmit Message with id: {} to destination".format(p_message._str_()))
             send_message(p_message.message, p_message.sender, p_message.destination, False)

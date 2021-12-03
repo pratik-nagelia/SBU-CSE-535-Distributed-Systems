@@ -15,7 +15,7 @@
         3
     ],
     "enable_partitions": true,
-    "liveness_bound": 6,
+    "liveness_bound": 5,
     "diem_config": {
         "nvalidators": 4,
         "nfaulty": 1,
