@@ -19,6 +19,7 @@ class Validator (process):
     def setup(config, config_id: int, validator_id: int, replicas: list, clients: list, private_key, public_keys_validators, public_keys_clients, playground, leader_map, nodes_mapping, actual_id):
 
         LOGGER.replicas = replicas
+        LOGGER.nodes_mapping = nodes_mapping
         LOGGER.process_id = "validator_" + str(actual_id)
         LOGGER.clients = clients
         LOGGER.filename = '../logs/config' + str(config_id) + '/' \
@@ -46,13 +47,12 @@ class Validator (process):
         Cryptography.nodes_mapping = self.nodes_mapping
         Cryptography.public_keys_validators = self.public_keys_validators
         print("Actual Id : ", actual_id, " Twin Id ", validator_id, " ", self)
-
-        if config['failure_config'].seed is None:
-            config['failure_config'].seed = random.randint(10000, 100000)
+        if config['failure_config']["seed"] is None:
+            config['failure_config']["seed"] = random.randint(10000, 100000)
             LOGGER.log_action("Generated a seed for failure config",
-                              config['failure_config'].seed)
+                              config['failure_config']["seed"])
 
-        random.seed(config['failure_config'].seed)
+        random.seed(config['failure_config']["seed"])
 
     # For fault injection
     def setattr(attr, value):
@@ -356,7 +356,7 @@ class Validator (process):
 class ValidatorFI (process, Validator):
 
     def get_failure_config(message, to):
-        for failure_config in self.config['failure_config'].failures:
+        for failure_config in self.config['failure_config']["failures"]:
 
             # only allow SetAttr fail type to last nfaulty validators
             if failure_config.fail_type == FailType.SetAttr and self.validator_id < len(self.replicas) - config['nfaulty']:

@@ -84,7 +84,7 @@ class RunDiemBFT(process):
         for i, c in enumerate(clients):
             setup({c}, (config, config_id, i, list(validators), private_keys_clients[c], public_keys_validators))
 
-        setup(self.playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound))
+        setup(self.playground, (config_id, self.enable_partitions, round_arrangements, nodes_mapping, nodes_reverse, self.liveness_bound, clients))
         start(self.playground, ())
 
         start(validators)
@@ -159,7 +159,6 @@ def is_config_valid(config):
         return False
     return True
 
-
 def main():
 
     if os.path.exists('../logs/') and os.path.isdir('../logs/'):
@@ -171,14 +170,27 @@ def main():
     if os.path.exists('../reports/') and os.path.isdir('../reports/'):
         shutil.rmtree('../reports/')
 
-    config_id = 0
-    config = configs[0]
-    if not is_config_valid(config):
-        output("The provided config", config, "is not valid. Skipping this config.")
+    if len(sys.argv) > 1:
+        with open(sys.argv[1]) as test_scenarios_file:
+            test_scenarios = json.load(test_scenarios_file)
+        run = new(RunDiemBFT)
+        setup(run, (test_scenarios, test_scenarios["diem_config"], 0))
+        start(run)
         return
-    with open(sys.argv[1]) as test_scenarios_file:
-        test_scenarios = json.load(test_scenarios_file)
-    run = new(RunDiemBFT)
-    setup(run, (test_scenarios, config, config_id))
-    start(run)
+
+    config_id = 0
+    filename = "../config/test_scenarios/test_scenarios{}.json".format(config_id)
+    file_exists = os.path.exists(filename)
+    while (file_exists):
+        with open(filename) as test_scenarios_file:
+            test_scenarios = json.load(test_scenarios_file)
+        config = test_scenarios["diem_config"]
+        if not is_config_valid(config):
+            output("The provided config", config, "is not valid. Skipping this config.")
+            continue
+        run = new(RunDiemBFT)
+        setup(run, (test_scenarios, config, config_id))
+        start(run)
+        config_id += 1
+        file_exists = os.path.exists("../config/test_scenarios/test_scenarios{}.json".format(config_id))
 

@@ -2,47 +2,31 @@
     "all_nodes": [
         1,
         2,
-        4,
         3,
-        -3
+        4,
+        -4
     ],
     "honest_nodes": [
         1,
         2,
-        4
-    ],
-    "faulty_nodes": [
         3
     ],
+    "faulty_nodes": [
+        4
+    ],
     "enable_partitions": true,
-    "liveness_bound": 5,
-    "diem_config": {
-        "nvalidators": 4,
-        "nfaulty": 1,
-        "nclients": 1,
-        "nclientops": 2,
-        "sleeptime": 1,
-        "clienttimeout": 10,
-        "delta": 2,
-        "window_size": 5,
-        "exclude_size": 1,
-        "failure_config": {
-            "failures": [],
-            "seed": 637713655
-        }
-    },
     "round_arrangements": {
         "0": {
             "partition_set": [
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -52,12 +36,12 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -67,12 +51,12 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -84,12 +68,12 @@
                 ],
                 [
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -101,12 +85,12 @@
                 ],
                 [
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -118,12 +102,12 @@
                 ],
                 [
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -135,12 +119,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -152,12 +136,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -169,12 +153,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -186,12 +170,12 @@
                 ],
                 [
                     1,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -203,12 +187,12 @@
                 ],
                 [
                     1,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -220,12 +204,12 @@
                 ],
                 [
                     1,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -239,12 +223,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -258,12 +242,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -277,12 +261,12 @@
                     2
                 ],
                 [
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 2,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -292,14 +276,14 @@
                 [
                     1,
                     2,
-                    4
+                    3
                 ],
                 [
-                    3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -309,14 +293,14 @@
                 [
                     1,
                     2,
-                    4
+                    3
                 ],
                 [
-                    3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 1,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -326,12 +310,12 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 3,
+            "leader": 4,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null
@@ -341,9 +325,9 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
             "leader": 1,
@@ -356,9 +340,9 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
             "leader": 2,
@@ -371,12 +355,12 @@
                 [
                     1,
                     2,
-                    4,
                     3,
-                    -3
+                    4,
+                    -4
                 ]
             ],
-            "leader": 4,
+            "leader": 3,
             "is_intra_partition_drop": false,
             "intra_partition_drop_message_type": null,
             "intra_partition_drop_message_from": null

@@ -22,6 +22,7 @@ class Client(process):
         self.nops = config['nclientops']
         self.f = config['nfaulty']
         self.timer_set = []
+        self.system_stuck = False
         Cryptography.private_key = self.private_key
 
     def send_request(request):
@@ -48,12 +49,18 @@ class Client(process):
             send_request(request)
 
         # Wait until we have received valid (f+1) responses for all its requests
-        await(len(received_sufficient_responses) == nops)
+        await((len(received_sufficient_responses) == nops) or self.system_stuck)
         for timer in timer_set:
             timer.cancel()
         send(('Done',), to=parent())
+        print("Client ", self.client_id, "is exiting")
         output("Client ", self.client_id, "is exiting")
         LOGGER.log_event("Sent", "Done", None, parent())
+
+    def receive(msg=('Stuck', val), from_=sender):
+        print("System Stuck Message received=====================================================================")
+        LOGGER.log_action("System Stuck Message received", val)
+        self.system_stuck = True
 
     def receive(msg=('Response', resp), from_=validator):
         LOGGER.log_event("Received", "Response", resp, validator)

@@ -1,3 +1,5 @@
+import os
+import shutil
 import random
 import json
 import sys
@@ -28,9 +30,9 @@ def generate_twins_ids(faulty_nodes):
     return faulty_twins
 
 
-def generate_test_scenarios(configs):
-    total_nodes = configs["total_nodes"]  # read # of non-faulty nodes from config_file
-    faulty_nodes_count = configs["faulty_nodes"]  # read # of compromised nodes
+def generate_test_scenarios(config_id, configs):
+    total_nodes = configs["diem_config"]["nvalidators"]  # read # of non-faulty nodes from config_file
+    faulty_nodes_count = configs["diem_config"]["nfaulty"]  # read # of compromised nodes
     honest_nodes_count = total_nodes - faulty_nodes_count
 
     # Generate IDs of honest_nodes, faulty nodes and twins.
@@ -65,7 +67,8 @@ def generate_test_scenarios(configs):
     generate_liveness_partitions(round_arrangements, all_nodes, leaders)
 
     tag_intra_partition_drop(round_arrangements, configs)
-    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, configs)
+
+    fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config_id, configs)
 
 
 # Assign leaders to partition. E.g for P1 partition, {A, P1 }, {B,P1}, {C,P1}, {D,P1}
@@ -101,7 +104,7 @@ def enumerate_partitions(partiton_views, config):
     round_arrangements = {}
     for round_no, partition_view in enumerate(partiton_views, 0):
         round_arrangements[round_no] = partition_view
-        if round_no >= (config["enumeration_limit"]["total_round_views"] - config["total_nodes"]):  # Enumeration Limit
+        if round_no >= (config["enumeration_limit"]["total_round_views"] - config["diem_config"]["nvalidators"]):  # Enumeration Limit
             break
     return round_arrangements
 
@@ -142,9 +145,16 @@ def generate_partitions(nodes):
         yield [[first]] + smaller
 
 
-def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, configs):
-    file = open("test_scenarios.json", "w")
-    output = {"all_nodes": all_nodes, "honest_nodes": honest_nodes, "faulty_nodes": faulty_nodes, "enable_partitions": configs["enable_partitions"], "liveness_bound": configs["liveness_bound"], "round_arrangements": round_arrangements}
+def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config_id, configs):
+    file = open("../config/test_scenarios/test_scenarios{}.json".format(config_id), "w")
+    output = {"all_nodes": all_nodes,
+              "honest_nodes": honest_nodes,
+              "faulty_nodes": faulty_nodes,
+              "enable_partitions": configs["enable_partitions"],
+              "liveness_bound": configs["liveness_bound"],
+              "diem_config" : configs["diem_config"],
+              "round_arrangements": round_arrangements
+              }
     json.dump(output, file, default=lambda x: x.__dict__, indent=4)
     file.close()
 
@@ -152,7 +162,11 @@ def fileoutput(all_nodes, honest_nodes, faulty_nodes, round_arrangements, config
 def main():
     with open(sys.argv[1]) as config_file:
         configs = json.load(config_file)
-    generate_test_scenarios(configs)
+    if os.path.exists('../config/test_scenarios') and os.path.isdir('../config/test_scenarios'):
+        shutil.rmtree('../config/test_scenarios')
+    os.makedirs('../config/test_scenarios')
+    for config_id, config in enumerate(configs):
+        generate_test_scenarios(config_id, config)
 
 
 if __name__ == '__main__':
